@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/lib/supabase';
 import { PostCard } from '@/components/PostCard';
 import { BottomNav } from '@/components/BottomNav';
-import { Share2, Search, Settings, Settings2, LogOut, X, MessageCircle, MessageSquare, Plus } from 'lucide-react';
+import { Share2, Search, Settings, Settings2, LogOut, X, MessageCircle, MessageSquare, Plus, Users } from 'lucide-react';
 import { Loader } from '@/components/ui/loader';
 import { toast } from 'sonner';
 import Link from 'next/link';
@@ -25,7 +25,7 @@ export default function HomePage() {
   const [leftSidebarOpen, setLeftSidebarOpen] = useState(false);
   const [rightSidebarOpen, setRightSidebarOpen] = useState(false);
   const [isGesturing, setIsGesturing] = useState(false);
-  const [feedMode, setFeedMode] = useState<'trending' | 'explore' | 'following' | 'sharable'>('trending');
+  const [feedMode, setFeedMode] = useState<'trending' | 'explore' | 'following' | 'sharable' | 'communities'>('trending');
   const [profile, setProfile] = useState<any>(null);
   
   const observer = useRef<IntersectionObserver | null>(null);
@@ -76,7 +76,54 @@ export default function HomePage() {
 
       let fetchedPosts: any[] = [];
 
-        if (mode === 'trending') {
+        if (mode === 'communities') {
+          // Fetch user's community posts
+          if (!user) {
+            // Guests can't see community feed
+            setHasMore(false);
+            fetchedPosts = [];
+          } else {
+            // Get user's communities
+            const { data: userCommunities } = await supabase
+              .from('community_members')
+              .select('community_id')
+              .eq('user_id', user.id);
+
+            const communityIds = (userCommunities || []).map(m => m.community_id);
+
+            if (communityIds.length === 0) {
+              fetchedPosts = [];
+            } else {
+              // Get approved posts from user's communities
+              const { data, error } = await supabase
+                .from('community_posts')
+                .select(`
+                  *,
+                  user:profiles(id, full_name, username, avatar_url),
+                  community:communities(id, name),
+                  likes:community_post_likes(count),
+                  comments:community_post_comments(count)
+                `)
+                .in('community_id', communityIds)
+                .eq('is_approved', true)
+                .order('created_at', { ascending: false })
+                .range(currentOffset, currentOffset + PAGE_SIZE - 1);
+
+              if (error) throw error;
+              fetchedPosts = (data || []).map(post => ({
+                ...post,
+                id: post.id,
+                content: post.content,
+                media_url: post.media_url,
+                media_type: post.media_type,
+                user: post.user,
+                community: post.community,
+                created_at: post.created_at,
+                is_community_post: true,
+              }));
+            }
+          }
+        } else if (mode === 'trending') {
           // Use RPC for trending posts
           const { data, error } = await supabase.rpc('get_trending_posts', {
             limit_count: PAGE_SIZE,
@@ -246,7 +293,7 @@ export default function HomePage() {
             >
               <div className="p-6 flex flex-col gap-6">
                 <div className="grid grid-cols-2 gap-3">
-                  {(['trending', 'explore', 'following', 'sharable'] as const).map((mode) => (
+                  {(['trending', 'explore', 'following', 'communities', 'sharable'] as const).map((mode) => (
                     <button
                       key={mode}
                       onClick={() => {
@@ -372,6 +419,16 @@ export default function HomePage() {
                     </button>
                   ) : (
                     <>
+                  <button
+                    onClick={() => {
+                      setRightSidebarOpen(false);
+                      router.push('/communities');
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-4 text-black dark:text-white hover:bg-black/10 dark:hover:bg-white/10 rounded-2xl transition-all"
+                  >
+                    <Users size={24} strokeWidth={1.5} />
+                    <span className="font-bold">Communities</span>
+                  </button>
                   <button
                     onClick={() => {
                       setRightSidebarOpen(false);

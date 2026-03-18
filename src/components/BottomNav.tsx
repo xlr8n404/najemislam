@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Home, Search, PlusSquare, Bell, UserCircle } from 'lucide-react';
+import { Home, Search, PlusSquare, Bell, UserCircle, Users } from 'lucide-react';
 import { useGuestMode } from '@/context/GuestModeContext';
 import { toast } from 'sonner';
 
@@ -81,6 +81,7 @@ export function BottomNav() {
     const navItems = [
       { href: '/home', icon: Home },
       { href: '/search', icon: Search },
+      { href: '/communities', icon: Users },
       { href: '/post/create', icon: PlusSquare },
       { href: '/alerts', icon: Bell },
       { href: '/profile', icon: UserCircle },
