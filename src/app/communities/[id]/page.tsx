@@ -12,7 +12,7 @@ export default function CommunityDetailPage() {
   const communityId = params.id as string;
 
   const [community, setCommunity] = useState<any>(null);
-  const [posts, setPosts] = useState([]);
+  const [posts, setPosts] = useState<any[]>([]);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isMember, setIsMember] = useState(false);
