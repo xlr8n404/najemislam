@@ -11,6 +11,66 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const query = searchParams.get('q');
     const type = searchParams.get('type') || 'all';
+    const isRandom = searchParams.get('random') === 'true';
+
+    // Handle random content requests
+    if (isRandom) {
+      if (type === 'users') {
+        const { data: users, error } = await supabaseAdmin
+          .from('profiles')
+          .select('id, full_name, username, avatar_url, bio')
+          .order('created_at', { ascending: false })
+          .limit(10);
+
+        if (error) throw error;
+        return NextResponse.json({ users: users || [] });
+      }
+
+      if (type === 'posts') {
+        const { data: posts, error } = await supabaseAdmin
+          .from('posts')
+          .select(`
+            id,
+            content,
+            media_url,
+            media_type,
+            created_at,
+            user:profiles(id, full_name, username, avatar_url)
+          `)
+          .order('created_at', { ascending: false })
+          .limit(10);
+
+        if (error) throw error;
+        return NextResponse.json({ posts: posts || [] });
+      }
+
+      // Get all random content (users, posts, hashtags)
+      const [usersRes, postsRes] = await Promise.all([
+        supabaseAdmin
+          .from('profiles')
+          .select('id, full_name, username, avatar_url, bio')
+          .order('created_at', { ascending: false })
+          .limit(5),
+        supabaseAdmin
+          .from('posts')
+          .select(`
+            id,
+            content,
+            media_url,
+            media_type,
+            created_at,
+            user:profiles(id, full_name, username, avatar_url)
+          `)
+          .order('created_at', { ascending: false })
+          .limit(5),
+      ]);
+
+      return NextResponse.json({
+        users: usersRes.data || [],
+        posts: postsRes.data || [],
+        hashtags: postsRes.data || [],
+      });
+    }
 
     if (!query || query.length < 2) {
       return NextResponse.json({ users: [], posts: [] });

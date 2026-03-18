@@ -54,6 +54,40 @@ function SearchContent() {
   const [loading, setLoading] = useState(false);
   const [isGesturing, setIsGesturing] = useState(false);
   const [showFilterPills, setShowFilterPills] = useState(false);
+  const [hasInitialized, setHasInitialized] = useState(false);
+
+  const loadRandomContent = useCallback(async (type: SearchType) => {
+    setLoading(true);
+    try {
+      if (type === null) {
+        // Load all random content
+        const res = await fetch(`/api/search?random=true`);
+        const data = await res.json();
+        setResults({
+          posts: data.posts || [],
+          users: data.users || [],
+          hashtags: data.hashtags || [],
+          settings: [],
+        });
+      } else if (type === 'Posts') {
+        const res = await fetch(`/api/search?random=true&type=posts`);
+        const data = await res.json();
+        setResults(prev => ({ ...prev, posts: data.posts || [] }));
+      } else if (type === 'Users') {
+        const res = await fetch(`/api/search?random=true&type=users`);
+        const data = await res.json();
+        setResults(prev => ({ ...prev, users: data.users || [] }));
+      } else if (type === 'Hashtags') {
+        const res = await fetch(`/api/search?random=true&type=posts`);
+        const data = await res.json();
+        setResults(prev => ({ ...prev, hashtags: data.posts || [] }));
+      }
+    } catch (error) {
+      console.error('Error loading random content:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   const performSearch = useCallback(async (q: string, type: SearchType) => {
     if (!q.trim() || q.length < 2) {
@@ -111,11 +145,25 @@ function SearchContent() {
   }, []);
 
   useEffect(() => {
+    // Initialize with random content on first load
+    if (!hasInitialized && !initialQuery) {
+      loadRandomContent(null);
+      setHasInitialized(true);
+      return;
+    }
+
     const timer = setTimeout(() => {
-      performSearch(query, searchType);
+      if (query.length < 2) {
+        // If query is cleared, load random content again
+        if (searchType !== 'Settings') {
+          loadRandomContent(searchType);
+        }
+      } else {
+        performSearch(query, searchType);
+      }
     }, 300);
     return () => clearTimeout(timer);
-  }, [query, searchType, performSearch]);
+  }, [query, searchType, performSearch, loadRandomContent, hasInitialized, initialQuery]);
 
   const filterPills: { type: SearchType; icon: React.ElementType; label: string }[] = [
     { type: 'Posts', icon: FileText, label: 'Posts' },
@@ -219,18 +267,6 @@ function SearchContent() {
               className="py-20"
             >
               <Loader />
-            </motion.div>
-          ) : query.length < 2 ? (
-            <motion.div
-              key="empty"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="py-20 text-center text-zinc-500"
-            >
-              <div className="w-16 h-16 bg-zinc-100 dark:bg-zinc-900 rounded-full flex items-center justify-center mx-auto mb-4">
-                <SearchIcon size={24} strokeWidth={1.5} className="text-zinc-400" />
-              </div>
-              <p>Enter at least 2 characters to search</p>
             </motion.div>
           ) : (
             <motion.div
