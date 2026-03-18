@@ -408,7 +408,7 @@ export default function HomePage() {
         )}
       </AnimatePresence>
     
-      <header className="fixed top-0 left-0 right-0 h-16 z-50 px-4 bg-white/80 dark:bg-black/80 backdrop-blur-xl border-b border-black/10 dark:border-white/10">
+      <header className="fixed top-0 left-0 right-0 h-16 z-50 px-4 bg-white/80 dark:bg-black/80 backdrop-blur-xl">
         <div className="h-full flex items-center justify-between">
           <button 
             onClick={() => setLeftSidebarOpen(true)}
