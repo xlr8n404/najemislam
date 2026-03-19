@@ -14,6 +14,7 @@ interface Profile {
   id: string;
   full_name: string;
   avatar_url: string;
+  username?: string;
 }
 
 export default function CreatePostPage() {
@@ -92,7 +93,7 @@ export default function CreatePostPage() {
 
       const { data: profileData } = await supabase
         .from('profiles')
-        .select('id, full_name, avatar_url')
+        .select('id, full_name, avatar_url, username')
         .eq('id', user.id)
         .single();
 
@@ -154,8 +155,7 @@ export default function CreatePostPage() {
       } else {
         toast.dismiss(loadingToast);
       }
-    } catch (error) {
-      console.error('Compression error:', error);
+    } catch {
       toast.error('Failed to process some media', { id: loadingToast });
     }
   };
@@ -199,8 +199,7 @@ export default function CreatePostPage() {
         } else {
           throw new Error('Drive sync failed');
         }
-      } catch (driveError) {
-        console.error('Google Drive sync failed, falling back to server upload:', driveError);
+      } catch {
         // Fallback to existing server upload if Drive fails
         if (mediaFiles.length > 0) {
           for (const file of mediaFiles) {
@@ -221,23 +220,25 @@ export default function CreatePostPage() {
         }
       }
 
-      const { error: postError } = await supabase
+      // Save post to the new posts table (post_number is auto-incremented by trigger)
+      const { data: postData, error: postError } = await supabase
         .from('posts')
         .insert({
           user_id: profile.id,
           content: content,
-          media_urls: mediaUrls,
-          media_types: mediaTypes,
-          likes_count: 0,
-          comments_count: 0,
-        });
+          media_url: mediaUrls[0] || null, // Store first media as primary
+          media_type: mediaTypes[0] || null,
+        })
+        .select('post_number')
+        .single();
 
       if (postError) throw postError;
 
       toast.success('Post shared successfully!');
-      router.push('/home');
-    } catch (error) {
-      console.error('Error creating post:', error);
+      // Redirect to the newly created post
+      const postNumber = postData?.post_number || 1;
+      router.push(`/${profile.username || 'home'}/${postNumber}`);
+    } catch {
       toast.error('Failed to create post');
     } finally {
       setPosting(false);

@@ -20,18 +20,19 @@ const SUPABASE_STORAGE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL + '/storage/v1
 interface PostCardProps {
   id: string;
   user_id: string;
+  post_number?: number;
   user: {
     full_name: string;
     avatar_url: string;
     username?: string;
   };
   content: string;
-  media_url?: string;
-  media_type?: 'image' | 'video';
+  media_url?: string | null;
+  media_type?: 'image' | 'video' | null;
   media_urls?: string[];
   media_types?: string[];
-  likes_count: number;
-  comments_count: number;
+  likes_count?: number;
+  comments_count?: number;
   reposts_count?: number;
   reposted_id?: string;
   original_post?: any;
@@ -70,14 +71,15 @@ interface Comment {
 export function PostCard({ 
   id, 
   user_id, 
+  post_number,
   user, 
   content, 
   media_url, 
   media_type, 
   media_urls = [], 
   media_types = [], 
-  likes_count: initialLikes, 
-  comments_count: initialComments, 
+  likes_count: initialLikes = 0, 
+  comments_count: initialComments = 0, 
   reposts_count: initialReposts = 0,
   reposted_id,
   original_post,
