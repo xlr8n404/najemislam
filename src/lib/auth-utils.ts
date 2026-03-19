@@ -8,6 +8,12 @@ const JWT_SECRET = new TextEncoder().encode(
   'default-secret-key-123456'
 );
 
+type TokenPayload = {
+  userId: string;
+  username: string;
+  [key: string]: string | number | boolean;
+};
+
 export function getAppUrl() {
   if (process.env.NEXT_PUBLIC_APP_URL && process.env.NEXT_PUBLIC_APP_URL !== 'http://localhost:3000') {
     return process.env.NEXT_PUBLIC_APP_URL;
@@ -18,7 +24,7 @@ export function getAppUrl() {
   return 'http://localhost:3000';
 }
 
-export async function createToken(payload: any) {
+export async function createToken(payload: TokenPayload) {
   return await new SignJWT(payload)
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
@@ -30,7 +36,7 @@ export async function verifyToken(token: string) {
   try {
     const { payload } = await jwtVerify(token, JWT_SECRET);
     return payload;
-  } catch (error) {
+  } catch {
     return null;
   }
 }

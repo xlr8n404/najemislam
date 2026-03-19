@@ -14,10 +14,30 @@ import { useGuestMode } from '@/context/GuestModeContext';
 
 const PAGE_SIZE = 10;
 
+type Post = {
+  id: string;
+  content: string;
+  media_url: string | null;
+  media_type: string | null;
+  user: { id: string; full_name: string; username: string; avatar_url: string | null };
+  community?: { id: string; name: string };
+  created_at: string;
+  is_community_post?: boolean;
+  [key: string]: unknown;
+};
+
+type Profile = {
+  id: string;
+  full_name: string | null;
+  username: string;
+  avatar_url: string | null;
+  [key: string]: unknown;
+};
+
 export default function HomePage() {
   const router = useRouter();
   const { isGuest } = useGuestMode();
-  const [posts, setPosts] = useState<any[]>([]);
+  const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
@@ -26,7 +46,7 @@ export default function HomePage() {
   const [rightSidebarOpen, setRightSidebarOpen] = useState(false);
   const [isGesturing, setIsGesturing] = useState(false);
   const [feedMode, setFeedMode] = useState<'trending' | 'explore' | 'following' | 'sharable' | 'communities'>('trending');
-  const [profile, setProfile] = useState<any>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
   
   const observer = useRef<IntersectionObserver | null>(null);
 
@@ -74,7 +94,7 @@ export default function HomePage() {
         if (profileData) setProfile(profileData);
       }
 
-      let fetchedPosts: any[] = [];
+      let fetchedPosts: Post[] = [];
 
         if (mode === 'communities') {
           // Fetch user's community posts
@@ -186,9 +206,9 @@ export default function HomePage() {
       setHasMore(fetchedPosts.length === PAGE_SIZE);
       setOffset(currentOffset + fetchedPosts.length);
 
-    } catch (err: any) {
-      console.error('Data fetching error:', err);
-      toast.error('Failed to load posts: ' + err.message);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      toast.error('Failed to load posts: ' + errorMessage);
     } finally {
       setLoading(false);
       setLoadingMore(false);
