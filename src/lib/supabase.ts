@@ -64,6 +64,6 @@ export const supabase = new Proxy(baseSupabase, {
     if (prop === 'auth') {
       return authProxy;
     }
-    return (target as Record<string, unknown>)[prop];
+    return (target as any)[prop];
   }
 });

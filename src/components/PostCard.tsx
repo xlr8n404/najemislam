@@ -19,16 +19,16 @@ const SUPABASE_STORAGE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL + '/storage/v1
 
 interface PostCardProps {
   id: string;
-  user_id: string;
+  user_id?: string;
   post_number?: number;
   user: {
     full_name: string;
-    avatar_url: string;
+    avatar_url?: string | null;
     username?: string;
   };
   content: string;
   media_url?: string | null;
-  media_type?: 'image' | 'video' | null;
+  media_type?: string | null;
   media_urls?: string[];
   media_types?: string[];
   likes_count?: number;
@@ -49,7 +49,7 @@ interface CommentReply {
   user_id: string;
   user: {
     full_name: string;
-    avatar_url: string;
+    avatar_url?: string | null;
     username?: string;
   };
 }
@@ -61,7 +61,7 @@ interface Comment {
   user_id: string;
   user: {
     full_name: string;
-    avatar_url: string;
+    avatar_url?: string | null;
     username?: string;
   };
   replies?: CommentReply[];

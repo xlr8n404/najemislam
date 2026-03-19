@@ -8,11 +8,11 @@ import { supabase } from '@/lib/supabase';
 
 export default function CommunitiesPage() {
   const router = useRouter();
-  const [communities, setCommunities] = useState([]);
+  const [communities, setCommunities] = useState<any[]>([]);
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('');
   const [loading, setLoading] = useState(true);
-  const [userCommunities, setUserCommunities] = useState(new Set());
+  const [userCommunities, setUserCommunities] = useState<Set<string>>(new Set());
   const [currentUser, setCurrentUser] = useState<any>(null);
 
   useEffect(() => {
@@ -59,7 +59,7 @@ export default function CommunitiesPage() {
         .eq('user_id', currentUser.id);
 
       if (!error && data) {
-        setUserCommunities(new Set(data.map(m => m.community_id)));
+        setUserCommunities(new Set(data.map((m: any) => m.community_id)));
       }
     } catch (error) {
       console.error('Error fetching user communities:', error);
@@ -80,7 +80,7 @@ export default function CommunitiesPage() {
       });
 
       if (res.ok) {
-        setUserCommunities(prev => new Set([...prev, communityId]));
+        setUserCommunities(prev => new Set([...Array.from(prev), communityId]));
       } else {
         const error = await res.json();
         alert(error.error || 'Failed to join community');
@@ -164,7 +164,7 @@ export default function CommunitiesPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {communities.map(community => (
+            {communities.map((community: any) => (
               <CommunityCard
                 key={community.id}
                 community={community}
