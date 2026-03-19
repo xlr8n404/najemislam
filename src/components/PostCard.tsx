@@ -1254,13 +1254,45 @@ export function PostCard({
                 ) : (
                   <div className="flex flex-col py-4">
                     {/* Original Post Timing */}
-                    <div className="flex items-center gap-4 px-4 py-4 text-zinc-500 border-b border-black/5 dark:border-white/5 mb-2">
-                      <div className="w-10 h-10 rounded-full bg-zinc-200 dark:bg-zinc-800 flex items-center justify-center">
-                        <Clock className="w-5 h-5" strokeWidth={1.5} />
+                    <div className="flex flex-col gap-4 px-4 py-4 border-b border-black/5 dark:border-white/5 mb-2">
+                      <div className="flex items-center gap-4 text-zinc-500">
+                        <div className="w-10 h-10 rounded-full bg-zinc-200 dark:bg-zinc-800 flex items-center justify-center">
+                          <Clock className="w-5 h-5" strokeWidth={1.5} />
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-xs text-zinc-400 font-medium uppercase tracking-wider">Originally posted on</span>
+                          <span className="text-base font-medium text-black dark:text-white">{originalPostData.created_at ? formatFullDate(originalPostData.created_at) : 'Unknown'}</span>
+                        </div>
                       </div>
-                      <div className="flex flex-col">
-                        <span className="text-xs text-zinc-400 font-medium uppercase tracking-wider">Originally posted on</span>
-                        <span className="text-base font-medium text-black dark:text-white">{originalPostData.created_at ? formatFullDate(originalPostData.created_at) : 'Unknown'}</span>
+
+                      {/* Original Creator Info */}
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-full overflow-hidden border border-black/10 dark:border-white/10 bg-zinc-100 dark:bg-zinc-900">
+                          <img 
+                            src={getAvatarUrl(originalUser?.avatar_url, originalUser?.full_name || 'User')} 
+                            alt={originalUser?.full_name} 
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-xs text-zinc-400 font-medium uppercase tracking-wider">Posted by</span>
+                          <span className="text-base font-bold text-black dark:text-white">{originalUser?.full_name || 'Unknown User'}</span>
+                        </div>
+                      </div>
+
+                      {/* Reposter Info */}
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-full overflow-hidden border border-black/10 dark:border-white/10 bg-zinc-100 dark:bg-zinc-900">
+                          <img 
+                            src={getAvatarUrl(user?.avatar_url, user?.full_name || 'User')} 
+                            alt={user?.full_name} 
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-xs text-zinc-400 font-medium uppercase tracking-wider">Reposted by</span>
+                          <span className="text-base font-bold text-black dark:text-white">{user?.full_name || 'Unknown User'}</span>
+                        </div>
                       </div>
                     </div>
 
@@ -1419,17 +1451,34 @@ export function PostCard({
                         </div>
                       ) : (
                         <div className="flex flex-col py-4">
-                          {/* Post Timing */}
-                          <div className="flex items-center gap-4 px-4 py-4 text-zinc-500 border-b border-black/5 dark:border-white/5 mb-2">
-                            <div className="w-10 h-10 rounded-full bg-zinc-200 dark:bg-zinc-800 flex items-center justify-center">
-                              <Clock className="w-5 h-5" strokeWidth={1.5} />
+                          {/* Post Timing & Creator Info */}
+                          <div className="flex flex-col gap-4 px-4 py-4 border-b border-black/5 dark:border-white/5 mb-2">
+                            <div className="flex items-center gap-4 text-zinc-500">
+                              <div className="w-10 h-10 rounded-full bg-zinc-200 dark:bg-zinc-800 flex items-center justify-center">
+                                <Clock className="w-5 h-5" strokeWidth={1.5} />
+                              </div>
+                              <div className="flex flex-col">
+                                <span className="text-xs text-zinc-400 font-medium uppercase tracking-wider">Posted on</span>
+                                <span className="text-base font-medium text-black dark:text-white">{created_at ? formatFullDate(created_at) : 'Unknown'}</span>
+                              </div>
                             </div>
-                            <div className="flex flex-col">
-                              <span className="text-xs text-zinc-400 font-medium uppercase tracking-wider">Posted on</span>
-                              <span className="text-base font-medium text-black dark:text-white">{created_at ? formatFullDate(created_at) : 'Unknown'}</span>
+
+                            {/* Creator Info */}
+                            <div className="flex items-center gap-4">
+                              <div className="w-10 h-10 rounded-full overflow-hidden border border-black/10 dark:border-white/10 bg-zinc-100 dark:bg-zinc-900">
+                                <img 
+                                  src={getAvatarUrl(user?.avatar_url, user?.full_name || 'User')} 
+                                  alt={user?.full_name} 
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                              <div className="flex flex-col">
+                                <span className="text-xs text-zinc-400 font-medium uppercase tracking-wider">Posted by</span>
+                                <span className="text-base font-bold text-black dark:text-white">{user?.full_name || 'Unknown User'}</span>
+                              </div>
                             </div>
                           </div>
-  
+
                           <div className="grid grid-cols-1 gap-1">
                             {/* Save */}
                             <button
