@@ -2,15 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Plus, Search } from 'lucide-react';
+import { SquarePlus } from 'lucide-react';
 import CommunityCard from '@/components/CommunityCard';
 import { supabase } from '@/lib/supabase';
+import { BottomNav } from '@/components/BottomNav';
 
 export default function CommunitiesPage() {
   const router = useRouter();
   const [communities, setCommunities] = useState<any[]>([]);
-  const [search, setSearch] = useState('');
-  const [category, setCategory] = useState('');
   const [loading, setLoading] = useState(true);
   const [userCommunities, setUserCommunities] = useState<Set<string>>(new Set());
   const [currentUser, setCurrentUser] = useState<any>(null);
@@ -26,7 +25,7 @@ export default function CommunitiesPage() {
 
   useEffect(() => {
     fetchCommunities();
-  }, [search, category]);
+  }, []);
 
   useEffect(() => {
     if (currentUser) {
@@ -37,11 +36,7 @@ export default function CommunitiesPage() {
   const fetchCommunities = async () => {
     setLoading(true);
     try {
-      const params = new URLSearchParams();
-      if (search) params.append('search', search);
-      if (category) params.append('category', category);
-
-      const res = await fetch(`/api/communities?${params}`);
+      const res = await fetch(`/api/communities`);
       const data = await res.json();
       setCommunities(data.communities || []);
     } catch (error) {
@@ -91,79 +86,31 @@ export default function CommunitiesPage() {
     }
   };
 
-  const categories = ['Technology', 'Sports', 'Entertainment', 'Business', 'Lifestyle', 'Education'];
-
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-black pt-20 pb-20">
-      <div className="max-w-6xl mx-auto px-4">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <h1 className="text-3xl font-bold text-zinc-900 dark:text-white">Communities</h1>
-            <button
-              onClick={() => router.push('/communities/create')}
-              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition"
-            >
-              <Plus size={20} />
-              Create Community
-            </button>
-          </div>
-          <p className="text-zinc-600 dark:text-zinc-400">
-            Find communities based on your interests and connect with like-minded people
-          </p>
-        </div>
+    <div className="min-h-screen bg-background pb-28">
+      {/* Fixed Header - 64dp */}
+      <header className="fixed top-0 left-0 right-0 z-50 h-16 flex items-center justify-between px-4 bg-background">
+        <h1 className="text-2xl font-bold font-[family-name:var(--font-syne)]">Communities</h1>
+        <button
+          onClick={() => router.push('/communities/create')}
+          className="p-2 text-foreground hover:bg-accent rounded-full transition-colors"
+        >
+          <SquarePlus size={28} strokeWidth={1.5} />
+        </button>
+      </header>
 
-        {/* Search and Filter */}
-        <div className="mb-8 space-y-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-3 text-zinc-400" size={20} />
-            <input
-              type="text"
-              placeholder="Search communities..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          <div className="flex gap-2 flex-wrap">
-            <button
-              onClick={() => setCategory('')}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition ${
-                category === ''
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white border border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700'
-              }`}
-            >
-              All
-            </button>
-            {categories.map(cat => (
-              <button
-                key={cat}
-                onClick={() => setCategory(cat)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition ${
-                  category === cat
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white border border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700'
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Communities Grid */}
+      {/* Main Content */}
+      <main className="max-w-xl mx-auto pt-20 px-4">
         {loading ? (
           <div className="text-center py-12">
-            <p className="text-zinc-600 dark:text-zinc-400">Loading communities...</p>
+            <p className="text-muted-foreground">Loading communities...</p>
           </div>
         ) : communities.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-zinc-600 dark:text-zinc-400">No communities found</p>
+            <p className="text-muted-foreground">No communities found</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="space-y-4">
             {communities.map((community: any) => (
               <CommunityCard
                 key={community.id}
@@ -174,7 +121,9 @@ export default function CommunitiesPage() {
             ))}
           </div>
         )}
-      </div>
+      </main>
+
+      <BottomNav />
     </div>
   );
 }
