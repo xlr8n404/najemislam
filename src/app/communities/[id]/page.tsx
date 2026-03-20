@@ -2,9 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { Users, ArrowLeft, Plus } from 'lucide-react';
+import { Users, Settings2, Plus } from 'lucide-react';
 import CommunityPostCard from '@/components/CommunityPostCard';
 import { supabase } from '@/lib/supabase';
+import { BottomNav } from '@/components/BottomNav';
+import { toast } from 'sonner';
 
 export default function CommunityDetailPage() {
   const router = useRouter();
@@ -20,6 +22,8 @@ export default function CommunityDetailPage() {
   const [postContent, setPostContent] = useState('');
   const [postLoading, setPostLoading] = useState(false);
   const [likedPosts, setLikedPosts] = useState(new Set());
+  const [memberCount, setMemberCount] = useState(0);
+  const [postCount, setPostCount] = useState(0);
 
   useEffect(() => {
     const getUser = async () => {
@@ -46,6 +50,7 @@ export default function CommunityDetailPage() {
       const data = await res.json();
       if (data.community) {
         setCommunity(data.community);
+        setMemberCount(data.community.members?.length || 0);
 
         if (currentUser) {
           const isMemberCheck = data.community.members?.some((m: any) => m.user_id === currentUser.id);
@@ -55,6 +60,7 @@ export default function CommunityDetailPage() {
       }
     } catch (error) {
       console.error('Error fetching community:', error);
+      toast.error('Failed to load community');
     }
   };
 
@@ -69,9 +75,11 @@ export default function CommunityDetailPage() {
       const res = await fetch(`/api/communities/${communityId}/posts?${params}`);
       const data = await res.json();
       setPosts(data.posts || []);
+      setPostCount(data.posts?.length || 0);
       setLikedPosts(new Set(data.liked_post_ids || []));
     } catch (error) {
       console.error('Error fetching posts:', error);
+      toast.error('Failed to load posts');
     } finally {
       setLoading(false);
     }
@@ -194,96 +202,115 @@ export default function CommunityDetailPage() {
 
   if (!community) {
     return (
-      <div className="min-h-screen bg-zinc-50 dark:bg-black pt-20 pb-20">
-        <div className="max-w-4xl mx-auto px-4">Loading...</div>
+      <div className="min-h-screen bg-background pb-28 flex items-center justify-center">
+        <div>Loading...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-black pt-20 pb-20">
-      <div className="max-w-4xl mx-auto px-4">
-        {/* Header */}
-        <button
-          onClick={() => router.back()}
-          className="flex items-center gap-2 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white mb-8"
-        >
-          <ArrowLeft size={20} />
-          Back
-        </button>
+    <div className="min-h-screen bg-background pb-28">
+      {/* Fixed Header - 64dp */}
+      <header className="fixed top-0 left-0 right-0 z-50 h-16 flex items-center justify-between px-4 bg-background">
+        <h1 className="text-xl font-bold font-[family-name:var(--font-syne)] truncate">{community.name}</h1>
+        {isAdmin && (
+          <button
+            onClick={() => router.push(`/communities/${communityId}/settings`)}
+            className="p-2 text-foreground hover:bg-accent rounded-full transition-colors"
+          >
+            <Settings2 size={24} strokeWidth={1.5} />
+          </button>
+        )}
+      </header>
 
-        {/* Community Info */}
-        <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-6 mb-8">
-          <div className="flex gap-4 mb-4">
+      <main className="max-w-xl mx-auto pt-16">
+        {/* Cover Photo */}
+        {community.cover_url && (
+          <div className="w-full h-40 bg-muted overflow-hidden">
+            <img
+              src={community.cover_url}
+              alt="Community cover"
+              className="w-full h-full object-cover"
+            />
+          </div>
+        )}
+
+        {/* Community Info Section */}
+        <div className="px-4 py-6">
+          {/* Profile Picture & Name */}
+          <div className="flex items-start gap-4 mb-4">
             {community.avatar_url && (
               <img
                 src={community.avatar_url}
                 alt={community.name}
-                className="w-20 h-20 rounded-lg object-cover"
+                className="w-16 h-16 rounded-full object-cover flex-shrink-0"
               />
             )}
             <div className="flex-1">
-              <h1 className="text-3xl font-bold text-zinc-900 dark:text-white mb-2">
-                {community.name}
-              </h1>
-              {community.description && (
-                <p className="text-zinc-600 dark:text-zinc-400 mb-3">
-                  {community.description}
-                </p>
+              <h2 className="text-2xl font-bold text-foreground">{community.name}</h2>
+              {community.username && (
+                <p className="text-muted-foreground text-sm">@{community.username}</p>
               )}
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-1 text-sm text-zinc-600 dark:text-zinc-400">
-                  <Users size={16} />
-                  <span>{community.members?.length || 0} members</span>
-                </div>
-                {community.category && (
-                  <span className="text-sm bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 px-3 py-1 rounded-full">
-                    {community.category}
-                  </span>
-                )}
-              </div>
             </div>
-
-            {/* Join/Leave Button */}
-            {currentUser && !isAdmin && (
-              <div>
-                {isMember ? (
-                  <div className="text-sm bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 px-4 py-2 rounded">
-                    Member
-                  </div>
-                ) : (
-                  <button
-                    onClick={handleJoin}
-                    className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition"
-                  >
-                    <Plus size={16} />
-                    Join
-                  </button>
-                )}
-              </div>
-            )}
           </div>
+
+          {/* Stats */}
+          <div className="flex gap-6 mb-4 text-sm">
+            <div>
+              <div className="font-bold text-foreground">{postCount}</div>
+              <div className="text-muted-foreground">{postCount === 1 ? 'Post' : 'Posts'}</div>
+            </div>
+            <div>
+              <div className="font-bold text-foreground flex items-center gap-1">
+                <Users size={16} />
+                {memberCount}
+              </div>
+              <div className="text-muted-foreground">{memberCount === 1 ? 'Member' : 'Members'}</div>
+            </div>
+          </div>
+
+          {/* Description */}
+          {community.description && (
+            <p className="text-foreground text-sm leading-relaxed mb-4">
+              {community.description}
+            </p>
+          )}
+
+          {/* Join Button */}
+          {currentUser && !isAdmin && !isMember && (
+            <button
+              onClick={handleJoin}
+              className="w-full py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium"
+            >
+              Join Community
+            </button>
+          )}
         </div>
 
         {/* Create Post Section */}
         {isMember && currentUser && (
-          <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-6 mb-8">
-            <h3 className="font-semibold text-lg text-zinc-900 dark:text-white mb-4">
-              Share something with the community
-            </h3>
-            <form onSubmit={handleCreatePost} className="space-y-4">
+          <div className="px-4 mb-6">
+            <h3 className="text-sm font-semibold text-foreground mb-3">Create Post</h3>
+            <form onSubmit={handleCreatePost} className="space-y-3">
               <textarea
                 value={postContent}
                 onChange={(e) => setPostContent(e.target.value)}
                 placeholder="What's on your mind?"
                 rows={3}
-                className="w-full px-4 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-zinc-900 dark:text-white resize-none"
+                className="w-full px-4 py-3 bg-muted rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-foreground placeholder-muted-foreground resize-none"
               />
-              <div className="flex justify-end">
+              <div className="flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setPostContent('')}
+                  className="px-4 py-2 text-muted-foreground hover:bg-accent rounded-lg transition-colors text-sm font-medium"
+                >
+                  Clear
+                </button>
                 <button
                   type="submit"
                   disabled={postLoading || !postContent.trim()}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {postLoading ? 'Posting...' : 'Post'}
                 </button>
@@ -292,18 +319,14 @@ export default function CommunityDetailPage() {
           </div>
         )}
 
-        {/* Posts */}
-        <div>
-          <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-4">
-            {isAdmin ? 'All Posts' : 'Posts'}
-          </h2>
-
+        {/* Posts Section */}
+        <div className="px-4">
           {loading ? (
-            <p className="text-center text-zinc-600 dark:text-zinc-400 py-8">Loading posts...</p>
+            <p className="text-center text-muted-foreground py-8">Loading posts...</p>
           ) : posts.length === 0 ? (
-            <p className="text-center text-zinc-600 dark:text-zinc-400 py-8">No posts yet</p>
+            <p className="text-center text-muted-foreground py-8">No posts yet</p>
           ) : (
-            <div>
+            <div className="space-y-0">
               {posts.map(post => (
                 <CommunityPostCard
                   key={post.id}
@@ -319,7 +342,9 @@ export default function CommunityDetailPage() {
             </div>
           )}
         </div>
-      </div>
+      </main>
+
+      <BottomNav />
     </div>
   );
 }
