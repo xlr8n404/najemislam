@@ -81,7 +81,6 @@ export function BottomNav() {
     const navItems = [
       { href: '/home', icon: Home },
       { href: '/search', icon: Search },
-      { href: '/communities', icon: Users },
       { href: '/post/create', icon: PlusSquare },
       { href: '/alerts', icon: Bell },
       { href: '/profile', icon: UserCircle },

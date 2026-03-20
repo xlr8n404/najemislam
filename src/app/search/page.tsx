@@ -273,7 +273,7 @@ function SearchContent() {
               key="results"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="space-y-6"
+              className="space-y-4"
             >
               {/* Users */}
               {(searchType === 'Users' || searchType === null) && results.users.length > 0 && (

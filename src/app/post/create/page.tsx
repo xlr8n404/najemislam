@@ -180,28 +180,25 @@ export default function CreatePostPage() {
       let mediaUrls: string[] = [];
       let mediaTypes: string[] = [];
 
-      // Try syncing to Google Drive first
-      try {
-        const driveFormData = new FormData();
-        driveFormData.append('type', 'posts');
-        driveFormData.append('metadata', JSON.stringify({ content, userId: profile.id }));
-        mediaFiles.forEach(file => driveFormData.append('files', file));
+      // Upload media files
+      if (mediaFiles.length > 0) {
+        try {
+          const driveFormData = new FormData();
+          driveFormData.append('type', 'posts');
+          driveFormData.append('metadata', JSON.stringify({ content, userId: profile.id }));
+          mediaFiles.forEach(file => driveFormData.append('files', file));
 
-        const driveRes = await fetch('/api/drive/sync', { method: 'POST', body: driveFormData });
-        if (driveRes.ok) {
-          const driveData = await driveRes.json();
-          // Use Drive file IDs/Links for our post
-          mediaUrls = driveData.files.map((f: any) => 
-            // We use a specific URL format to display images from Drive
-            `https://lh3.googleusercontent.com/d/${f.id}=w1000`
-          );
-          mediaTypes = mediaFiles.map(f => f.type.startsWith('video/') ? 'video' : 'image');
-        } else {
-          throw new Error('Drive sync failed');
-        }
-      } catch {
-        // Fallback to existing server upload if Drive fails
-        if (mediaFiles.length > 0) {
+          const driveRes = await fetch('/api/drive/sync', { method: 'POST', body: driveFormData });
+          if (driveRes.ok) {
+            const driveData = await driveRes.json();
+            // Use uploaded file URLs
+            mediaUrls = driveData.files.map((f: any) => f.url);
+            mediaTypes = mediaFiles.map(f => f.type.startsWith('video/') ? 'video' : 'image');
+          } else {
+            throw new Error('Drive sync failed');
+          }
+        } catch {
+          // Fallback to existing server upload if Drive fails
           for (const file of mediaFiles) {
             const fd = new FormData();
             fd.append('file', file);
@@ -220,12 +217,12 @@ export default function CreatePostPage() {
         }
       }
 
-      // Save post to the new posts table (post_number is auto-incremented by trigger)
+      // Save post to the posts table (post_number is auto-incremented by trigger)
       const { data: postData, error: postError } = await supabase
         .from('posts')
         .insert({
           user_id: profile.id,
-          content: content,
+          content: content.trim(),
           media_url: mediaUrls[0] || null, // Store first media as primary
           media_type: mediaTypes[0] || null,
         })
@@ -237,8 +234,9 @@ export default function CreatePostPage() {
       toast.success('Post shared successfully!');
       // Redirect to the newly created post
       const postNumber = postData?.post_number || 1;
-      router.push(`/${profile.username || 'home'}/${postNumber}`);
-    } catch {
+      router.push(`/${profile.username}/${postNumber}`);
+    } catch (error) {
+      console.error('[v0] Post creation error:', error);
       toast.error('Failed to create post');
     } finally {
       setPosting(false);

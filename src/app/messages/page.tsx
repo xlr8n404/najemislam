@@ -1,6 +1,6 @@
 'use client';
 
-import { MessageCircle, ArrowLeft, Send, MoreVertical, Trash2, UserPlus, Home } from 'lucide-react';
+import { MessageCircle, ArrowLeft, Send, MoreVertical, Trash2, UserPlus, Home, Settings2, RotateCcw } from 'lucide-react';
 import { Loader } from '@/components/ui/loader';
 import Link from 'next/link';
 import { useEffect, useState, useRef, useCallback } from 'react';
@@ -64,6 +64,10 @@ export default function MessagesPage() {
   const [followedUsers, setFollowedUsers] = useState<Set<string>>(new Set());
   const [showMenu, setShowMenu] = useState(false);
   const [messagedUsers, setMessagedUsers] = useState<Set<string>>(new Set());
+  const [showFilters, setShowFilters] = useState(true);
+  const [visibleTimestamp, setVisibleTimestamp] = useState<string | null>(null);
+  const [replyingToMessage, setReplyingToMessage] = useState<Message | null>(null);
+  const [swipeStartX, setSwipeStartX] = useState(0);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -340,14 +344,67 @@ export default function MessagesPage() {
         {!selectedConversation ? (
           <>
             {/* Header for Chat List - 64px (approx 64dp) */}
-                <header className="fixed top-0 left-0 right-0 z-50 h-16 flex items-center justify-between px-4 bg-background border-b border-border">
+                <header className="fixed top-0 left-0 right-0 z-50 h-16 flex items-center justify-between px-4 bg-background">
                     <h1 className="text-xl font-bold font-[family-name:var(--font-syne)]">Chats</h1>
-                    <Link href="/home" className="p-2 text-foreground hover:bg-accent rounded-full transition-colors">
-                      <Home size={24} strokeWidth={1.5} />
-                    </Link>
+                    <div className="flex items-center gap-2">
+                      <button 
+                        onClick={() => setShowFilters(!showFilters)}
+                        className="p-2 text-foreground hover:bg-accent rounded-full transition-colors"
+                      >
+                        <Settings2 size={24} strokeWidth={1.5} />
+                      </button>
+                      <Link href="/home" className="p-2 text-foreground hover:bg-accent rounded-full transition-colors">
+                        <Home size={24} strokeWidth={1.5} />
+                      </Link>
+                    </div>
                 </header>
 
-            <main className="max-w-xl mx-auto pt-20 pb-28 px-4">
+                {/* Filter Pills - Below header, toggleable */}
+                <AnimatePresence>
+                  {showFilters && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="fixed top-16 left-0 right-0 z-40 bg-background px-4 py-3"
+                    >
+                      <div className="flex items-center gap-2 w-full max-w-xl mx-auto">
+                        <button
+                          onClick={() => setActiveTab('inbox')}
+                          className={`flex-1 py-3 rounded-full text-base font-bold transition-all ${
+                            activeTab === 'inbox'
+                              ? 'bg-foreground text-background shadow-md'
+                              : 'bg-muted text-muted-foreground hover:bg-accent hover:text-foreground'
+                          }`}
+                        >
+                          Inbox
+                        </button>
+                        <button
+                          onClick={() => setActiveTab('request')}
+                          className={`flex-1 py-3 rounded-full text-base font-bold transition-all ${
+                            activeTab === 'request'
+                              ? 'bg-foreground text-background shadow-md'
+                              : 'bg-muted text-muted-foreground hover:bg-accent hover:text-foreground'
+                          }`}
+                        >
+                          Requests
+                        </button>
+                        <button
+                          onClick={() => setActiveTab('suggestions')}
+                          className={`flex-1 py-3 rounded-full text-base font-bold transition-all ${
+                            activeTab === 'suggestions'
+                              ? 'bg-foreground text-background shadow-md'
+                              : 'bg-muted text-muted-foreground hover:bg-accent hover:text-foreground'
+                          }`}
+                        >
+                          Suggestions
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+            <main className={`max-w-xl mx-auto pb-28 px-4 transition-all ${showFilters ? 'pt-40' : 'pt-20'}`}>
               {loading ? (
                 <Loader />
               ) : activeTab === 'suggestions' ? (
@@ -364,7 +421,7 @@ export default function MessagesPage() {
                           <img
                             src={getAvatarUrl(user.avatar_url, user.full_name)}
                             alt={user.full_name}
-                            className="w-14 h-14 rounded-full object-cover border border-border flex-shrink-0 group-hover:scale-105 transition-transform"
+                            className="w-14 h-14 rounded-full object-cover flex-shrink-0 group-hover:scale-105 transition-transform"
                           />
                           <div className="flex-1 min-w-0">
                             <p className="font-bold text-base truncate">{user.full_name}</p>
@@ -421,7 +478,7 @@ export default function MessagesPage() {
                           <img
                             src={getAvatarUrl(otherUser.avatar_url, otherUser.full_name)}
                             alt={otherUser.full_name}
-                            className="w-14 h-14 rounded-full object-cover border border-border"
+                            className="w-14 h-14 rounded-full object-cover"
                           />
                           {conv.unread_count > 0 && (
                             <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center border-2 border-background">
@@ -448,47 +505,13 @@ export default function MessagesPage() {
                 )}
                 </main>
 
-            {/* Bottom Tab Navigation - Pill buttons */}
-            <div className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-t border-border px-4 py-3">
-              <div className="flex items-center gap-2 w-full max-w-xl mx-auto">
-                <button
-                  onClick={() => setActiveTab('inbox')}
-                  className={`flex-1 py-3 rounded-full text-base font-bold transition-all ${
-                    activeTab === 'inbox'
-                      ? 'bg-foreground text-background shadow-md'
-                      : 'bg-muted text-muted-foreground hover:bg-accent hover:text-foreground'
-                  }`}
-                >
-                  Inbox
-                </button>
-                <button
-                  onClick={() => setActiveTab('request')}
-                  className={`flex-1 py-3 rounded-full text-base font-bold transition-all ${
-                    activeTab === 'request'
-                      ? 'bg-foreground text-background shadow-md'
-                      : 'bg-muted text-muted-foreground hover:bg-accent hover:text-foreground'
-                  }`}
-                >
-                  Requests
-                </button>
-                <button
-                  onClick={() => setActiveTab('suggestions')}
-                  className={`flex-1 py-3 rounded-full text-base font-bold transition-all ${
-                    activeTab === 'suggestions'
-                      ? 'bg-foreground text-background shadow-md'
-                      : 'bg-muted text-muted-foreground hover:bg-accent hover:text-foreground'
-                  }`}
-                >
-                  Suggestions
-                </button>
-              </div>
-            </div>
+
               </>
           ) : (
         /* Chat Detail View */
         <div className="fixed inset-0 z-[100] bg-background flex flex-col">
             {/* Top Bar 64dp */}
-            <header className="h-16 flex items-center justify-between px-4 border-b border-border">
+            <header className="h-16 flex items-center justify-between px-4">
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => setSelectedConversation(null)}
@@ -500,7 +523,7 @@ export default function MessagesPage() {
                   <img
                     src={getAvatarUrl(getOtherUser(selectedConversation).avatar_url, getOtherUser(selectedConversation).full_name)}
                     alt={getOtherUser(selectedConversation).full_name}
-                    className="w-10 h-10 rounded-full object-cover border border-border"
+                    className="w-10 h-10 rounded-full object-cover"
                   />
                 </div>
                 <div className="flex flex-col">
@@ -544,7 +567,7 @@ export default function MessagesPage() {
             </header>
 
           {/* Messages container */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 flex flex-col">
+          <div className="flex-1 overflow-y-auto p-4 flex flex-col">
             {messagesLoading && messages.length === 0 ? (
               <Loader />
             ) : messages.length === 0 ? (
@@ -556,36 +579,67 @@ export default function MessagesPage() {
                 <p className="text-sm">Send a message to start the conversation with {getOtherUser(selectedConversation).full_name}</p>
               </div>
             ) : (
-              messages.map((msg, index) => {
-                const isMe = msg.sender_id === userId;
-                const showAvatar = index === 0 || messages[index - 1].sender_id !== msg.sender_id;
-                
-                return (
-                  <div key={msg.id} className={`flex w-full ${isMe ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-[75%] flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
-                      <div
-                        className={`px-4 py-2.5 rounded-[20px] text-sm break-words ${
-                          isMe
-                            ? 'bg-primary text-primary-foreground rounded-tr-none'
-                            : 'bg-muted text-foreground rounded-tl-none border border-border/50'
-                        }`}
-                      >
-                        {msg.content}
+              <div className="space-y-0.5">
+                {messages.map((msg, index) => {
+                  const isMe = msg.sender_id === userId;
+                  const showAvatar = index === 0 || messages[index - 1].sender_id !== msg.sender_id;
+                  
+                  return (
+                    <div 
+                      key={msg.id} 
+                      className={`flex w-full ${isMe ? 'justify-end' : 'justify-start'}`}
+                      onTouchStart={(e) => setSwipeStartX(e.touches[0].clientX)}
+                      onTouchEnd={(e) => {
+                        const swipeEndX = e.changedTouches[0].clientX;
+                        const diff = swipeStartX - swipeEndX;
+                        if (!isMe && Math.abs(diff) > 50) {
+                          setReplyingToMessage(msg);
+                        }
+                      }}
+                    >
+                      <div className={`max-w-[75%] flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
+                        {/* Reply preview if this message is being replied to */}
+                        {replyingToMessage?.id === msg.id && (
+                          <div className="mb-1 px-3 py-1 bg-accent rounded text-xs text-muted-foreground flex items-center gap-2">
+                            <RotateCcw size={12} />
+                            <span>Replying to this</span>
+                          </div>
+                        )}
+                        <div
+                          onClick={() => setVisibleTimestamp(visibleTimestamp === msg.id ? null : msg.id)}
+                          className={`px-4 py-2.5 rounded-[20px] text-sm break-words cursor-pointer transition-all ${
+                            isMe
+                              ? 'bg-primary text-primary-foreground rounded-tr-none hover:opacity-90'
+                              : 'bg-muted text-foreground rounded-tl-none hover:opacity-90'
+                          }`}
+                        >
+                          {msg.content}
+                        </div>
+                        {/* Timestamp shown only when clicked */}
+                        <AnimatePresence>
+                          {visibleTimestamp === msg.id && (
+                            <motion.span 
+                              initial={{ opacity: 0, height: 0 }}
+                              animate={{ opacity: 1, height: 'auto' }}
+                              exit={{ opacity: 0, height: 0 }}
+                              className="text-[10px] text-muted-foreground mt-0.5 px-1"
+                            >
+                              {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </motion.span>
+                          )}
+                        </AnimatePresence>
                       </div>
-                      <span className="text-[10px] text-muted-foreground mt-1 px-1">
-                        {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </span>
                     </div>
-                  </div>
-                );
-              })
+                  );
+                })}
+              </div>
             )}
             <div ref={messagesEndRef} className="h-4" />
           </div>
 
             {/* Bottom Bar 64dp */}
-            <footer className="h-20 flex items-center gap-3 px-4 pb-safe bg-background border-t border-border">
-              <div className="w-10 h-10 rounded-full overflow-hidden border border-border bg-muted flex-shrink-0">
+            <footer className="h-20 flex items-center gap-3 px-4 pb-safe bg-background">
+              <div className="w-10 h-10 rounded-full overflow-hidden bg-muted flex-shrink-0">
               <img 
                 src={getAvatarUrl(currentUserProfile?.avatar_url, currentUserProfile?.full_name || 'User')} 
                 alt="Me" 
@@ -594,7 +648,7 @@ export default function MessagesPage() {
             </div>
             
             <form onSubmit={handleSendMessage} className="flex-1 flex items-center gap-2">
-              <div className="flex-1 bg-muted rounded-full flex items-center px-4 py-1.5 border border-border">
+              <div className="flex-1 bg-muted rounded-full flex items-center px-4 py-1.5">
                 <input
                   type="text"
                   value={messageText}

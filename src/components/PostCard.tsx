@@ -723,9 +723,25 @@ export function PostCard({
           next.delete(commentId);
           return next;
         });
-        setComments(prev => prev.map(c => 
-          c.id === commentId ? { ...c, votes_count: (c.votes_count || 1) - 1 } : c
-        ));
+        // Update comments (top-level and replies)
+        setComments(prev => prev.map(c => {
+          if (c.id === commentId) {
+            return { ...c, votes_count: Math.max(0, (c.votes_count || 1) - 1) };
+          }
+          // Also update votes in replies
+          if (c.replies) {
+            return {
+              ...c,
+              replies: c.replies.map(r => 
+                r.id === commentId ? { ...r, votes_count: Math.max(0, (r.votes_count || 1) - 1) } : r
+              )
+            };
+          }
+          return c;
+        }));
+        toast.success('Vote removed');
+      } else {
+        toast.error('Could not remove vote');
       }
     } else {
       // Add vote
@@ -735,9 +751,23 @@ export function PostCard({
 
       if (!error) {
         setVotedComments(prev => new Set([...prev, commentId]));
-        setComments(prev => prev.map(c =>
-          c.id === commentId ? { ...c, votes_count: (c.votes_count || 0) + 1 } : c
-        ));
+        // Update comments (top-level and replies)
+        setComments(prev => prev.map(c => {
+          if (c.id === commentId) {
+            return { ...c, votes_count: (c.votes_count || 0) + 1 };
+          }
+          // Also update votes in replies
+          if (c.replies) {
+            return {
+              ...c,
+              replies: c.replies.map(r =>
+                r.id === commentId ? { ...r, votes_count: (r.votes_count || 0) + 1 } : r
+              )
+            };
+          }
+          return c;
+        }));
+        toast.success('Ranked!');
       } else {
         toast.error('Could not rank this comment');
       }
@@ -1004,63 +1034,66 @@ export function PostCard({
             </p>
           </div>
 
-          {/* Actions row — Reply | Replies toggle | right: TrendingUp | Three dot menu */}
+          {/* Actions row — Left: Reply | Replies | TrendingUp | Right: Three dot menu */}
           <div className="flex items-center gap-3 mt-1">
-            {/* Reply button */}
-            <button
-              onClick={() => {
-                const username = (comment.user as any)?.username;
-                setReplyingTo({
-                  id: isReply ? (parentId || comment.id) : comment.id,
-                  name: username ? `@${username}` : (comment.user?.full_name || 'User')
-                });
-                setNewComment(username ? `@${username} ` : '');
-                setTimeout(() => {
-                  if (commentInputRef.current) {
-                    commentInputRef.current.focus();
-                    const len = commentInputRef.current.value.length;
-                    commentInputRef.current.setSelectionRange(len, len);
-                  }
-                }, 10);
-              }}
-              className="flex items-center gap-1 text-base text-zinc-500 hover:text-black dark:hover:text-white transition-colors"
-            >
-              <Reply className="w-6 h-6" strokeWidth={1.5} />
-              <span>Reply</span>
-            </button>
-
-            {/* Replies toggle — only for main comments with replies */}
-            {!isReply && replies && replies.length > 0 && (
+            {/* Left side actions */}
+            <div className="flex items-center gap-3">
+              {/* Reply button */}
               <button
-                onClick={() => toggleReplies(comment.id)}
+                onClick={() => {
+                  const username = (comment.user as any)?.username;
+                  setReplyingTo({
+                    id: isReply ? (parentId || comment.id) : comment.id,
+                    name: username ? `@${username}` : (comment.user?.full_name || 'User')
+                  });
+                  setNewComment(username ? `@${username} ` : '');
+                  setTimeout(() => {
+                    if (commentInputRef.current) {
+                      commentInputRef.current.focus();
+                      const len = commentInputRef.current.value.length;
+                      commentInputRef.current.setSelectionRange(len, len);
+                    }
+                  }, 10);
+                }}
                 className="flex items-center gap-1 text-base text-zinc-500 hover:text-black dark:hover:text-white transition-colors"
               >
-                {expandedReplies?.has(comment.id) ? (
-                  <ChevronUp className="w-6 h-6" strokeWidth={1.5} />
-                ) : (
-                  <ChevronDown className="w-6 h-6" strokeWidth={1.5} />
-                )}
-                <span>{replies.length} {replies.length === 1 ? 'Reply' : 'Replies'}</span>
+                <Reply className="w-6 h-6" strokeWidth={1.5} />
+                <span>Reply</span>
               </button>
-            )}
 
-            {/* Right side: TrendingUp + Three dot menu */}
+              {/* Replies toggle — only for main comments with replies */}
+              {!isReply && replies && replies.length > 0 && (
+                <button
+                  onClick={() => toggleReplies(comment.id)}
+                  className="flex items-center gap-1 text-base text-zinc-500 hover:text-black dark:hover:text-white transition-colors"
+                >
+                  {expandedReplies?.has(comment.id) ? (
+                    <ChevronUp className="w-6 h-6" strokeWidth={1.5} />
+                  ) : (
+                    <ChevronDown className="w-6 h-6" strokeWidth={1.5} />
+                  )}
+                  <span>{replies.length} {replies.length === 1 ? 'Reply' : 'Replies'}</span>
+                </button>
+              )}
+
+              {/* TrendingUp — only for main comments */}
+              {!isReply && (
+                <button
+                  onClick={() => handleVoteComment(comment.id)}
+                  className={`flex items-center gap-1 text-base transition-colors ${
+                    hasVoted
+                      ? 'text-green-500'
+                      : 'text-zinc-500 hover:text-green-500'
+                  }`}
+                >
+                  <TrendingUp className={`w-6 h-6 ${hasVoted ? 'fill-green-500/20' : ''}`} strokeWidth={1.5} />
+                  {(comment.votes_count || 0) > 0 && <span>{comment.votes_count}</span>}
+                </button>
+              )}
+            </div>
+
+            {/* Right side: Three dot menu */}
             <div className="ml-auto flex items-center gap-1">
-            {/* TrendingUp — only for main comments */}
-            {!isReply && (
-              <button
-                onClick={() => handleVoteComment(comment.id)}
-                className={`flex items-center gap-1 text-base transition-colors ${
-                  hasVoted
-                    ? 'text-green-500'
-                    : 'text-zinc-500 hover:text-green-500'
-                }`}
-              >
-                <TrendingUp className={`w-6 h-6 ${hasVoted ? 'fill-green-500/20' : ''}`} strokeWidth={1.5} />
-                {(comment.votes_count || 0) > 0 && <span>{comment.votes_count}</span>}
-              </button>
-            )}
-
             {/* Three dot menu */}
             <div className="relative">
               {deletingCommentId === comment.id ? (
