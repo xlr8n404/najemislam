@@ -13,6 +13,15 @@ import { GuestBannerWrapper } from "@/components/GuestBannerWrapper";
 export const metadata: Metadata = {
   title: "Sharable",
   description: "Share everything with Sharable",
+  icons: {
+    icon: "/icon.png",
+    apple: "/icon.png",
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Sharable",
+  },
 };
 
 export const viewport = {
