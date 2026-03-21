@@ -36,6 +36,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid username or password' }, { status: 401 });
     }
 
+    // Reactivate account if it was deactivated
+    await supabaseAdmin
+      .from('profiles')
+      .update({ is_deactivated: false })
+      .eq('id', profile.id);
+
     const token = await createToken({
       userId: profile.id,
       username: profile.username

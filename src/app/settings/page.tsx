@@ -155,6 +155,22 @@ export default function SettingsPage() {
             <ChevronRight size={24} strokeWidth={1.5} className="text-zinc-500" />
           </Link>
 
+          <Link 
+            href="/settings/deactivate"
+            className="flex items-center justify-between p-4 bg-orange-50 dark:bg-orange-950/30 rounded-2xl border border-orange-200 dark:border-orange-500/20 hover:bg-orange-100 dark:hover:bg-orange-950/50 transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900/50 rounded-full flex items-center justify-center">
+                <UserX size={24} strokeWidth={1.5} className="text-orange-500 dark:text-orange-400" />
+              </div>
+              <div className="text-left">
+                <p className="font-medium text-orange-600 dark:text-orange-400">Deactivate Account</p>
+                <p className="text-sm text-orange-500 dark:text-orange-400/60">Temporarily disable your account</p>
+              </div>
+            </div>
+            <ChevronRight size={24} strokeWidth={1.5} className="text-orange-400 dark:text-orange-400/60" />
+          </Link>
+
           <button 
             onClick={() => setShowLogoutDialog(true)}
             className="w-full flex items-center justify-between p-4 bg-zinc-100 dark:bg-zinc-900/50 rounded-2xl border border-black/5 dark:border-white/5 hover:bg-zinc-200 dark:hover:bg-zinc-800/50 transition-colors"

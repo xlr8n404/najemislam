@@ -119,13 +119,14 @@ export default function HomePage() {
                 .from('community_posts')
                 .select(`
                   *,
-                  user:profiles(id, full_name, username, avatar_url),
+                  user:profiles!inner(id, full_name, username, avatar_url, is_deactivated),
                   community:communities(id, name),
                   likes:community_post_likes(count),
                   comments:community_post_comments(count)
                 `)
                 .in('community_id', communityIds)
                 .eq('is_approved', true)
+                .eq('user.is_deactivated', false)
                 .order('created_at', { ascending: false })
                 .range(currentOffset, currentOffset + PAGE_SIZE - 1);
 
@@ -157,12 +158,13 @@ export default function HomePage() {
             .from('posts')
             .select(`
               *,
-              user:profiles!inner(full_name, avatar_url, username),
+              user:profiles!inner(full_name, avatar_url, username, is_deactivated),
               original_post:reposted_id(
                 *,
                 user:profiles(full_name, avatar_url, username)
               )
-            `);
+            `)
+            .eq('user.is_deactivated', false);
 
           if (mode === 'following') {
             if (!user) {
