@@ -309,41 +309,50 @@ export default function HomePage() {
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="absolute top-0 left-0 h-full w-[85%] max-w-[320px] bg-zinc-100 dark:bg-zinc-900 shadow-2xl flex flex-col"
+              className="absolute top-0 left-0 h-full w-[85%] max-w-[320px] bg-white dark:bg-black shadow-2xl flex flex-col overflow-y-auto"
             >
-              <div className="p-6 flex flex-col gap-6">
-                <div className="grid grid-cols-2 gap-3">
-                  {(['trending', 'explore', 'following', 'communities', 'sharable'] as const).map((mode) => (
-                    <button
-                      key={mode}
-                      onClick={() => {
-                        setFeedMode(mode);
-                        setLeftSidebarOpen(false);
-                      }}
-                      className={`py-4 px-3 rounded-full font-bold text-sm transition-all text-center border-2 capitalize ${
-                        feedMode === mode 
-                        ? 'bg-black dark:bg-white text-white dark:text-black border-black dark:border-white shadow-lg' 
-                        : 'bg-zinc-200/50 dark:bg-zinc-800/50 text-zinc-500 border-transparent hover:border-black/20 dark:hover:border-white/20'
-                      }`}
-                    >
-                      {mode}
-                    </button>
-                  ))}
+              {/* Top Search Bar - 64dp */}
+              <div className="h-16 px-4 py-3 flex items-center gap-2 border-b border-zinc-200 dark:border-zinc-800 shrink-0">
+                <div className="flex-1 flex items-center gap-2 bg-zinc-100 dark:bg-zinc-900 rounded-full px-3 py-2">
+                  <Search size={18} className="text-zinc-500 dark:text-zinc-400 shrink-0" />
+                  <input
+                    type="text"
+                    placeholder="Search"
+                    className="flex-1 bg-transparent text-sm outline-none text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-500 dark:placeholder:text-zinc-400"
+                  />
                 </div>
+                <button className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-full transition-colors">
+                  <Settings2 size={18} className="text-zinc-700 dark:text-zinc-300" />
+                </button>
+              </div>
 
-                <div 
-                  className="relative cursor-pointer group"
-                  onClick={() => {
-                    setLeftSidebarOpen(false);
-                    router.push('/search');
-                  }}
-                >
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 group-hover:text-black dark:group-hover:text-white transition-colors" size={20} />
-                  <div className="w-full bg-zinc-200/50 dark:bg-zinc-800/50 rounded-2xl py-4 pl-12 pr-4 text-zinc-500 group-hover:bg-zinc-200 dark:group-hover:bg-zinc-800 transition-all border border-transparent group-hover:border-black/10 dark:group-hover:border-white/10">
-                    Search Sharable
-                  </div>
+              {/* Feed Mode Selection */}
+              <div className="px-4 py-4 border-b border-zinc-200 dark:border-zinc-800">
+                <div className="flex flex-col gap-2">
+                  {(['Trending', 'Explore', 'Following', 'Communities', 'Sharable'] as const).map((label) => {
+                    const mode = label.toLowerCase() as typeof feedMode;
+                    return (
+                      <button
+                        key={mode}
+                        onClick={() => {
+                          setFeedMode(mode);
+                          setLeftSidebarOpen(false);
+                        }}
+                        className={`w-full text-left px-4 py-3 rounded-lg font-medium text-sm transition-all ${
+                          feedMode === mode 
+                          ? 'bg-black dark:bg-white text-white dark:text-black' 
+                          : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900'
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
                 </div>
+              </div>
 
+              {/* Profile Pill Section */}
+              <div className="px-4 py-4 border-b border-zinc-200 dark:border-zinc-800">
                 <Link
                   href={isGuest ? '#' : '/post/create'}
                   onClick={(e) => {
@@ -355,17 +364,149 @@ export default function HomePage() {
                       setLeftSidebarOpen(false);
                     }
                   }}
-                  className={`flex items-center gap-3 p-3 bg-zinc-200 dark:bg-zinc-800 rounded-full hover:bg-zinc-300 dark:hover:bg-zinc-700 transition-all border border-transparent hover:border-black/10 dark:hover:border-white/10 ${isGuest ? 'opacity-50' : ''}`}
+                  className={`flex items-center gap-3 px-4 py-3 bg-zinc-100 dark:bg-zinc-900 rounded-full hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-all ${isGuest ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
-                  <div className="shrink-0 w-10 h-10 rounded-full overflow-hidden bg-black/5 dark:bg-white/10">
+                  <div className="shrink-0 w-10 h-10 rounded-full overflow-hidden bg-zinc-200 dark:bg-zinc-800">
                     <img
                       src={avatarSrc}
                       alt="Profile"
                       className="w-full h-full object-cover"
                     />
                   </div>
-                  <span className="font-bold text-zinc-800 dark:text-zinc-200 text-sm">Anything Sharable today?</span>
+                  <span className="flex-1 font-medium text-sm text-zinc-700 dark:text-zinc-300 truncate">Anything Sharable Today?</span>
                 </Link>
+              </div>
+
+              {/* Quick Action Buttons */}
+              <div className="px-4 py-4 border-b border-zinc-200 dark:border-zinc-800">
+                <div className="grid grid-cols-5 gap-2">
+                  <button
+                    onClick={() => {
+                      setFeedMode('trending');
+                      setLeftSidebarOpen(false);
+                    }}
+                    className="flex flex-col items-center justify-center py-3 px-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-all"
+                    title="Home"
+                  >
+                    <span className="text-xl mb-1">🏠</span>
+                    <span className="text-xs text-zinc-600 dark:text-zinc-400">Home</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setLeftSidebarOpen(false);
+                      router.push('/search');
+                    }}
+                    className="flex flex-col items-center justify-center py-3 px-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-all"
+                    title="Search"
+                  >
+                    <Search size={20} className="mb-1 text-zinc-700 dark:text-zinc-300" />
+                    <span className="text-xs text-zinc-600 dark:text-zinc-400">Search</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setLeftSidebarOpen(false);
+                      if (isGuest) {
+                        toast('Sign up to create posts', { description: 'Create an account to share content.' });
+                      } else {
+                        router.push('/post/create');
+                      }
+                    }}
+                    className="flex flex-col items-center justify-center py-3 px-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-all"
+                    title="Create"
+                  >
+                    <Plus size={20} className="mb-1 text-zinc-700 dark:text-zinc-300" />
+                    <span className="text-xs text-zinc-600 dark:text-zinc-400">Create</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setLeftSidebarOpen(false);
+                      if (isGuest) {
+                        toast('Sign up to access alerts', { description: 'Create an account to get alerts.' });
+                      } else {
+                        router.push('/alerts');
+                      }
+                    }}
+                    className="flex flex-col items-center justify-center py-3 px-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-all"
+                    title="Alerts"
+                  >
+                    <span className="text-xl mb-1">🔔</span>
+                    <span className="text-xs text-zinc-600 dark:text-zinc-400">Alerts</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setLeftSidebarOpen(false);
+                      if (isGuest) {
+                        toast('Sign up to access profile', { description: 'Create an account to view your profile.' });
+                      } else {
+                        router.push('/profile');
+                      }
+                    }}
+                    className="flex flex-col items-center justify-center py-3 px-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-all"
+                    title="Profile"
+                  >
+                    <span className="text-xl mb-1">👤</span>
+                    <span className="text-xs text-zinc-600 dark:text-zinc-400">Profile</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Settings Toggles */}
+              <div className="flex-1 px-4 py-4 border-b border-zinc-200 dark:border-zinc-800">
+                <div className="flex flex-col gap-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Alerts</span>
+                    <button className="relative inline-flex h-6 w-10 items-center rounded-full bg-zinc-300 dark:bg-zinc-700 transition-colors hover:bg-zinc-400 dark:hover:bg-zinc-600">
+                      <span className="inline-block h-5 w-5 transform rounded-full bg-white dark:bg-black transition-transform translate-x-0.5"></span>
+                    </button>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Dark Mode</span>
+                    <button className="relative inline-flex h-6 w-10 items-center rounded-full bg-zinc-300 dark:bg-zinc-700 transition-colors hover:bg-zinc-400 dark:hover:bg-zinc-600">
+                      <span className="inline-block h-5 w-5 transform rounded-full bg-white dark:bg-black transition-transform translate-x-4 dark:translate-x-0.5"></span>
+                    </button>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setLeftSidebarOpen(false);
+                      if (!isGuest) {
+                        router.push('/settings');
+                      }
+                    }}
+                    className="w-full text-left px-4 py-3 rounded-lg font-medium text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-all"
+                  >
+                    Settings
+                  </button>
+                </div>
+              </div>
+
+              {/* Bottom Action Bar */}
+              <div className="px-4 py-4 border-t border-zinc-200 dark:border-zinc-800 shrink-0 space-y-2">
+                <button
+                  onClick={() => {
+                    setLeftSidebarOpen(false);
+                    // Handle download app
+                  }}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-zinc-900 dark:bg-white text-white dark:text-black rounded-lg font-medium text-sm hover:opacity-90 transition-opacity"
+                >
+                  <span>⬇️</span>
+                  Download App
+                </button>
+                <button
+                  onClick={() => {
+                    // Handle share app
+                  }}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-black dark:bg-zinc-800 text-white rounded-lg font-medium text-sm hover:bg-zinc-900 dark:hover:bg-zinc-700 transition-colors"
+                >
+                  <Share2 size={18} />
+                  Share
+                </button>
+                <button
+                  onClick={handleLogout}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-3 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg font-medium text-sm transition-colors"
+                >
+                  <LogOut size={18} />
+                  Log out
+                </button>
               </div>
             </motion.div>
           </div>
