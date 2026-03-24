@@ -681,10 +681,8 @@ export function PostCard({
         comment.replies = repliesMap[comment.id] || [];
       }
 
-      // Sort comments by votes (highest first), then by created_at
+      // Sort comments by created_at (newest first), then by votes (highest first)
       topLevel.sort((a, b) => {
-        const voteDiff = (b.votes_count || 0) - (a.votes_count || 0);
-        if (voteDiff !== 0) return voteDiff;
         return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
       });
 
@@ -753,21 +751,30 @@ export function PostCard({
       if (!error) {
         setVotedComments(prev => new Set([...prev, commentId]));
         // Update comments (top-level and replies)
-        setComments(prev => prev.map(c => {
-          if (c.id === commentId) {
-            return { ...c, votes_count: (c.votes_count || 0) + 1 };
-          }
-          // Also update votes in replies
-          if (c.replies) {
-            return {
-              ...c,
-              replies: c.replies.map(r =>
-                r.id === commentId ? { ...r, votes_count: (r.votes_count || 0) + 1 } : r
-              )
-            };
-          }
-          return c;
-        }));
+        setComments(prev => {
+          const updated = prev.map(c => {
+            if (c.id === commentId) {
+              return { ...c, votes_count: (c.votes_count || 0) + 1 };
+            }
+            // Also update votes in replies
+            if (c.replies) {
+              return {
+                ...c,
+                replies: c.replies.map(r =>
+                  r.id === commentId ? { ...r, votes_count: (r.votes_count || 0) + 1 } : r
+                )
+              };
+            }
+            return c;
+          });
+          // Re-sort comments: by votes (highest first), then by created_at (newest first)
+          updated.sort((a, b) => {
+            const voteDiff = (b.votes_count || 0) - (a.votes_count || 0);
+            if (voteDiff !== 0) return voteDiff;
+            return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+          });
+          return updated;
+        });
         toast.success('Ranked!');
       } else {
         toast.error('Could not rank this comment');
