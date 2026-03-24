@@ -728,14 +728,14 @@ export function PostCard({
         // Update comments (top-level and replies)
         setComments(prev => prev.map(c => {
           if (c.id === commentId) {
-            return { ...c, votes_count: Math.max(0, (c.votes_count || 1) - 1) };
+            return { ...c, votes_count: Math.max(0, (c.votes_count || 0) - 1) };
           }
           // Also update votes in replies
           if (c.replies) {
             return {
               ...c,
               replies: c.replies.map(r => 
-                r.id === commentId ? { ...r, votes_count: Math.max(0, (r.votes_count || 1) - 1) } : r
+                r.id === commentId ? { ...r, votes_count: Math.max(0, (r.votes_count || 0) - 1) } : r
               )
             };
           }
