@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/lib/supabase';
 import { PostCard } from '@/components/PostCard';
 import { BottomNav } from '@/components/BottomNav';
-import { Share2, Search, Settings, Settings2, LogOut, X, MessageCircle, MessageSquare, Plus, Users, TrendingUp, Nav, UserRoundPlus, UsersRound } from 'lucide-react';
+import { Share2, Search, Settings, Settings2, LogOut, X, MessageCircle, MessageSquare, Plus, Users, TrendingUp, Navigation, UserRoundPlus, UsersRound } from 'lucide-react';
 import { Loader } from '@/components/ui/loader';
 import { toast } from 'sonner';
 import Link from 'next/link';
@@ -357,7 +357,7 @@ export default function HomePage() {
                     }`}
                     title="Explore"
                   >
-                    <Nav size={24} />
+                    <Navigation size={24} />
                   </button>
                   <button
                     onClick={() => {
