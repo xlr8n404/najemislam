@@ -269,9 +269,10 @@ export function PostCard({
     setNewComment(nextComment);
     setShowMentions(false);
     
-    setTimeout(() => {
-      commentInputRef.current?.focus();
-    }, 0);
+    // Disabled: Do not auto-focus to prevent scroll-up behavior
+    // setTimeout(() => {
+    //   commentInputRef.current?.focus();
+    // }, 0);
   };
 
   useEffect(() => {
@@ -287,13 +288,14 @@ export function PostCard({
   }, [showComments, showMenu, fullscreenMedia]);
 
   useEffect(() => {
-    if (showComments && commentInputRef.current) {
-      // Delay focus slightly to allow animation to complete
-      const timer = setTimeout(() => {
-        commentInputRef.current?.focus();
-      }, 350);
-      return () => clearTimeout(timer);
-    }
+    // Disabled: Do not auto-focus on comment input to prevent scroll-up behavior
+    // if (showComments && commentInputRef.current) {
+    //   // Delay focus slightly to allow animation to complete
+    //   const timer = setTimeout(() => {
+    //     commentInputRef.current?.focus();
+    //   }, 350);
+    //   return () => clearTimeout(timer);
+    // }
   }, [showComments]);
 
   const handleCopyText = () => {
@@ -1056,13 +1058,14 @@ export function PostCard({
                     name: username ? `@${username}` : (comment.user?.full_name || 'User')
                   });
                   setNewComment(username ? `@${username} ` : '');
-                  setTimeout(() => {
-                    if (commentInputRef.current) {
-                      commentInputRef.current.focus();
-                      const len = commentInputRef.current.value.length;
-                      commentInputRef.current.setSelectionRange(len, len);
-                    }
-                  }, 10);
+                  // Disabled: Do not auto-focus to prevent scroll-up behavior
+                  // setTimeout(() => {
+                  //   if (commentInputRef.current) {
+                  //     commentInputRef.current.focus();
+                  //     const len = commentInputRef.current.value.length;
+                  //     commentInputRef.current.setSelectionRange(len, len);
+                  //   }
+                  // }, 10);
                 }}
                 className="flex items-center gap-1 text-base text-zinc-500 hover:text-black dark:hover:text-white transition-colors"
               >
