@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/lib/supabase';
 import { PostCard } from '@/components/PostCard';
 import { BottomNav } from '@/components/BottomNav';
-import { Share2, Search, Settings, Settings2, LogOut, X, MessageCircle, MessageSquare, Plus, Users } from 'lucide-react';
+import { Share2, Search, Settings, Settings2, LogOut, X, MessageCircle, MessageSquare, Plus, Users, TrendingUp, Nav, UserRoundPlus, UsersRound } from 'lucide-react';
 import { Loader } from '@/components/ui/loader';
 import { toast } from 'sonner';
 import Link from 'next/link';
@@ -316,7 +316,7 @@ export default function HomePage() {
               {/* Top Search Bar - 64dp */}
               <div className="h-16 px-4 py-3 flex items-center gap-2 border-b border-zinc-200 dark:border-zinc-800 shrink-0">
                 <div className="flex-1 flex items-center gap-2 bg-zinc-100 dark:bg-zinc-900 rounded-full px-3 py-2">
-                  <Search size={18} className="text-zinc-500 dark:text-zinc-400 shrink-0" />
+                  <Search size={24} className="text-zinc-500 dark:text-zinc-400 shrink-0" />
                   <input
                     type="text"
                     placeholder="Search"
@@ -324,34 +324,86 @@ export default function HomePage() {
                   />
                 </div>
                 <button className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-full transition-colors">
-                  <Settings2 size={18} className="text-zinc-700 dark:text-zinc-300" />
+                  <Settings2 size={24} className="text-zinc-700 dark:text-zinc-300" />
                 </button>
               </div>
 
-              {/* Feed Mode Selection */}
+              {/* Feed Mode Selection - Icon Only */}
               <div className="px-4 py-4 border-b border-zinc-200 dark:border-zinc-800">
-                <div className="flex flex-col gap-2">
-                  {(['Trending', 'Explore', 'Following', 'Communities', 'Sharable'] as const).map((label) => {
-                    const mode = label.toLowerCase() as typeof feedMode;
-                    return (
-                      <button
-                        key={mode}
-                        onClick={() => {
-                          setFeedMode(mode);
-                          setLeftSidebarOpen(false);
-                        }}
-                        className={`w-full text-left px-4 py-3 rounded-lg font-medium text-sm transition-all ${
-                          feedMode === mode 
-                          ? 'bg-black dark:bg-white text-white dark:text-black' 
-                          : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900'
-                        }`}
-                      >
-                        {label}
-                      </button>
-                    );
-                  })}
+                <div className="flex justify-around gap-2">
+                  <button
+                    onClick={() => {
+                      setFeedMode('trending');
+                      setLeftSidebarOpen(false);
+                    }}
+                    className={`flex items-center justify-center p-3 rounded-lg transition-all ${
+                      feedMode === 'trending' 
+                      ? 'bg-black dark:bg-white text-white dark:text-black' 
+                      : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900'
+                    }`}
+                    title="Trending"
+                  >
+                    <TrendingUp size={24} />
+                  </button>
+                  <button
+                    onClick={() => {
+                      setFeedMode('explore');
+                      setLeftSidebarOpen(false);
+                    }}
+                    className={`flex items-center justify-center p-3 rounded-lg transition-all ${
+                      feedMode === 'explore' 
+                      ? 'bg-black dark:bg-white text-white dark:text-black' 
+                      : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900'
+                    }`}
+                    title="Explore"
+                  >
+                    <Nav size={24} />
+                  </button>
+                  <button
+                    onClick={() => {
+                      setFeedMode('following');
+                      setLeftSidebarOpen(false);
+                    }}
+                    className={`flex items-center justify-center p-3 rounded-lg transition-all ${
+                      feedMode === 'following' 
+                      ? 'bg-black dark:bg-white text-white dark:text-black' 
+                      : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900'
+                    }`}
+                    title="Following"
+                  >
+                    <UserRoundPlus size={24} />
+                  </button>
+                  <button
+                    onClick={() => {
+                      setFeedMode('communities');
+                      setLeftSidebarOpen(false);
+                    }}
+                    className={`flex items-center justify-center p-3 rounded-lg transition-all ${
+                      feedMode === 'communities' 
+                      ? 'bg-black dark:bg-white text-white dark:text-black' 
+                      : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900'
+                    }`}
+                    title="Communities"
+                  >
+                    <UsersRound size={24} />
+                  </button>
+                  <button
+                    onClick={() => {
+                      setFeedMode('sharable');
+                      setLeftSidebarOpen(false);
+                    }}
+                    className={`flex items-center justify-center p-3 rounded-lg transition-all ${
+                      feedMode === 'sharable' 
+                      ? 'bg-black dark:bg-white text-white dark:text-black' 
+                      : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900'
+                    }`}
+                    title="Sharable"
+                  >
+                    <Share2 size={24} />
+                  </button>
                 </div>
               </div>
+
 
               {/* Profile Pill Section */}
               <div className="px-4 py-4 border-b border-zinc-200 dark:border-zinc-800">
