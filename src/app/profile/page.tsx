@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { PostCard } from '@/components/PostCard';
 import { VerifiedBadge } from '@/components/VerifiedBadge';
 import { BottomNav } from '@/components/BottomNav';
-import { Calendar, User, UserRoundPen, Menu, X, Settings, LogOut, Share2, Globe, Lock, Eye, EyeOff, UserCircle, AtSign, Cake, Mars, Venus, Heart } from 'lucide-react';
+import { Calendar, User, UserPen, Menu, X, Settings, LogOut, Share2, Globe, Lock, Eye, EyeOff, UserCircle, AtSign, Cake, Mars, Venus, Heart } from 'lucide-react';
 import { Loader } from '@/components/ui/loader';
 import { useScrollDirection } from '@/hooks/use-scroll-direction';
 import Link from 'next/link';
