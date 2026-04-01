@@ -11,11 +11,11 @@ import { GuestModeProvider } from "@/context/GuestModeContext";
 import { GuestBannerWrapper } from "@/components/GuestBannerWrapper";
 
 export const metadata: Metadata = {
-  title: "Sharable",
-  description: "Share everything with Sharable",
+  title: "Sharable | Share anything with the world.",
+  description: "Got anything Sharable? Join the community and start sharing now.",
   icons: {
-    icon: "/icon.png",
-    apple: "/icon.png",
+    icon: "/favicon.ico",
+    apple: "/favicon.ico",
   },
   appleWebApp: {
     capable: true,
@@ -23,6 +23,7 @@ export const metadata: Metadata = {
     title: "Sharable",
   },
 };
+
 
 export const viewport = {
   width: "device-width",
