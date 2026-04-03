@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Heart, MessageCircle, Share2, MoreVertical, X, Send, Trash2, Clock, Reply, ChevronDown, ChevronUp, Bookmark, Copy, Download, Maximize2, Repeat, TrendingUp, CornerRightDown } from 'lucide-react';
+import { Heart, MessageCircle, Share2, MoreHorizontal, X, Send, Trash2, Clock, Reply, ChevronDown, ChevronUp, Bookmark, Copy, Download, Maximize2, Repeat, TrendingUp, CornerRightDown } from 'lucide-react';
 import { Loader } from '@/components/ui/loader';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/lib/supabase';
@@ -40,6 +40,8 @@ interface PostCardProps {
   onDelete?: (postId: string) => void;
   avatarSize?: number;
   isNested?: boolean;
+  community?: { id: string; name: string };
+  is_community_post?: boolean;
 }
 
 interface CommentReply {
@@ -87,7 +89,9 @@ export function PostCard({
   created_at, 
   onDelete, 
   avatarSize = 40,
-  isNested = false
+  isNested = false,
+  community,
+  is_community_post
 }: PostCardProps) {
   const router = useRouter();
   const { isGuest } = useGuestMode();
@@ -1455,8 +1459,37 @@ export function PostCard({
                 </div>
                 <div className="flex flex-col min-w-0">
                   <div className="flex items-center gap-1.5">
-                    <span className="font-bold text-[18px] tracking-tight truncate">{user?.full_name || user?.username || 'Unknown User'}</span>
-                    <VerifiedBadge username={user?.username} />
+                    <span className="font-bold text-[16px] tracking-tight truncate">{user?.full_name || user?.username || 'Unknown User'}</span>
+                    <VerifiedBadge username={user?.username} className="w-4 h-4" />
+                  </div>
+                  
+                  {/* Pill buttons below name */}
+                  <div className="flex items-center gap-2 mt-0.5 overflow-x-auto no-scrollbar pb-1">
+                    <div className="flex-shrink-0 px-2.5 py-1 bg-zinc-100 dark:bg-zinc-900 border border-black/[0.05] dark:border-white/[0.05] rounded-full">
+                      <span className="text-[12px] font-medium text-zinc-500 dark:text-zinc-400">@{user?.username || 'user'}</span>
+                    </div>
+                    
+                    {is_community_post && community && (
+                      <Link 
+                        href={`/communities/${community.id}`}
+                        onClick={(e) => e.stopPropagation()}
+                        className="flex-shrink-0 px-2.5 py-1 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/30 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
+                      >
+                        <span className="text-[12px] font-semibold text-blue-600 dark:text-blue-400">{community.name}</span>
+                      </Link>
+                    )}
+                    
+                    {/* Hashtags as pills */}
+                    {content.match(/#\w+/g)?.map((tag, i) => (
+                      <Link
+                        key={i}
+                        href={`/search?q=%23${tag.slice(1)}`}
+                        onClick={(e) => e.stopPropagation()}
+                        className="flex-shrink-0 px-2.5 py-1 bg-zinc-100 dark:bg-zinc-900 border border-black/[0.05] dark:border-white/[0.05] rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+                      >
+                        <span className="text-[12px] font-medium text-zinc-500 dark:text-zinc-400">{tag}</span>
+                      </Link>
+                    ))}
                   </div>
                 </div>
               </Link>
@@ -1466,7 +1499,7 @@ export function PostCard({
                   onClick={() => setShowMenu(true)}
                   className="p-2 -mr-2 text-zinc-500 hover:text-black dark:hover:text-white hover:bg-black/10 dark:hover:bg-white/10 rounded-full transition-colors"
                 >
-                  <MoreVertical className="w-6 h-6" strokeWidth={1.5} />
+                  <MoreHorizontal className="w-6 h-6" strokeWidth={1.5} />
                 </button>
                 
                     <Drawer open={showMenu} onOpenChange={(open) => { setShowMenu(open); if(!open) setShowDeleteConfirm(false); }}>
@@ -1525,16 +1558,7 @@ export function PostCard({
                           </div>
 
                           <div className="grid grid-cols-1 gap-1">
-                            {/* Save */}
-                            <button
-                              onClick={handleSavePost}
-                              className="w-full flex items-center gap-4 px-4 py-4 hover:bg-black/5 dark:hover:bg-white/5 rounded-2xl transition-colors text-left"
-                            >
-                              <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isSaved ? 'bg-black text-white dark:bg-white dark:text-black' : 'bg-zinc-200 dark:bg-zinc-800'}`}>
-                                <Bookmark className={`w-5 h-5 ${isSaved ? 'fill-current' : ''}`} strokeWidth={1.5} />
-                              </div>
-                              <span className="text-lg font-bold">{isSaved ? 'Saved' : 'Save post'}</span>
-                            </button>
+
   
                             {/* Copy Text */}
                             <button
@@ -1731,12 +1755,20 @@ export function PostCard({
                       <Repeat className={`w-6 h-6 group-active:rotate-180 transition-transform ${reposted ? 'stroke-[2.5px]' : ''}`} strokeWidth={1.5} />
                       <span className="text-base font-medium">{repostsCount}</span>
                     </button>
+                    <button 
+                      onClick={handleSharePost}
+                      className="p-2 rounded-full text-zinc-500 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-black/10 dark:hover:bg-white/10 transition-colors group"
+                    >
+                      <Share2 className="w-6 h-6 group-active:rotate-12 transition-transform" strokeWidth={1.5} />
+                    </button>
                   </div>
                   <button 
-                    onClick={handleSharePost}
-                    className="p-2 -mr-2 rounded-full text-zinc-500 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-black/10 dark:hover:bg-white/10 transition-colors group"
+                    onClick={handleSavePost}
+                    className={`p-2 -mr-2 rounded-full group transition-colors ${
+                      isSaved ? 'text-black dark:text-white' : 'text-zinc-500 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-black/10 dark:hover:bg-white/10'
+                    }`}
                   >
-                    <Share2 className="w-6 h-6 group-active:rotate-12 transition-transform" strokeWidth={1.5} />
+                    <Bookmark className={`w-6 h-6 group-active:scale-110 transition-transform ${isSaved ? 'fill-current' : ''}`} strokeWidth={1.5} />
                   </button>
                 </div>
           </motion.div>
