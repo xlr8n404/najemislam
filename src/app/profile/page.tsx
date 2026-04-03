@@ -321,7 +321,7 @@ export default function ProfilePage() {
                     href="/profile/edit"
                     className="p-2.5 bg-zinc-100 dark:bg-zinc-900 text-black dark:text-white rounded-full border border-black/10 dark:border-white/10 hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors"
                   >
-                    <UserRoundPen size={24} strokeWidth={1.5} />
+                    <UserPen size={24} strokeWidth={1.5} />
                   </Link>
                     <Link
                       href="/post/create"
