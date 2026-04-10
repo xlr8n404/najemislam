@@ -812,7 +812,7 @@ export default function HomePage() {
 
         {!hasMore && posts.length > 0 && (
           <div className="py-12 text-center text-zinc-500 text-sm font-medium">
-            You've reached the end of the world. 🌍
+            🧸
           </div>
         )}
       </main>
