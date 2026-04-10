@@ -44,8 +44,23 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ posts: posts || [] });
       }
 
-      // Get all random content (users, posts, hashtags)
-      const [usersRes, postsRes] = await Promise.all([
+      if (type === 'communities') {
+        const { data: communities, error } = await supabaseAdmin
+          .from('communities')
+          .select(`
+            *,
+            creator:profiles(id, full_name, username, avatar_url),
+            members:community_members(count)
+          `)
+          .order('created_at', { ascending: false })
+          .limit(10);
+
+        if (error) throw error;
+        return NextResponse.json({ communities: communities || [] });
+      }
+
+      // Get all random content (users, posts, hashtags, communities)
+      const [usersRes, postsRes, communitiesRes] = await Promise.all([
         supabaseAdmin
           .from('profiles')
           .select('id, full_name, username, avatar_url, bio')
@@ -63,17 +78,27 @@ export async function GET(req: NextRequest) {
           `)
           .order('created_at', { ascending: false })
           .limit(5),
+        supabaseAdmin
+          .from('communities')
+          .select(`
+            *,
+            creator:profiles(id, full_name, username, avatar_url),
+            members:community_members(count)
+          `)
+          .order('created_at', { ascending: false })
+          .limit(5),
       ]);
 
       return NextResponse.json({
         users: usersRes.data || [],
         posts: postsRes.data || [],
         hashtags: postsRes.data || [],
+        communities: communitiesRes.data || [],
       });
     }
 
     if (!query || query.length < 2) {
-      return NextResponse.json({ users: [], posts: [] });
+      return NextResponse.json({ users: [], posts: [], communities: [] });
     }
 
     const searchTerm = `%${query}%`;
@@ -92,25 +117,36 @@ export async function GET(req: NextRequest) {
       }
 
       if (type === 'all') {
-        const { data: posts, error: postsError } = await supabaseAdmin
-          .from('posts')
-          .select(`
-            id,
-            content,
-            media_url,
-            media_type,
-            created_at,
-            user:profiles(id, full_name, username, avatar_url)
-          `)
-          .ilike('content', searchTerm)
-          .order('created_at', { ascending: false })
-          .limit(20);
-
-        if (postsError) throw postsError;
+        const [postsRes, communitiesRes] = await Promise.all([
+          supabaseAdmin
+            .from('posts')
+            .select(`
+              id,
+              content,
+              media_url,
+              media_type,
+              created_at,
+              user:profiles(id, full_name, username, avatar_url)
+            `)
+            .ilike('content', searchTerm)
+            .order('created_at', { ascending: false })
+            .limit(20),
+          supabaseAdmin
+            .from('communities')
+            .select(`
+              *,
+              creator:profiles(id, full_name, username, avatar_url),
+              members:community_members(count)
+            `)
+            .or(`name.ilike.${searchTerm},description.ilike.${searchTerm},username.ilike.${searchTerm}`)
+            .order('created_at', { ascending: false })
+            .limit(20),
+        ]);
 
         return NextResponse.json({ 
           users: users || [], 
-          posts: posts || [] 
+          posts: postsRes.data || [],
+          communities: communitiesRes.data || []
         });
       }
     }
@@ -135,7 +171,24 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ posts: posts || [] });
     }
 
-    return NextResponse.json({ users: [], posts: [] });
+    if (type === 'communities') {
+      const { data: communities, error: communitiesError } = await supabaseAdmin
+        .from('communities')
+        .select(`
+          *,
+          creator:profiles(id, full_name, username, avatar_url),
+          members:community_members(count)
+        `)
+        .or(`name.ilike.${searchTerm},description.ilike.${searchTerm},username.ilike.${searchTerm}`)
+        .order('created_at', { ascending: false })
+        .limit(20);
+
+      if (communitiesError) throw communitiesError;
+
+      return NextResponse.json({ communities: communities || [] });
+    }
+
+    return NextResponse.json({ users: [], posts: [], communities: [] });
   } catch (error: any) {
     console.error('Search error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });

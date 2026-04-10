@@ -16,17 +16,19 @@ import {
   Lock,
   LogOut,
   Trash2,
-  ChevronRight
+  ChevronRight,
+  Users
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/lib/supabase';
 import { PostCard } from '@/components/PostCard';
+import CommunityCard from '@/components/CommunityCard';
 import { Loader } from '@/components/ui/loader';
 import { cn } from '@/lib/utils';
 import { VerifiedBadge } from '@/components/VerifiedBadge';
 import { BottomNav } from '@/components/BottomNav';
 
-type SearchType = 'Posts' | 'Users' | 'Hashtags' | 'Settings' | null;
+type SearchType = 'Posts' | 'Users' | 'Communities' | 'Hashtags' | 'Settings' | null;
 
 const SETTINGS_ITEMS = [
   { label: 'Alerts', description: 'Push alerts', icon: Bell, path: '/settings' },
@@ -45,10 +47,11 @@ function SearchContent() {
   const initialQuery = searchParams.get('q') || '';
   const [query, setQuery] = useState(initialQuery);
   const [searchType, setSearchType] = useState<SearchType>(null);
-  const [results, setResults] = useState<{ users: any[], posts: any[], hashtags: any[], settings: any[] }>({
+  const [results, setResults] = useState<{ users: any[], posts: any[], hashtags: any[], communities: any[], settings: any[] }>({
     users: [],
     posts: [],
     hashtags: [],
+    communities: [],
     settings: []
   });
   const [loading, setLoading] = useState(false);
@@ -67,6 +70,7 @@ function SearchContent() {
           posts: data.posts || [],
           users: data.users || [],
           hashtags: data.hashtags || [],
+          communities: data.communities || [],
           settings: [],
         });
       } else if (type === 'Posts') {
@@ -77,6 +81,10 @@ function SearchContent() {
         const res = await fetch(`/api/search?random=true&type=users`);
         const data = await res.json();
         setResults(prev => ({ ...prev, users: data.users || [] }));
+      } else if (type === 'Communities') {
+        const res = await fetch(`/api/search?random=true&type=communities`);
+        const data = await res.json();
+        setResults(prev => ({ ...prev, communities: data.communities || [] }));
       } else if (type === 'Hashtags') {
         const res = await fetch(`/api/search?random=true&type=posts`);
         const data = await res.json();
@@ -91,7 +99,7 @@ function SearchContent() {
 
   const performSearch = useCallback(async (q: string, type: SearchType) => {
     if (!q.trim() || q.length < 2) {
-      setResults({ users: [], posts: [], hashtags: [], settings: [] });
+      setResults({ users: [], posts: [], hashtags: [], communities: [], settings: [] });
       return;
     }
 
@@ -107,23 +115,18 @@ function SearchContent() {
     setLoading(true);
     try {
       if (type === null) {
-        // Search all: posts, users, hashtags simultaneously
-        const [postsRes, usersRes, hashtagsRes] = await Promise.all([
-          fetch(`/api/search?q=${encodeURIComponent(q)}&type=posts`),
-          fetch(`/api/search?q=${encodeURIComponent(q)}&type=users`),
-          fetch(`/api/search?q=${encodeURIComponent('#' + q.replace(/^#/, ''))}&type=posts`),
-        ]);
-        const [postsData, usersData, hashtagsData] = await Promise.all([
-          postsRes.json(), usersRes.json(), hashtagsRes.json(),
-        ]);
+        // Search all: posts, users, hashtags, communities simultaneously
+        const res = await fetch(`/api/search?q=${encodeURIComponent(q)}&type=all`);
+        const data = await res.json();
         setResults({
-          posts: postsData.posts || [],
-          users: usersData.users || [],
-          hashtags: hashtagsData.posts || [],
+          posts: data.posts || [],
+          users: data.users || [],
+          communities: data.communities || [],
+          hashtags: data.posts || [], // Using posts for hashtags for now
           settings: [],
         });
       } else {
-        const apiType = type === 'Users' ? 'users' : 'posts';
+        const apiType = type === 'Users' ? 'users' : type === 'Communities' ? 'communities' : 'posts';
         const res = await fetch(`/api/search?q=${encodeURIComponent(q)}&type=${apiType}`);
         const data = await res.json();
 
@@ -131,6 +134,8 @@ function SearchContent() {
           setResults(prev => ({ ...prev, users: data.users || [] }));
         } else if (type === 'Posts') {
           setResults(prev => ({ ...prev, posts: data.posts || [] }));
+        } else if (type === 'Communities') {
+          setResults(prev => ({ ...prev, communities: data.communities || [] }));
         } else if (type === 'Hashtags') {
           const res2 = await fetch(`/api/search?q=${encodeURIComponent('#' + q.replace(/^#/, ''))}&type=posts`);
           const data2 = await res2.json();
@@ -168,6 +173,7 @@ function SearchContent() {
   const filterPills: { type: SearchType; icon: React.ElementType; label: string }[] = [
     { type: 'Posts', icon: FileText, label: 'Posts' },
     { type: 'Users', icon: User, label: 'Users' },
+    { type: 'Communities', icon: Users, label: 'Communities' },
     { type: 'Hashtags', icon: Hash, label: 'Hashtags' },
     { type: 'Settings', icon: SettingsIcon, label: '' },
   ];
@@ -231,7 +237,7 @@ function SearchContent() {
               transition={{ duration: 0.2, ease: 'easeInOut' }}
               className="overflow-hidden"
             >
-              <div className="flex items-center gap-2 px-4 pb-3 pt-1">
+              <div className="flex items-center gap-2 px-4 pb-3 pt-1 overflow-x-auto no-scrollbar">
                 {filterPills.map(({ type, icon: Icon, label }) => {
                   const isActive = searchType === type;
                   return (
@@ -239,7 +245,7 @@ function SearchContent() {
                       key={type}
                       onClick={() => setSearchType(prev => prev === type ? null : type)}
                       className={cn(
-                        "flex items-center gap-1.5 px-4 py-2 rounded-full border text-sm font-medium transition-all",
+                        "flex items-center gap-1.5 px-4 py-2 rounded-full border text-sm font-medium transition-all whitespace-nowrap",
                         isActive
                           ? "bg-black text-white border-black dark:bg-white dark:text-black dark:border-white"
                           : "bg-transparent text-zinc-600 border-zinc-200 dark:text-zinc-400 dark:border-zinc-700 hover:border-black dark:hover:border-white"
@@ -314,6 +320,25 @@ function SearchContent() {
                 <div className="py-20 text-center text-zinc-500">No users found</div>
               )}
 
+              {/* Communities */}
+              {(searchType === 'Communities' || searchType === null) && results.communities.length > 0 && (
+                <div className="space-y-3">
+                  {searchType === null && (
+                    <div className="flex items-center gap-2 text-sm font-bold text-zinc-500 uppercase tracking-wider px-1">
+                      <Users size={14} strokeWidth={2} /> Communities
+                    </div>
+                  )}
+                  <div className="grid grid-cols-1 gap-4">
+                    {results.communities.map((community) => (
+                      <CommunityCard key={community.id} community={community} />
+                    ))}
+                  </div>
+                </div>
+              )}
+              {searchType === 'Communities' && results.communities.length === 0 && (
+                <div className="py-20 text-center text-zinc-500">No communities found</div>
+              )}
+
               {/* Posts */}
               {(searchType === 'Posts' || searchType === null) && results.posts.length > 0 && (
                 <div>
@@ -349,39 +374,48 @@ function SearchContent() {
                 </div>
               )}
               {searchType === 'Hashtags' && results.hashtags.length === 0 && (
-                <div className="py-20 text-center text-zinc-500">No posts found for this hashtag</div>
-              )}
-
-              {/* All empty when null */}
-              {searchType === null && results.users.length === 0 && results.posts.length === 0 && results.hashtags.length === 0 && (
-                <div className="py-20 text-center text-zinc-500">No results found</div>
+                <div className="py-20 text-center text-zinc-500">No hashtags found</div>
               )}
 
               {/* Settings */}
               {searchType === 'Settings' && (
                 <div className="space-y-2">
                   {results.settings.length > 0 ? (
-                    results.settings.map((item) => (
+                    results.settings.map((item, idx) => (
                       <button
-                        key={item.label}
+                        key={idx}
                         onClick={() => router.push(item.path)}
-                        className="w-full flex items-center justify-between p-4 bg-zinc-100 dark:bg-zinc-900/50 rounded-2xl border border-black/5 dark:border-white/5 hover:bg-zinc-200 dark:hover:bg-zinc-800/50 transition-colors"
+                        className="w-full flex items-center gap-4 p-4 bg-zinc-50 dark:bg-zinc-900/50 rounded-2xl border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors text-left"
                       >
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-zinc-200 dark:bg-zinc-800 rounded-full flex items-center justify-center">
-                            <item.icon size={24} strokeWidth={1.5} className="text-zinc-500 dark:text-zinc-400" />
-                          </div>
-                          <div className="text-left">
-                            <p className="font-medium">{item.label}</p>
-                            <p className="text-sm text-zinc-500">{item.description}</p>
-                          </div>
+                        <div className="w-10 h-10 rounded-full bg-zinc-200 dark:bg-zinc-800 flex items-center justify-center shrink-0">
+                          <item.icon size={20} className="text-zinc-600 dark:text-zinc-400" />
                         </div>
-                        <ChevronRight size={24} strokeWidth={1.5} className="text-zinc-500" />
+                        <div className="flex-1 min-w-0">
+                          <span className="font-bold block">{item.label}</span>
+                          <p className="text-sm text-zinc-500 truncate">{item.description}</p>
+                        </div>
+                        <ChevronRight size={20} className="text-zinc-400" />
                       </button>
                     ))
                   ) : (
                     <div className="py-20 text-center text-zinc-500">No settings found</div>
                   )}
+                </div>
+              )}
+
+              {/* Empty State */}
+              {query.length >= 2 && 
+               results.users.length === 0 && 
+               results.posts.length === 0 && 
+               results.hashtags.length === 0 && 
+               results.communities.length === 0 && 
+               results.settings.length === 0 && (
+                <div className="py-20 text-center">
+                  <div className="w-16 h-16 bg-zinc-100 dark:bg-zinc-900 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <SearchIcon size={24} className="text-zinc-400" />
+                  </div>
+                  <h3 className="font-bold text-lg mb-1">No results for "{query}"</h3>
+                  <p className="text-zinc-500">Try searching for something else</p>
                 </div>
               )}
             </motion.div>
@@ -396,7 +430,7 @@ function SearchContent() {
 
 export default function SearchPage() {
   return (
-    <Suspense fallback={<Loader />}>
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><Loader /></div>}>
       <SearchContent />
     </Suspense>
   );
