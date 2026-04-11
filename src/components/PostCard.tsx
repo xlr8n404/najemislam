@@ -1467,7 +1467,7 @@ export function PostCard({
                   <div className="flex items-center gap-1.5 mt-1 overflow-x-auto no-scrollbar pb-1 text-[12px] text-zinc-500 dark:text-zinc-400">
                     <span>@{user?.username || 'user'}</span>
                     <span>·</span>
-                    <span>{formatTime(created_at)}</span>
+                    <span>{formatTime(created_at || new Date().toISOString())}</span>
                     
                     {is_community_post && community && (
                       <>
