@@ -112,6 +112,8 @@ export function PostCard({
   const [showComments, setShowComments] = useState(false);
   const [comments, setComments] = useState<Comment[]>([]);
   const [loadingComments, setLoadingComments] = useState(false);
+  const [commentSortOrder, setCommentSortOrder] = useState<'top' | 'recent'>('top');
+  const [showCommentSortMenu, setShowCommentSortMenu] = useState(false);
   const [newComment, setNewComment] = useState('');
   const [submittingComment, setSubmittingComment] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
@@ -341,18 +343,25 @@ export function PostCard({
     setShowMenu(false);
   };
 
+    const generateShareLink = () => {
+      // Create short unique link: @username + random 6 chars
+      const randomChars = Math.random().toString(36).substring(2, 8);
+      return `${window.location.origin}/${user.username}/${randomChars}`;
+    };
+
     const handleSharePost = async () => {
+      const shareLink = generateShareLink();
       const shareData = {
         title: 'Sharable Post',
-        text: content,
-        url: window.location.origin + (user.username ? `/user/${user.username}` : '') + `?post=${id}`,
+        text: 'Check out this post on Sharable',
+        url: shareLink,
       };
 
       try {
         if (navigator.share) {
           await navigator.share(shareData);
         } else {
-          await navigator.clipboard.writeText(shareData.url);
+          await navigator.clipboard.writeText(shareLink);
           toast.success('Link copied to clipboard');
         }
       } catch (err) {
@@ -616,7 +625,7 @@ export function PostCard({
 
   const loadComments = async () => {
     setLoadingComments(true);
-    const { data, error } = await supabase
+    let query = supabase
       .from('comments')
       .select(`
         id,
@@ -626,8 +635,16 @@ export function PostCard({
         parent_id,
         user:profiles(full_name, avatar_url, username)
       `)
-      .eq('post_id', id)
-      .order('created_at', { ascending: true });
+      .eq('post_id', id);
+    
+    if (commentSortOrder === 'recent') {
+      query = query.order('created_at', { ascending: false });
+    } else {
+      // Top comments - order by most voted (oldest first, but will be reordered by vote count after fetching)
+      query = query.order('created_at', { ascending: true });
+    }
+    
+    const { data, error } = await query;
     
     if (!error && data) {
       // Fetch vote counts for all comments
@@ -688,10 +705,20 @@ export function PostCard({
         comment.replies = repliesMap[comment.id] || [];
       }
 
-      // Sort comments by created_at (newest first), then by votes (highest first)
-      topLevel.sort((a, b) => {
-        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-      });
+      // Sort comments based on selected order
+      if (commentSortOrder === 'recent') {
+        // Recent: newest first
+        topLevel.sort((a, b) => {
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        });
+      } else {
+        // Top: by votes (highest first), then by created_at (oldest first)
+        topLevel.sort((a, b) => {
+          const voteDiff = (b.votes_count || 0) - (a.votes_count || 0);
+          if (voteDiff !== 0) return voteDiff;
+          return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+        });
+      }
 
       setComments(topLevel);
     }
@@ -701,6 +728,15 @@ export function PostCard({
   const handleOpenComments = () => {
     setShowComments(true);
     loadComments();
+  };
+
+  const handleCommentSortChange = (order: 'top' | 'recent') => {
+    setCommentSortOrder(order);
+    setShowCommentSortMenu(false);
+    // Reload comments with new sort order
+    setTimeout(() => {
+      loadComments();
+    }, 0);
   };
 
   const handleVoteComment = async (commentId: string) => {
@@ -1395,9 +1431,10 @@ export function PostCard({
                       {/* Share Original */}
                       <button
                         onClick={async () => {
-                          const url = window.location.origin + (originalUser.username ? `/user/${originalUser.username}` : '') + `?post=${originalPostData.id}`;
+                          const randomChars = Math.random().toString(36).substring(2, 8);
+                          const url = `${window.location.origin}/${originalUser.username}/${randomChars}`;
                           if (navigator.share) {
-                            await navigator.share({ title: 'Sharable Post', text: originalPostData.content, url });
+                            await navigator.share({ title: 'Sharable Post', text: 'Check out this post on Sharable', url });
                           } else {
                             await navigator.clipboard.writeText(url);
                             toast.success('Link copied');
@@ -1809,31 +1846,73 @@ export function PostCard({
                                 {/* Pull Bar */}
                                 <div className="absolute top-4 left-1/2 -translate-x-1/2 w-12 h-1.5 bg-zinc-300 dark:bg-zinc-700 rounded-full cursor-grab active:cursor-grabbing" />
                                 
-                                {/* Comment Sheet Header */}
-                                <div className="flex items-center justify-between px-4 pb-3 border-b border-black/5 dark:border-white/5">
-                                  <div className="flex items-center gap-4">
-                                    <div className="flex items-center gap-1 text-zinc-500">
-                                      <Heart className="w-6 h-6" strokeWidth={1.5} />
-                                      <span className="text-base font-medium">{likesCount}</span>
-                                    </div>
-                                    <div className="flex items-center gap-1 text-zinc-500">
+                                {/* Comment Sheet Header - 64dp */}
+                                <div className="flex items-center justify-between px-4 h-16 border-b border-black/5 dark:border-white/5">
+                                  <div className="flex items-center gap-6">
+                                    <button 
+                                      onClick={handleLike}
+                                      disabled={liking}
+                                      className="flex items-center gap-2 p-2 -ml-2 text-zinc-500 hover:text-red-500 dark:hover:text-red-400 transition-colors disabled:opacity-50"
+                                    >
+                                      <Heart className={`w-6 h-6 ${isLiked ? 'fill-red-500 text-red-500' : ''}`} strokeWidth={1.5} />
+                                    </button>
+                                    <button 
+                                      className="flex items-center gap-2 p-2 text-zinc-500 hover:text-blue-500 dark:hover:text-blue-400 transition-colors"
+                                    >
                                       <MessageCircle className="w-6 h-6" strokeWidth={1.5} />
-                                      <span className="text-base font-medium">{commentsCount}</span>
-                                    </div>
-                                    <div className="flex items-center gap-1 text-zinc-500">
-                                      <Repeat className="w-6 h-6" strokeWidth={1.5} />
-                                      <span className="text-base font-medium">{repostsCount}</span>
-                                    </div>
-                                  </div>
-                                  <div className="flex items-center gap-2">
-                                    <button className="p-2 text-zinc-500 hover:text-black dark:hover:text-white rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
-                                      <CornerRightDown className="w-6 h-6" strokeWidth={1.5} />
+                                    </button>
+                                    <button 
+                                      onClick={handleRepost}
+                                      disabled={reposting}
+                                      className="flex items-center gap-2 p-2 text-zinc-500 hover:text-green-500 dark:hover:text-green-400 transition-colors disabled:opacity-50"
+                                    >
+                                      <Repeat className={`w-6 h-6 ${reposted ? 'text-green-500' : ''}`} strokeWidth={1.5} />
                                     </button>
                                     <button 
                                       onClick={handleSharePost}
-                                      className="p-2 text-zinc-500 hover:text-black dark:hover:text-white rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+                                      className="flex items-center gap-2 p-2 text-zinc-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                                     >
                                       <Share2 className="w-6 h-6" strokeWidth={1.5} />
+                                    </button>
+                                  </div>
+                                  <div className="flex items-center gap-2 relative">
+                                    <button 
+                                      onClick={() => setShowCommentSortMenu(!showCommentSortMenu)}
+                                      className="p-2 text-zinc-500 hover:text-black dark:hover:text-white transition-colors"
+                                    >
+                                      <Settings2 className="w-6 h-6" strokeWidth={1.5} />
+                                    </button>
+                                    
+                                    {showCommentSortMenu && (
+                                      <div className="absolute bottom-full right-0 mb-2 bg-white dark:bg-zinc-800 border border-black/10 dark:border-white/10 rounded-xl shadow-xl z-20 overflow-hidden min-w-[160px]">
+                                        <button
+                                          onClick={() => handleCommentSortChange('top')}
+                                          className={`w-full text-left px-4 py-2.5 transition-colors ${
+                                            commentSortOrder === 'top'
+                                              ? 'bg-black/5 dark:bg-white/5 font-medium text-black dark:text-white'
+                                              : 'text-zinc-700 dark:text-zinc-300 hover:bg-black/5 dark:hover:bg-white/5'
+                                          }`}
+                                        >
+                                          Top Comments
+                                        </button>
+                                        <button
+                                          onClick={() => handleCommentSortChange('recent')}
+                                          className={`w-full text-left px-4 py-2.5 border-t border-black/5 dark:border-white/5 transition-colors ${
+                                            commentSortOrder === 'recent'
+                                              ? 'bg-black/5 dark:bg-white/5 font-medium text-black dark:text-white'
+                                              : 'text-zinc-700 dark:text-zinc-300 hover:bg-black/5 dark:hover:bg-white/5'
+                                          }`}
+                                        >
+                                          Recent Comments
+                                        </button>
+                                      </div>
+                                    )}
+                                    
+                                    <button 
+                                      onClick={handleSavePost}
+                                      className="p-2 text-zinc-500 hover:text-yellow-500 dark:hover:text-yellow-400 transition-colors"
+                                    >
+                                      <Bookmark className={`w-6 h-6 ${isSaved ? 'fill-yellow-500 text-yellow-500' : ''}`} strokeWidth={1.5} />
                                     </button>
                                   </div>
                                 </div>

@@ -47,6 +47,8 @@ export default function HomePage() {
   const [isGesturing, setIsGesturing] = useState(false);
   const [feedMode, setFeedMode] = useState<'trending' | 'explore' | 'following' | 'sharable' | 'communities'>('trending');
   const [profile, setProfile] = useState<Profile | null>(null);
+  const touchStartX = useRef(0);
+  const touchEndX = useRef(0);
   
   const observer = useRef<IntersectionObserver | null>(null);
 
@@ -57,6 +59,29 @@ export default function HomePage() {
 
   const handleDeletePost = (postId: string) => {
     setPosts(prev => prev.filter(p => p.id !== postId));
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.changedTouches[0].screenX;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    touchEndX.current = e.changedTouches[0].screenX;
+    handleSwipe();
+  };
+
+  const handleSwipe = () => {
+    const distance = touchStartX.current - touchEndX.current;
+    const threshold = 50; // Minimum swipe distance in pixels
+
+    // Swipe left (distance > threshold)
+    if (distance > threshold) {
+      if (isGuest) {
+        toast('Sign up to access messages', { description: 'Create an account to chat with others.' });
+        return;
+      }
+      router.push('/messages');
+    }
   };
 
   useEffect(() => {
@@ -751,7 +776,11 @@ export default function HomePage() {
         </div>
       </header>
     
-      <main className="max-w-xl mx-auto pt-16 pb-20">
+      <main 
+        className="max-w-xl mx-auto pt-16 pb-20"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
         <div className="px-4 py-4 flex items-center gap-3 border-b border-black/[0.05] dark:border-white/[0.05]">
           <div className="shrink-0 w-10 h-10 rounded-full overflow-hidden bg-zinc-100 dark:bg-zinc-900">
             <img 
