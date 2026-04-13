@@ -1466,7 +1466,6 @@ export function PostCard({
                   {/* Text metadata below name */}
                   <div className="flex items-center gap-1.5 mt-1 overflow-x-auto no-scrollbar pb-1 text-[12px] text-zinc-500 dark:text-zinc-400">
                     <span>@{user?.username || 'user'}</span>
-                    <span>·</span>
                     <span>{formatTime(created_at || new Date().toISOString())}</span>
                     
                     {is_community_post && community && (
@@ -1843,33 +1842,41 @@ export function PostCard({
                                 {/* Pull Bar */}
                                 <div className="absolute top-4 left-1/2 -translate-x-1/2 w-12 h-1.5 bg-zinc-300 dark:bg-zinc-700 rounded-full cursor-grab active:cursor-grabbing" />
                                 
-                                {/* Comment Sheet Header */}
-                                <div className="flex items-center justify-between px-4 pb-3 border-b border-black/5 dark:border-white/5">
-                                  <div className="flex items-center gap-4">
-                                    <div className="flex items-center gap-1 text-zinc-500">
-                                      <Heart className="w-6 h-6" strokeWidth={1.5} />
-                                      <span className="text-base font-medium">{likesCount}</span>
-                                    </div>
-                                    <div className="flex items-center gap-1 text-zinc-500">
+                                {/* Comment Sheet Header - 64dp */}
+                                <div className="flex items-center justify-between px-4 h-16 border-b border-black/5 dark:border-white/5">
+                                  <div className="flex items-center gap-6">
+                                    <button 
+                                      onClick={handleLike}
+                                      disabled={liking}
+                                      className="flex items-center gap-2 p-2 -ml-2 text-zinc-500 hover:text-red-500 dark:hover:text-red-400 transition-colors disabled:opacity-50"
+                                    >
+                                      <Heart className={`w-6 h-6 ${isLiked ? 'fill-red-500 text-red-500' : ''}`} strokeWidth={1.5} />
+                                    </button>
+                                    <button 
+                                      className="flex items-center gap-2 p-2 text-zinc-500 hover:text-blue-500 dark:hover:text-blue-400 transition-colors"
+                                    >
                                       <MessageCircle className="w-6 h-6" strokeWidth={1.5} />
-                                      <span className="text-base font-medium">{commentsCount}</span>
-                                    </div>
-                                    <div className="flex items-center gap-1 text-zinc-500">
-                                      <Repeat className="w-6 h-6" strokeWidth={1.5} />
-                                      <span className="text-base font-medium">{repostsCount}</span>
-                                    </div>
-                                  </div>
-                                  <div className="flex items-center gap-2">
-                                    <button className="p-2 text-zinc-500 hover:text-black dark:hover:text-white rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
-                                      <CornerRightDown className="w-6 h-6" strokeWidth={1.5} />
+                                    </button>
+                                    <button 
+                                      onClick={handleRepost}
+                                      disabled={reposting}
+                                      className="flex items-center gap-2 p-2 text-zinc-500 hover:text-green-500 dark:hover:text-green-400 transition-colors disabled:opacity-50"
+                                    >
+                                      <Repeat className={`w-6 h-6 ${reposted ? 'text-green-500' : ''}`} strokeWidth={1.5} />
                                     </button>
                                     <button 
                                       onClick={handleSharePost}
-                                      className="p-2 text-zinc-500 hover:text-black dark:hover:text-white rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+                                      className="flex items-center gap-2 p-2 text-zinc-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                                     >
                                       <Share2 className="w-6 h-6" strokeWidth={1.5} />
                                     </button>
                                   </div>
+                                  <button 
+                                    onClick={handleSavePost}
+                                    className="p-2 text-zinc-500 hover:text-yellow-500 dark:hover:text-yellow-400 transition-colors"
+                                  >
+                                    <Bookmark className={`w-6 h-6 ${isSaved ? 'fill-yellow-500 text-yellow-500' : ''}`} strokeWidth={1.5} />
+                                  </button>
                                 </div>
 
                         <div className="flex-1 overflow-y-auto px-4 py-2 space-y-4 overscroll-contain touch-pan-y custom-scrollbar" onPointerDownCapture={(e) => e.stopPropagation()}>
