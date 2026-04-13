@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Heart, MessageCircle, Share2, MoreHorizontal, X, Send, Trash2, Clock, Reply, ChevronDown, ChevronUp, Bookmark, Copy, Download, Maximize2, Repeat, TrendingUp, CornerRightDown } from 'lucide-react';
+import { Heart, MessageCircle, Share2, MoreHorizontal, X, Send, Trash2, Clock, Reply, ChevronDown, ChevronUp, Bookmark, Copy, Download, Maximize2, Repeat, TrendingUp, CornerRightDown, Settings2 } from 'lucide-react';
 import { Loader } from '@/components/ui/loader';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/lib/supabase';
@@ -112,6 +112,8 @@ export function PostCard({
   const [showComments, setShowComments] = useState(false);
   const [comments, setComments] = useState<Comment[]>([]);
   const [loadingComments, setLoadingComments] = useState(false);
+  const [commentSortOrder, setCommentSortOrder] = useState<'top' | 'recent'>('top');
+  const [showCommentSortMenu, setShowCommentSortMenu] = useState(false);
   const [newComment, setNewComment] = useState('');
   const [submittingComment, setSubmittingComment] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
@@ -616,7 +618,7 @@ export function PostCard({
 
   const loadComments = async () => {
     setLoadingComments(true);
-    const { data, error } = await supabase
+    let query = supabase
       .from('comments')
       .select(`
         id,
@@ -626,8 +628,16 @@ export function PostCard({
         parent_id,
         user:profiles(full_name, avatar_url, username)
       `)
-      .eq('post_id', id)
-      .order('created_at', { ascending: true });
+      .eq('post_id', id);
+    
+    if (commentSortOrder === 'recent') {
+      query = query.order('created_at', { ascending: false });
+    } else {
+      // Top comments - order by most voted (oldest first, but will be reordered by vote count after fetching)
+      query = query.order('created_at', { ascending: true });
+    }
+    
+    const { data, error } = await query;
     
     if (!error && data) {
       // Fetch vote counts for all comments
@@ -688,10 +698,20 @@ export function PostCard({
         comment.replies = repliesMap[comment.id] || [];
       }
 
-      // Sort comments by created_at (newest first), then by votes (highest first)
-      topLevel.sort((a, b) => {
-        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-      });
+      // Sort comments based on selected order
+      if (commentSortOrder === 'recent') {
+        // Recent: newest first
+        topLevel.sort((a, b) => {
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        });
+      } else {
+        // Top: by votes (highest first), then by created_at (oldest first)
+        topLevel.sort((a, b) => {
+          const voteDiff = (b.votes_count || 0) - (a.votes_count || 0);
+          if (voteDiff !== 0) return voteDiff;
+          return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+        });
+      }
 
       setComments(topLevel);
     }
@@ -701,6 +721,15 @@ export function PostCard({
   const handleOpenComments = () => {
     setShowComments(true);
     loadComments();
+  };
+
+  const handleCommentSortChange = (order: 'top' | 'recent') => {
+    setCommentSortOrder(order);
+    setShowCommentSortMenu(false);
+    // Reload comments with new sort order
+    setTimeout(() => {
+      loadComments();
+    }, 0);
   };
 
   const handleVoteComment = async (commentId: string) => {
@@ -1871,12 +1900,46 @@ export function PostCard({
                                       <Share2 className="w-6 h-6" strokeWidth={1.5} />
                                     </button>
                                   </div>
-                                  <button 
-                                    onClick={handleSavePost}
-                                    className="p-2 text-zinc-500 hover:text-yellow-500 dark:hover:text-yellow-400 transition-colors"
-                                  >
-                                    <Bookmark className={`w-6 h-6 ${isSaved ? 'fill-yellow-500 text-yellow-500' : ''}`} strokeWidth={1.5} />
-                                  </button>
+                                  <div className="flex items-center gap-2 relative">
+                                    <button 
+                                      onClick={() => setShowCommentSortMenu(!showCommentSortMenu)}
+                                      className="p-2 text-zinc-500 hover:text-black dark:hover:text-white transition-colors"
+                                    >
+                                      <Settings2 className="w-6 h-6" strokeWidth={1.5} />
+                                    </button>
+                                    
+                                    {showCommentSortMenu && (
+                                      <div className="absolute bottom-full right-0 mb-2 bg-white dark:bg-zinc-800 border border-black/10 dark:border-white/10 rounded-xl shadow-xl z-20 overflow-hidden min-w-[160px]">
+                                        <button
+                                          onClick={() => handleCommentSortChange('top')}
+                                          className={`w-full text-left px-4 py-2.5 transition-colors ${
+                                            commentSortOrder === 'top'
+                                              ? 'bg-black/5 dark:bg-white/5 font-medium text-black dark:text-white'
+                                              : 'text-zinc-700 dark:text-zinc-300 hover:bg-black/5 dark:hover:bg-white/5'
+                                          }`}
+                                        >
+                                          Top Comments
+                                        </button>
+                                        <button
+                                          onClick={() => handleCommentSortChange('recent')}
+                                          className={`w-full text-left px-4 py-2.5 border-t border-black/5 dark:border-white/5 transition-colors ${
+                                            commentSortOrder === 'recent'
+                                              ? 'bg-black/5 dark:bg-white/5 font-medium text-black dark:text-white'
+                                              : 'text-zinc-700 dark:text-zinc-300 hover:bg-black/5 dark:hover:bg-white/5'
+                                          }`}
+                                        >
+                                          Recent Comments
+                                        </button>
+                                      </div>
+                                    )}
+                                    
+                                    <button 
+                                      onClick={handleSavePost}
+                                      className="p-2 text-zinc-500 hover:text-yellow-500 dark:hover:text-yellow-400 transition-colors"
+                                    >
+                                      <Bookmark className={`w-6 h-6 ${isSaved ? 'fill-yellow-500 text-yellow-500' : ''}`} strokeWidth={1.5} />
+                                    </button>
+                                  </div>
                                 </div>
 
                         <div className="flex-1 overflow-y-auto px-4 py-2 space-y-4 overscroll-contain touch-pan-y custom-scrollbar" onPointerDownCapture={(e) => e.stopPropagation()}>
