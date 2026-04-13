@@ -343,18 +343,25 @@ export function PostCard({
     setShowMenu(false);
   };
 
+    const generateShareLink = () => {
+      // Create short unique link: @username + random 6 chars
+      const randomChars = Math.random().toString(36).substring(2, 8);
+      return `${window.location.origin}/${user.username}/${randomChars}`;
+    };
+
     const handleSharePost = async () => {
+      const shareLink = generateShareLink();
       const shareData = {
         title: 'Sharable Post',
-        text: content,
-        url: window.location.origin + (user.username ? `/user/${user.username}` : '') + `?post=${id}`,
+        text: 'Check out this post on Sharable',
+        url: shareLink,
       };
 
       try {
         if (navigator.share) {
           await navigator.share(shareData);
         } else {
-          await navigator.clipboard.writeText(shareData.url);
+          await navigator.clipboard.writeText(shareLink);
           toast.success('Link copied to clipboard');
         }
       } catch (err) {
@@ -1424,9 +1431,10 @@ export function PostCard({
                       {/* Share Original */}
                       <button
                         onClick={async () => {
-                          const url = window.location.origin + (originalUser.username ? `/user/${originalUser.username}` : '') + `?post=${originalPostData.id}`;
+                          const randomChars = Math.random().toString(36).substring(2, 8);
+                          const url = `${window.location.origin}/${originalUser.username}/${randomChars}`;
                           if (navigator.share) {
-                            await navigator.share({ title: 'Sharable Post', text: originalPostData.content, url });
+                            await navigator.share({ title: 'Sharable Post', text: 'Check out this post on Sharable', url });
                           } else {
                             await navigator.clipboard.writeText(url);
                             toast.success('Link copied');
