@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useEffect, useRef, Fragment } from 'react';
-import { Heart, MessageCircle, Share2, MoreHorizontal, X, Send, Trash2, Clock, Reply, ChevronDown, ChevronUp, Bookmark, Copy, Download, Maximize2, Repeat, TrendingUp, CornerRightDown, Users } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Heart, MessageCircle, Share2, MoreHorizontal, X, Send, Trash2, Clock, Reply, ChevronDown, ChevronUp, Bookmark, Copy, Download, Maximize2, Repeat, TrendingUp, CornerRightDown, Settings2 } from 'lucide-react';
 import { Loader } from '@/components/ui/loader';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/lib/supabase';
@@ -1480,7 +1480,7 @@ export function PostCard({
       >
           {!isNested && (
             <div className="flex items-center justify-between px-4 pt-4 pb-2">
-              <Link href={user?.username ? `/user/${user.username}` : '#'} className="flex items-center gap-3 min-w-0">
+              <Link href={user?.username ? `/user/${user.username}` : '#'} className="flex items-center gap-2 min-w-0">
                 <div 
                   className="rounded-full overflow-hidden border border-black/10 dark:border-white/10 bg-zinc-100 dark:bg-zinc-900 flex-shrink-0"
                   style={{ width: avatarSize, height: avatarSize }}
@@ -1494,11 +1494,44 @@ export function PostCard({
                     }}
                   />
                 </div>
-                <div className="flex items-center gap-1.5 min-w-0 overflow-hidden">
-                  <span className="font-bold text-[16px] leading-tight tracking-tight truncate">{user?.full_name || user?.username || 'Unknown User'}</span>
-                  <VerifiedBadge username={user?.username} className="w-4 h-4 flex-shrink-0" />
-                  <span className="text-zinc-500 dark:text-zinc-400 text-[14px]">·</span>
-                  <span className="text-zinc-500 dark:text-zinc-400 text-[14px] truncate">@{user?.username || 'user'}</span>
+                <div className="flex flex-col min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-bold text-[16px] tracking-tight truncate">{user?.full_name || user?.username || 'Unknown User'}</span>
+                    <VerifiedBadge username={user?.username} className="w-4 h-4" />
+                  </div>
+                  
+                  {/* Text metadata below name */}
+                  <div className="flex items-center gap-1.5 mt-1 overflow-x-auto no-scrollbar pb-1 text-[12px] text-zinc-500 dark:text-zinc-400">
+                    <span>@{user?.username || 'user'}</span>
+                    <span>{formatTime(created_at || new Date().toISOString())}</span>
+                    
+                    {is_community_post && community && (
+                      <>
+                        <span>·</span>
+                        <Link 
+                          href={`/communities/${community.id}`}
+                          onClick={(e) => e.stopPropagation()}
+                          className="text-blue-600 dark:text-blue-400 hover:underline"
+                        >
+                          {community.name}
+                        </Link>
+                      </>
+                    )}
+                    
+                    {/* Hashtags as plain text */}
+                    {content.match(/#\w+/g)?.map((tag, i) => (
+                      <div key={i} className="flex items-center gap-1.5">
+                        <span>·</span>
+                        <Link
+                          href={`/search?q=%23${tag.slice(1)}`}
+                          onClick={(e) => e.stopPropagation()}
+                          className="text-zinc-500 dark:text-zinc-400 hover:underline"
+                        >
+                          {tag}
+                        </Link>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </Link>
               
