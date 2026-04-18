@@ -4,7 +4,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "Sharable",
     short_name: "Sharable",
-    description: "Share everything with Sharable",
+    description: "Share anything with the world.",
     start_url: "/",
     display: "standalone",
       background_color: "#ffffff",
