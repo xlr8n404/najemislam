@@ -1489,7 +1489,7 @@ export function PostCard({
               <Link href={user?.username ? `/user/${user.username}` : '#'} className="flex items-center gap-2 min-w-0">
                 <div 
                   className="rounded-full overflow-hidden border border-black/10 dark:border-white/10 bg-zinc-100 dark:bg-zinc-900 flex-shrink-0"
-                  style={{ width: avatarSize, height: avatarSize }}
+                  style={{ width: '40px', height: '40px' }}
                 >
                   <img 
                     src={avatarSrc} 
@@ -1501,14 +1501,15 @@ export function PostCard({
                   />
                 </div>
                 <div className="flex flex-col min-w-0">
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1">
                     <span className="font-bold text-[16px] tracking-tight truncate">{user?.full_name || user?.username || 'Unknown User'}</span>
-                    <VerifiedBadge username={user?.username} className="w-4 h-4" />
+                    <VerifiedBadge username={user?.username} className="w-[16px] h-[16px]" />
                   </div>
                   
                   {/* Text metadata below name */}
-                  <div className="flex items-center gap-1.5 mt-1 overflow-x-auto no-scrollbar pb-1 text-[12px] text-zinc-500 dark:text-zinc-400">
-                    <span>@{user?.username || 'user'}</span>
+                  <div className="flex items-center gap-1.5 mt-0.5 overflow-x-auto no-scrollbar pb-1 text-[12px] text-zinc-500 dark:text-zinc-400">
+                    <span className="font-medium">@{user?.username || 'user'}</span>
+                    <span>·</span>
                     <span>{formatTime(created_at || new Date().toISOString())}</span>
                     
                     {is_community_post && community && (
