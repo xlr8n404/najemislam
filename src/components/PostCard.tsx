@@ -1295,9 +1295,10 @@ export function PostCard({
                 </div>
               </div>
               <div className="flex flex-col min-w-0">
-                <div className="flex items-center gap-1.5">
-                  <span className="font-bold text-[18px] tracking-tight truncate">{user?.full_name || user?.username || 'Unknown User'}</span>
-                  <VerifiedBadge username={user?.username} />
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <span className="font-bold text-[16px] tracking-tight truncate">{user?.full_name || user?.username || 'Unknown User'}</span>
+                  <VerifiedBadge username={user?.username} className="w-[16px] h-[16px]" />
+                  <span className="text-[14px] text-zinc-500 dark:text-zinc-400 font-medium">@{user?.username || 'user'}</span>
                 </div>
               </div>
             </div>
