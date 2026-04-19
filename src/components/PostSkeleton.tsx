@@ -10,12 +10,8 @@ export function PostSkeleton() {
             {/* Avatar Skeleton - 40px */}
             <Skeleton className="w-10 h-10 rounded-full shrink-0 bg-zinc-200 dark:bg-zinc-800" />
             
-            {/* Name, Badge, Username on same line */}
-            <div className="flex items-center gap-1.5 flex-wrap flex-1 min-w-0">
-              <Skeleton className="h-4 w-32 bg-zinc-200 dark:bg-zinc-800" />
-              <Skeleton className="h-4 w-4 rounded-full bg-zinc-200 dark:bg-zinc-800" />
-              <Skeleton className="h-4 w-20 bg-zinc-100 dark:bg-zinc-900" />
-            </div>
+            {/* Full Name only */}
+            <Skeleton className="h-4 w-32 bg-zinc-200 dark:bg-zinc-800" />
           </div>
           
           {/* Three-dot Menu Skeleton */}
