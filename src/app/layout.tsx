@@ -13,9 +13,10 @@ import { GuestBannerWrapper } from "@/components/GuestBannerWrapper";
 export const metadata: Metadata = {
   title: "Sharable | Share anything with the world.",
   description: "Got anything Sharable? Join the community and start sharing now.",
+  manifest: "/manifest.json",
   icons: {
-    icon: "/favicon.ico",
-    apple: "/favicon.ico",
+    icon: "/icon.png",
+    apple: "/icon.png",
   },
   appleWebApp: {
     capable: true,
