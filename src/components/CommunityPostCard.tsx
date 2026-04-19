@@ -101,11 +101,21 @@ export default function CommunityPostCard({
 
       {/* Media */}
       {post.media_url && (
-        <img
-          src={post.media_url}
-          alt="Post media"
-          className="w-full rounded-lg mb-3 max-h-96 object-cover"
-        />
+        <div className="w-full mb-3">
+          {post.media_type === 'video' || (post.media_url && (post.media_url.endsWith('.mp4') || post.media_url.endsWith('.webm') || post.media_url.endsWith('.mov'))) ? (
+            <video
+              src={post.media_url}
+              controls
+              className="w-full rounded-lg max-h-96 object-cover"
+            />
+          ) : (
+            <img
+              src={post.media_url}
+              alt="Post media"
+              className="w-full rounded-lg max-h-96 object-cover"
+            />
+          )}
+        </div>
       )}
 
       {/* Actions */}

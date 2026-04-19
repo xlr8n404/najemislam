@@ -1703,7 +1703,7 @@ export function PostCard({
                     onClick={() => setFullscreenMedia({ url: finalMediaUrls[0], type: finalMediaTypes[0] })}
                     onDoubleClick={handleMediaDoubleClick}
                   >
-                    {finalMediaTypes[0] === 'video' ? (
+                    {finalMediaTypes[0] === 'video' || (finalMediaUrls[0] && (finalMediaUrls[0].endsWith('.mp4') || finalMediaUrls[0].endsWith('.webm') || finalMediaUrls[0].endsWith('.mov'))) ? (
                       <video 
                         src={finalMediaUrls[0]} 
                         controls 
