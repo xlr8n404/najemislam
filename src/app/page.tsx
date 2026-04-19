@@ -10,16 +10,15 @@ import { LoginForm } from "@/components/auth/login-form";
 import { RegisterForm } from "@/components/auth/register-form";
 import { ArrowLeft, Sun, Moon } from "lucide-react";
 import { useTheme } from "next-themes";
-
-const ShareIcon = ({ size = 24 }: { size?: number }) => (
-  <img src="/icon.png" alt="Logo" width={size} height={size} className="object-contain" />
-);
+import { Share2 } from "lucide-react";
 
 const Logo = ({ size = 'md', showText = true, orientation = 'vertical', className = '' }: { size?: 'sm' | 'md' | 'lg', showText?: boolean, orientation?: 'vertical' | 'horizontal', className?: string }) => {
+  const { theme } = useTheme();
+  
   const containerSizes = {
-    sm: "w-10 h-10 rounded-xl",
+    sm: "w-10 h-10 rounded-lg",
     md: "w-16 h-16 rounded-2xl",
-    lg: "w-20 h-20 rounded-3xl shadow-2xl shadow-foreground/10"
+    lg: "w-20 h-20 rounded-3xl"
   };
   
   const iconSizes = {
@@ -35,11 +34,12 @@ const Logo = ({ size = 'md', showText = true, orientation = 'vertical', classNam
   };
 
   const isVertical = orientation === 'vertical';
+  const isDark = theme === 'dark';
 
   return (
     <div className={`flex ${isVertical ? 'flex-col items-center' : 'flex-row items-center gap-3'} ${className}`}>
       <div className={`${containerSizes[size]} flex items-center justify-center ${isVertical && size !== 'sm' ? (size === 'lg' ? 'mb-6' : 'mb-4') : ''}`}>
-        <ShareIcon size={iconSizes[size] * 1.5} />
+        <Share2 size={iconSizes[size]} className={isDark ? 'text-white' : 'text-black'} strokeWidth={1.5} />
       </div>
       {showText && (
         <span className={`font-syne font-bold ${textSizes[size]} tracking-tight ${size === 'lg' ? 'tracking-tighter' : ''}`}>
