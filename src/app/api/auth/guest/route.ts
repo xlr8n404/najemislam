@@ -1,18 +1,16 @@
 import { NextResponse } from 'next/server';
 
+// Guest mode has been deprecated
 export async function POST() {
-  const response = NextResponse.json({ success: true });
-  response.cookies.set('guest_mode', 'true', {
-    httpOnly: false,
-    sameSite: 'lax',
-    path: '/',
-    maxAge: 60 * 60 * 24, // 1 day
-  });
-  return response;
+  return NextResponse.json(
+    { error: 'Guest mode has been disabled. Please log in or create an account.' },
+    { status: 403 }
+  );
 }
 
 export async function DELETE() {
-  const response = NextResponse.json({ success: true });
-  response.cookies.delete('guest_mode');
-  return response;
+  return NextResponse.json(
+    { error: 'Guest mode has been disabled.' },
+    { status: 403 }
+  );
 }

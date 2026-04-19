@@ -7,6 +7,7 @@ import { supabase } from '@/lib/supabase';
 import { Home, Search, PlusSquare, Bell, UserCircle, Users } from 'lucide-react';
 import { useGuestMode } from '@/context/GuestModeContext';
 import { toast } from 'sonner';
+import { CreateBottomSheet } from './CreateBottomSheet';
 
 // Nav items blocked for guests (require account)
 const GUEST_BLOCKED_PATHS = ['/post/create', '/profile', '/alerts', '/messages'];
@@ -17,6 +18,7 @@ export function BottomNav() {
   const { isGuest } = useGuestMode();
   const [unreadCount, setUnreadCount] = useState(0);
   const [userId, setUserId] = useState<string | null>(null);
+  const [showCreateSheet, setShowCreateSheet] = useState(false);
 
   useEffect(() => {
     const getSession = async () => {
@@ -81,20 +83,27 @@ export function BottomNav() {
     const navItems = [
       { href: '/home', icon: Home },
       { href: '/search', icon: Search },
-      { href: '/post/create', icon: PlusSquare },
+      { href: null, icon: PlusSquare, action: 'create' },
       { href: '/alerts', icon: Bell },
       { href: '/profile', icon: UserCircle },
     ];
 
       return (
-          <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white/80 dark:bg-black/80 backdrop-blur-xl h-16">
-            <div className="max-w-xl mx-auto flex items-center justify-between px-4 h-full">
-              {navItems.map((item) => {
+          <>
+            <CreateBottomSheet isOpen={showCreateSheet} onClose={() => setShowCreateSheet(false)} />
+            <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white/80 dark:bg-black/80 backdrop-blur-xl h-16">
+              <div className="max-w-xl mx-auto flex items-center justify-between px-4 h-full">
+                {navItems.map((item) => {
               const Icon = item.icon;
-              const isActive = pathname === item.href;
-              const blockedForGuest = isGuest && GUEST_BLOCKED_PATHS.includes(item.href);
+              const isActive = item.href !== null && pathname === item.href;
+              const blockedForGuest = isGuest && item.href && GUEST_BLOCKED_PATHS.includes(item.href);
 
               const handleClick = (e: React.MouseEvent) => {
+                if ((item as any).action === 'create') {
+                  e.preventDefault();
+                  setShowCreateSheet(true);
+                  return;
+                }
                 if (blockedForGuest) {
                   e.preventDefault();
                   const msgs: Record<string, string> = {
@@ -102,7 +111,7 @@ export function BottomNav() {
                     '/profile': 'Sign up to view your profile',
                     '/alerts': 'Sign up to see notifications',
                   };
-                  toast(msgs[item.href] || 'Sign up to continue', {
+                  toast(msgs[item.href!] || 'Sign up to continue', {
                     description: 'Create an account to unlock all features.',
                   });
                 }
@@ -110,8 +119,8 @@ export function BottomNav() {
 
                 return (
                     <Link
-                      key={item.href}
-                      href={blockedForGuest ? '#' : item.href}
+                      key={item.href || 'create'}
+                      href={blockedForGuest || (item as any).action === 'create' ? '#' : item.href!}
                       onClick={handleClick}
                       className={`flex items-center justify-center transition-all relative w-12 h-12 rounded-2xl group ${
                         isActive
@@ -139,7 +148,8 @@ export function BottomNav() {
 </Link>
 );
 })}
-      </div>
-    </nav>
-  );
+              </div>
+            </nav>
+          </>
+        );
 }

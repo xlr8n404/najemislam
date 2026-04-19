@@ -22,17 +22,6 @@ const publicPaths = [
   '/api/auth/google',
   '/api/auth/session',
   '/api/auth/logout',
-  '/api/auth/guest',
-];
-
-// Paths that guests (unauthenticated read-only viewers) are allowed to visit
-const guestAllowedPaths = [
-  '/home',
-  '/search',
-  '/about',
-  '/connect',
-  '/alerts',
-  '/profile',
 ];
 
 export async function middleware(req: NextRequest) {
@@ -49,19 +38,6 @@ export async function middleware(req: NextRequest) {
   }
 
   const token = req.cookies.get('sb-auth-token')?.value;
-  const guestMode = req.cookies.get('guest_mode')?.value;
-
-  // Allow guests to browse read-only pages
-  if (!token && guestMode === 'true') {
-    const isGuestAllowed =
-      guestAllowedPaths.some((p) => pathname === p || pathname.startsWith(p + '/')) ||
-      pathname.startsWith('/user/');
-    if (isGuestAllowed) {
-      return NextResponse.next();
-    }
-    // Guests trying to access write-only areas get redirected home
-    return NextResponse.redirect(new URL('/home', req.url));
-  }
 
   if (!token) {
     return NextResponse.redirect(new URL('/', req.url));

@@ -51,8 +51,6 @@ export function LoginForm({ onSuccess, onSwitchToRegister }: LoginFormProps) {
       }
 
         toast.success(t('welcome_back') + '!');
-        // Clear guest mode cookie client-side before navigating
-        document.cookie = 'guest_mode=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax';
         if (onSuccess) {
           onSuccess();
         } else {

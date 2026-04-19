@@ -169,26 +169,6 @@ export default function Home() {
                 >
                   Create Account
                 </button>
-                
-                <div className="flex items-center gap-4 my-2">
-                  <div className="flex-1 h-px bg-neutral-200 dark:bg-neutral-800" />
-                  <span className="text-neutral-500 text-sm font-medium">or</span>
-                  <div className="flex-1 h-px bg-neutral-200 dark:bg-neutral-800" />
-                </div>
-
-                <button
-                  onClick={async () => {
-                    await fetch('/api/auth/guest', { method: 'POST' });
-                    router.push('/home');
-                  }}
-                  className="flex items-center justify-center gap-2 w-full h-[44px] text-neutral-500 dark:text-neutral-400 font-medium text-sm rounded-full transition-all hover:text-foreground hover:bg-neutral-100 dark:hover:bg-neutral-900"
-                >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                  Explore as Guest
-                </button>
               </div>
             </motion.div>
           )}
@@ -220,7 +200,7 @@ export default function Home() {
           >
               <div className="max-w-4xl mx-auto flex flex-col items-center gap-8">
                 
-                <Logo size="sm" orientation="horizontal" />
+                <span className="font-syne font-bold text-xl tracking-tight">Sharable</span>
 
                 <nav className="flex flex-wrap items-center justify-center gap-x-8 gap-y-4">
                 <Link href="/about" className="text-neutral-500 hover:text-foreground transition-colors text-sm">About</Link>

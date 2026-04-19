@@ -234,9 +234,8 @@ export default function CreatePostPage() {
       if (postError) throw postError;
 
       toast.success('Post shared successfully!');
-      // Redirect to the newly created post
-      const postNumber = postData?.post_number || 1;
-      router.push(`/${profile.username}/${postNumber}`);
+      // Redirect to home page
+      router.push('/home');
     } catch (error) {
       console.error('[v0] Post creation error:', error);
       toast.error('Failed to create post');

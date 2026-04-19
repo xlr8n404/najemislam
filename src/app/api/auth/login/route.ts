@@ -61,9 +61,6 @@ export async function POST(request: Request) {
       path: '/'
     });
 
-    // Clear guest mode cookie if user logs in
-    response.cookies.delete('guest_mode');
-
     return response;
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
