@@ -13,6 +13,13 @@ import { GuestBannerWrapper } from "@/components/GuestBannerWrapper";
 export const metadata: Metadata = {
   title: "Sharable",
   description: "Share anything with the world.",
+  openGraph: {
+    title: 'Sharable',
+    description: 'Share anything with the world.',
+    siteName: 'Sharable',
+    url: 'https://sharableofc.vercel.app',
+    type: 'website',
+  },
   manifest: "/manifest.json",
   icons: {
     icon: "/icon.png",
@@ -24,6 +31,7 @@ export const metadata: Metadata = {
     title: "Sharable",
   },
 };
+
 
 
 export const viewport = {
