@@ -739,13 +739,13 @@ export default function HomePage() {
             onClick={() => setLeftSidebarOpen(true)}
             className="p-2 text-black dark:text-white hover:bg-black/5 dark:hover:bg-white/5 rounded-full transition-colors"
           >
-            <Settings2 size={24} strokeWidth={1} />
+            <Settings2 size={24} strokeWidth={1.5} />
           </button>
 
           <div className="flex-1 flex justify-center">
             <Share2 
               size={24} 
-              strokeWidth={1}
+              strokeWidth={1.5}
               className="text-black dark:text-white cursor-pointer"
               onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
             />
@@ -761,7 +761,7 @@ export default function HomePage() {
             }}
             className="p-2 text-black dark:text-white hover:bg-black/5 dark:hover:bg-white/5 rounded-full transition-colors"
           >
-            <MessageCircle size={24} strokeWidth={1} />
+            <MessageCircle size={24} strokeWidth={1.5} />
           </button>
         </div>
       </header>
