@@ -194,7 +194,7 @@ export default function EditProfilePage() {
             <Link href="/profile" className="p-2 -ml-2 text-black dark:text-white hover:bg-black/10 dark:hover:bg-white/10 rounded-full transition-colors" onClick={(e) => { e.preventDefault(); router.back(); }}>
             <ArrowLeft className="w-5 h-5" />
           </Link>
-          <span className="ml-2 font-bold text-lg">Edit Profile</span>
+          <span className="ml-2 font-bold text-lg">Edit Sharable ID</span>
         </div>
         <button
           onClick={handleSave}

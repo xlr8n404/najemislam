@@ -108,7 +108,7 @@ export function BottomNav() {
                   e.preventDefault();
                   const msgs: Record<string, string> = {
                     '/post/create': 'Sign up to create posts',
-                    '/profile': 'Sign up to view your profile',
+                    '/profile': 'Sign up to view your Sharable ID',
                     '/alerts': 'Sign up to see notifications',
                   };
                   toast(msgs[item.href!] || 'Sign up to continue', {
