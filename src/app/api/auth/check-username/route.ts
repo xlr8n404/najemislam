@@ -9,21 +9,21 @@ const supabaseAdmin = createClient(
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const sharableId = searchParams.get('sharable_id') || searchParams.get('username');
+    const username = searchParams.get('username');
 
-    if (!sharableId || sharableId.length < 3) {
-      return NextResponse.json({ available: false, error: 'Sharable ID must be at least 3 characters' }, { status: 400 });
+    if (!username || username.length < 3) {
+      return NextResponse.json({ available: false, error: 'Username must be at least 3 characters' }, { status: 400 });
     }
 
     // Validate format: alphanumeric and underscores only
-    if (!/^[a-zA-Z0-9_]+$/.test(sharableId)) {
-      return NextResponse.json({ available: false, error: 'Sharable ID can only contain letters, numbers, and underscores' }, { status: 400 });
+    if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+      return NextResponse.json({ available: false, error: 'Username can only contain letters, numbers, and underscores' }, { status: 400 });
     }
 
     const { data } = await supabaseAdmin
       .from('profiles')
-      .select('sharable_id')
-      .eq('sharable_id', sharableId.toLowerCase())
+      .select('username')
+      .eq('username', username.toLowerCase())
       .single();
 
     return NextResponse.json({ available: !data });

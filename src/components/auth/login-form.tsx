@@ -81,13 +81,13 @@ export function LoginForm({ onSuccess, onSwitchToRegister }: LoginFormProps) {
       <form onSubmit={handleLogin} className="w-full space-y-4">
         <div className="space-y-1.5 text-left">
           <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-[0.1em] ml-1">
-            Sharable ID
+            Username
           </label>
             <div className="relative">
               <CircleUser className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500" />
               <input
                 type="text"
-                placeholder="@sharable_id"
+                placeholder="@username"
                 required
                 className="w-full h-[56px] bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl pl-12 pr-4 focus:border-foreground/20 focus:ring-0 transition-all placeholder:text-neutral-500 dark:placeholder:text-neutral-600 text-foreground"
                 value={formData.username}

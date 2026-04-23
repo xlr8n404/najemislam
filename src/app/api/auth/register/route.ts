@@ -13,20 +13,20 @@ export async function POST(request: Request) {
     const { username, password, fullName, dob, gender, avatarUrl } = await request.json();
     
     if (!username || !password) {
-      return NextResponse.json({ error: 'Sharable ID and password required' }, { status: 400 });
+      return NextResponse.json({ error: 'Username and password required' }, { status: 400 });
     }
 
     if (username.length < 3) {
-      return NextResponse.json({ error: 'Sharable ID must be at least 3 characters' }, { status: 400 });
+      return NextResponse.json({ error: 'Username must be at least 3 characters' }, { status: 400 });
     }
 
     if (username.length > 15) {
-      return NextResponse.json({ error: 'Sharable ID cannot exceed 15 characters' }, { status: 400 });
+      return NextResponse.json({ error: 'Username cannot exceed 15 characters' }, { status: 400 });
     }
 
     // Validate format: alphanumeric and underscores only
     if (!/^[a-zA-Z0-9_]+$/.test(username)) {
-      return NextResponse.json({ error: 'Sharable ID can only contain letters, numbers, and underscores' }, { status: 400 });
+      return NextResponse.json({ error: 'Username can only contain letters, numbers, and underscores' }, { status: 400 });
     }
 
     if (fullName && fullName.length > 15) {
@@ -39,12 +39,12 @@ export async function POST(request: Request) {
 
     const { data: existingUser } = await supabaseAdmin
       .from('profiles')
-      .select('sharable_id')
-      .eq('sharable_id', username.toLowerCase())
+      .select('username')
+      .eq('username', username.toLowerCase())
       .single();
 
     if (existingUser) {
-      return NextResponse.json({ error: 'Sharable ID already taken' }, { status: 400 });
+      return NextResponse.json({ error: 'Username already taken' }, { status: 400 });
     }
 
       const hashedPassword = await hashPassword(password);
@@ -64,7 +64,7 @@ export async function POST(request: Request) {
       const { error: profileError } = await supabaseAdmin.from('profiles').insert({
         id: userId,
         full_name: fullName,
-        sharable_id: username.toLowerCase(),
+        username: username.toLowerCase(),
         date_of_birth: dob || null,
         gender: gender || null,
         avatar_url: avatarUrl || '',

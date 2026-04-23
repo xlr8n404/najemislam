@@ -34,9 +34,9 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ 
       user: { 
         id: profile.id, 
-        email: `${profile.sharable_id}@shareit.com`,
+        email: `${profile.username}@shareit.com`,
         user_metadata: {
-          username: profile.sharable_id,
+          username: profile.username,
           full_name: profile.full_name
         },
         profile 

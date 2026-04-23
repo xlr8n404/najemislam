@@ -2,7 +2,7 @@
 CREATE TABLE IF NOT EXISTS profiles (
   id UUID PRIMARY KEY,
   full_name TEXT,
-  sharable_id TEXT UNIQUE NOT NULL,
+  username TEXT UNIQUE NOT NULL,
   avatar_url TEXT,
   bio TEXT,
   password_hash TEXT NOT NULL,
@@ -13,5 +13,5 @@ CREATE TABLE IF NOT EXISTS profiles (
 );
 
 -- Create indexes
-CREATE INDEX IF NOT EXISTS profiles_sharable_id_idx ON profiles(sharable_id);
+CREATE INDEX IF NOT EXISTS profiles_username_idx ON profiles(username);
 CREATE INDEX IF NOT EXISTS profiles_created_at_idx ON profiles(created_at);

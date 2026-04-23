@@ -50,7 +50,7 @@ export function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFormProps) 
     const timer = setTimeout(async () => {
       setUsernameStatus('checking');
       try {
-        const res = await fetch(`/api/auth/check-username?sharable_id=${formData.username}`);
+        const res = await fetch(`/api/auth/check-username?username=${formData.username}`);
         const data = await res.json();
         setUsernameStatus(data.available ? 'available' : 'taken');
       } catch {
@@ -63,7 +63,7 @@ export function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFormProps) 
 
   const handleNext = () => {
     if (step === 1 && usernameStatus === 'taken') {
-      toast.error('Sharable ID is already taken');
+      toast.error('Username is already taken');
       return;
     }
     setStep(s => s + 1);

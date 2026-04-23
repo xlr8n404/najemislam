@@ -20,7 +20,7 @@ type Tab = 'posts' | 'saved' | 'about';
 interface Profile {
   id: string;
   full_name: string;
-  sharable_id: string;
+  username: string;
   avatar_url: string;
   cover_url: string;
   bio: string;
@@ -97,7 +97,7 @@ export default function ProfilePage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          username: profile.sharable_id,
+          username: profile.username,
           password: password,
         }),
       });
@@ -338,9 +338,9 @@ export default function ProfilePage() {
 
             <div className="mt-16 px-4">
                 <div className="flex items-center gap-x-2 gap-y-1 flex-wrap">
-                  <h1 className="text-xl font-bold">{profile?.full_name || profile?.sharable_id}</h1>
-                  <VerifiedBadge username={profile?.sharable_id} />
-                  <p className="text-sm text-zinc-500 dark:text-zinc-400">@{profile?.sharable_id}</p>
+                  <h1 className="text-xl font-bold">{profile?.full_name || profile?.username}</h1>
+                  <VerifiedBadge username={profile?.username} />
+                  <p className="text-sm text-zinc-500 dark:text-zinc-400">@{profile?.username}</p>
                 </div>
               <div className="flex items-center gap-4 mt-4">
                 <div className="text-center">
@@ -495,8 +495,8 @@ export default function ProfilePage() {
                         <AtSign size={22} strokeWidth={1.5} />
                       </div>
                         <div className="flex-1">
-                          <p className="text-[12px] text-zinc-500 dark:text-zinc-400 font-medium">Sharable ID</p>
-                          <p className="font-semibold text-black dark:text-white">@{profile?.sharable_id || 'Not set'}</p>
+                          <p className="text-[12px] text-zinc-500 dark:text-zinc-400 font-medium">Username</p>
+                          <p className="font-semibold text-black dark:text-white">@{profile?.username || 'Not set'}</p>
                         </div>
 
                     </div>

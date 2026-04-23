@@ -13,17 +13,17 @@ export async function POST(request: Request) {
     const { username, password } = await request.json();
     
     if (!username || !password) {
-      return NextResponse.json({ error: 'Sharable ID and password required' }, { status: 400 });
+      return NextResponse.json({ error: 'Username and password required' }, { status: 400 });
     }
 
     const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
-      .select('id, sharable_id, password_hash')
-      .eq('sharable_id', username.toLowerCase())
+      .select('id, username, password_hash')
+      .eq('username', username.toLowerCase())
       .single();
 
     if (profileError || !profile) {
-      return NextResponse.json({ error: 'Invalid Sharable ID or password' }, { status: 401 });
+      return NextResponse.json({ error: 'Invalid username or password' }, { status: 401 });
     }
 
     if (!profile.password_hash) {
@@ -33,7 +33,7 @@ export async function POST(request: Request) {
     const isPasswordValid = await comparePassword(password, profile.password_hash);
 
     if (!isPasswordValid) {
-      return NextResponse.json({ error: 'Invalid Sharable ID or password' }, { status: 401 });
+      return NextResponse.json({ error: 'Invalid username or password' }, { status: 401 });
     }
 
     // Reactivate account if it was deactivated
@@ -44,7 +44,7 @@ export async function POST(request: Request) {
 
     const token = await createToken({
       userId: profile.id,
-      username: profile.sharable_id
+      username: profile.username
     });
 
     const response = NextResponse.json({ 
