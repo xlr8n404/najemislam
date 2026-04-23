@@ -221,7 +221,8 @@ export default function EditProfilePage() {
           />
             <div 
               onClick={() => coverInputRef.current?.click()}
-                className="w-full h-36 md:h-48 bg-zinc-100 dark:bg-zinc-900 overflow-hidden cursor-pointer group relative"
+                className="w-full bg-zinc-100 dark:bg-zinc-900 overflow-hidden cursor-pointer group relative"
+                style={{aspectRatio: '3/1'}}
             >
               {coverSrc ? (
                 <img

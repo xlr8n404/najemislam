@@ -286,7 +286,7 @@ export default function ProfilePage() {
 
       <main className="max-w-xl mx-auto pb-20">
         <div className="relative">
-          <div className="w-full h-56 bg-zinc-100 dark:bg-zinc-900 overflow-hidden">
+          <div className="w-full bg-zinc-100 dark:bg-zinc-900 overflow-hidden" style={{aspectRatio: '3/1'}}>
             {coverSrc ? (
               <img
                 src={coverSrc}
