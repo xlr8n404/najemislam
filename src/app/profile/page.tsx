@@ -301,8 +301,8 @@ export default function ProfilePage() {
             )}
           </div>
 
-            <div className="absolute -bottom-14 left-4">
-              <div className="w-28 h-28 rounded-full border-4 border-white dark:border-black overflow-hidden bg-zinc-100 dark:bg-zinc-900">
+            <div className="absolute -bottom-14 left-4 w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28">
+              <div className="w-full h-full rounded-full border-4 border-white dark:border-black overflow-hidden bg-zinc-100 dark:bg-zinc-900">
                 <img
                   src={avatarSrc}
                   alt={profile?.full_name || 'User'}
@@ -314,26 +314,12 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            <div className="absolute right-4 -bottom-5 flex items-center gap-2">
-                  <button
-                    onClick={() => setMenuOpen(true)}
-                    className="p-2.5 bg-zinc-100 dark:bg-zinc-900 text-black dark:text-white rounded-full border border-black/10 dark:border-white/10 hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors"
-                  >
-                    <Menu size={24} strokeWidth={1.5} />
-                  </button>
-                  <Link
-                    href="/profile/edit"
-                    className="p-2.5 bg-zinc-100 dark:bg-zinc-900 text-black dark:text-white rounded-full border border-black/10 dark:border-white/10 hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors"
-                  >
-                    <UserPen size={24} strokeWidth={1.5} />
-                  </Link>
-                    <Link
-                      href="/post/create"
-                      className="flex items-center gap-2 px-4 py-2.5 bg-black dark:bg-white text-white dark:text-black font-bold text-sm rounded-full hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors"
-                    >
-                      Share
-                    </Link>
-              </div>
+            <button
+              onClick={() => setMenuOpen(true)}
+              className="absolute top-4 right-4 p-2.5 bg-white/90 dark:bg-black/90 backdrop-blur-sm text-black dark:text-white rounded-full border border-black/10 dark:border-white/10 hover:bg-white dark:hover:bg-black transition-colors"
+            >
+              <Menu size={24} strokeWidth={1.5} />
+            </button>
             </div>
 
             <div className="mt-16 px-4">
@@ -362,6 +348,22 @@ export default function ProfilePage() {
                 <MentionText text={profile.bio} />
               </p>
             )}
+
+            <div className="flex gap-3 mt-6 mb-6">
+              <Link
+                href="/profile/edit"
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-zinc-100 dark:bg-zinc-900 text-black dark:text-white font-bold text-sm rounded-full border border-black/10 dark:border-white/10 hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors"
+              >
+                <UserPen size={18} strokeWidth={1.5} />
+                Edit
+              </Link>
+              <Link
+                href="/post/create"
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-black dark:bg-white text-white dark:text-black font-bold text-sm rounded-full hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors"
+              >
+                Share
+              </Link>
+            </div>
 
           <div className="flex mt-6">
             <button

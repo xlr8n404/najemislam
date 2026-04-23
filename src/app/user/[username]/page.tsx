@@ -273,8 +273,8 @@ export default function UserProfilePage() {
           )}
         </div>
 
-        <div className="absolute -bottom-14 left-4">
-          <div className="w-28 h-28 rounded-full border-4 border-white dark:border-black overflow-hidden bg-zinc-100 dark:bg-zinc-900">
+        <div className="absolute -bottom-14 left-4 w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28">
+          <div className="w-full h-full rounded-full border-4 border-white dark:border-black overflow-hidden bg-zinc-100 dark:bg-zinc-900">
             <img
               src={avatarSrc}
               alt={profile?.full_name || 'User'}
@@ -286,20 +286,20 @@ export default function UserProfilePage() {
           </div>
         </div>
 
-        <div className="absolute right-4 -bottom-5 flex items-center gap-2">
+        <div className="absolute top-4 right-4 flex items-center gap-2">
               <button 
                 onClick={handleMessage}
-                className="p-2.5 bg-zinc-100 dark:bg-zinc-900 text-black dark:text-white rounded-full border border-black/10 dark:border-white/10 hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors"
+                className="p-2.5 bg-white/90 dark:bg-black/90 backdrop-blur-sm text-black dark:text-white rounded-full border border-black/10 dark:border-white/10 hover:bg-white dark:hover:bg-black transition-colors"
               >
               <MessageCircle className="w-5 h-5" />
             </button>
             <button
               onClick={handleFollow}
               disabled={followLoading}
-                className={`px-6 py-2.5 font-bold text-sm rounded-full transition-colors disabled:opacity-50 ${
+                className={`px-4 py-2.5 font-bold text-sm rounded-full transition-colors disabled:opacity-50 ${
                   isFollowing
-                    ? 'bg-zinc-100 dark:bg-zinc-900 text-black dark:text-white border border-black/10 dark:border-white/10 hover:bg-red-50 dark:hover:bg-red-900/50 hover:border-red-500/50 hover:text-red-500'
-                    : 'bg-black dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200'
+                    ? 'bg-white/90 dark:bg-black/90 backdrop-blur-sm text-black dark:text-white border border-black/10 dark:border-white/10 hover:bg-red-50/90 dark:hover:bg-red-900/50 hover:border-red-500/50 hover:text-red-500'
+                    : 'bg-black/90 dark:bg-white/90 backdrop-blur-sm text-white dark:text-black hover:bg-black dark:hover:bg-white'
               }`}
             >
               {followLoading ? '...' : isFollowing ? 'Following' : 'Follow'}
@@ -335,6 +335,27 @@ export default function UserProfilePage() {
               <MentionText text={profile.bio} />
             </p>
           )}
+
+          <div className="flex gap-3 mt-6 mb-6">
+            <button 
+              onClick={handleMessage}
+              className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-zinc-100 dark:bg-zinc-900 text-black dark:text-white font-bold text-sm rounded-full border border-black/10 dark:border-white/10 hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors"
+            >
+              <MessageCircle size={18} strokeWidth={1.5} />
+              Message
+            </button>
+            <button
+              onClick={handleFollow}
+              disabled={followLoading}
+              className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 font-bold text-sm rounded-full transition-colors disabled:opacity-50 ${
+                isFollowing
+                  ? 'bg-zinc-100 dark:bg-zinc-900 text-black dark:text-white border border-black/10 dark:border-white/10 hover:bg-red-50 dark:hover:bg-red-900/50 hover:border-red-500/50 hover:text-red-500'
+                  : 'bg-black dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200'
+              }`}
+            >
+              {followLoading ? '...' : isFollowing ? 'Following' : 'Follow'}
+            </button>
+          </div>
 
           <div className="flex mt-6">
             <button
