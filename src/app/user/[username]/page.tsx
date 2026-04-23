@@ -58,7 +58,7 @@ export default function UserProfilePage() {
 
       const { data: profileData } = await supabase
       .from('profiles')
-      .select('id, full_name, avatar_url, cover_url, bio, date_of_birth, gender, saved_visibility, relationship_status, created_at')
+      .select('id, full_name, username, avatar_url, cover_url, bio, date_of_birth, gender, saved_visibility, relationship_status, created_at')
       .eq('username', sharableId)
         .single();
 
