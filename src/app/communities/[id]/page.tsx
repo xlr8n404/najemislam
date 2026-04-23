@@ -240,7 +240,7 @@ export default function CommunityDetailPage() {
   return (
     <div className="min-h-screen bg-background pb-28">
       {/* Fixed Header - 64dp */}
-      <header className="fixed top-0 left-0 right-0 z-50 h-16 flex items-center justify-between px-4 bg-background">
+      <header className="fixed top-0 left-0 right-0 z-50 h-16 flex items-center justify-between px-4 bg-background hidden">
         <h1 className="text-xl font-bold font-[family-name:var(--font-syne)] truncate">{community.name}</h1>
         {isAdmin && (
           <button
@@ -252,10 +252,10 @@ export default function CommunityDetailPage() {
         )}
       </header>
 
-      <main className="max-w-xl mx-auto pt-16">
+      <main className="max-w-xl mx-auto">
         {/* Cover Photo */}
         {community.cover_url && (
-          <div className="w-full h-40 bg-muted overflow-hidden">
+          <div className="w-full h-56 bg-muted overflow-hidden">
             <img
               src={community.cover_url}
               alt="Community cover"
@@ -267,12 +267,12 @@ export default function CommunityDetailPage() {
         {/* Community Info Section */}
         <div className="px-4 py-6">
           {/* Profile Picture & Name */}
-          <div className="flex items-start gap-4 mb-4">
+          <div className="flex items-start gap-4 mb-4 -mt-14">
             {community.avatar_url && (
               <img
                 src={community.avatar_url}
                 alt={community.name}
-                className="w-16 h-16 rounded-full object-cover flex-shrink-0"
+                className="w-28 h-28 rounded-full object-cover flex-shrink-0 border-4 border-white dark:border-black"
               />
             )}
             <div className="flex-1">

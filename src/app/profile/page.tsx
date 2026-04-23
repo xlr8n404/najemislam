@@ -229,7 +229,7 @@ export default function ProfilePage() {
 
     return (
       <div className="min-h-screen bg-white dark:bg-black text-black dark:text-white selection:bg-black dark:selection:bg-white selection:text-white dark:selection:text-black">
-        <div className="fixed top-4 right-4 z-50">
+        <div className="fixed top-4 right-4 z-50 hidden">
           <button 
             onClick={() => setMenuOpen(true)}
             className="p-2 bg-white/80 dark:bg-black/80 backdrop-blur-xl text-black dark:text-white border border-black/10 dark:border-white/10 rounded-full transition-colors shadow-sm"
@@ -286,7 +286,7 @@ export default function ProfilePage() {
 
       <main className="max-w-xl mx-auto pb-20">
         <div className="relative">
-          <div className="w-full h-48 bg-zinc-100 dark:bg-zinc-900 overflow-hidden">
+          <div className="w-full h-56 bg-zinc-100 dark:bg-zinc-900 overflow-hidden">
             {coverSrc ? (
               <img
                 src={coverSrc}
@@ -301,8 +301,8 @@ export default function ProfilePage() {
             )}
           </div>
 
-            <div className="absolute -bottom-12 left-4">
-              <div className="w-24 h-24 rounded-full border-4 border-white dark:border-black overflow-hidden bg-zinc-100 dark:bg-zinc-900">
+            <div className="absolute -bottom-14 left-4">
+              <div className="w-28 h-28 rounded-full border-4 border-white dark:border-black overflow-hidden bg-zinc-100 dark:bg-zinc-900">
                 <img
                   src={avatarSrc}
                   alt={profile?.full_name || 'User'}
@@ -315,6 +315,12 @@ export default function ProfilePage() {
             </div>
 
             <div className="absolute right-4 -bottom-5 flex items-center gap-2">
+                  <button
+                    onClick={() => setMenuOpen(true)}
+                    className="p-2.5 bg-zinc-100 dark:bg-zinc-900 text-black dark:text-white rounded-full border border-black/10 dark:border-white/10 hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors"
+                  >
+                    <Menu size={24} strokeWidth={1.5} />
+                  </button>
                   <Link
                     href="/profile/edit"
                     className="p-2.5 bg-zinc-100 dark:bg-zinc-900 text-black dark:text-white rounded-full border border-black/10 dark:border-white/10 hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors"
