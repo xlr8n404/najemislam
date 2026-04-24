@@ -2032,7 +2032,7 @@ export function PostCard({
                       
                       return (
                         <>
-                          {currentUser?.id === targetComment.user_id && (
+                          {currentUserId === targetComment.user_id && (
                             <button
                               onClick={() => {
                                 setDeletingCommentId(targetComment.id);
