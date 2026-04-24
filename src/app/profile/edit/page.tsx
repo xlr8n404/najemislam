@@ -2,11 +2,13 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
-import { ArrowLeft, Camera } from 'lucide-react';
+import { ArrowLeft, Camera, CircleUser } from 'lucide-react';
 import { Loader } from '@/components/ui/loader';
 import { ProfileSkeleton } from '@/components/ProfileSkeleton';
 import { BottomNav } from '@/components/BottomNav';
 import { useScrollDirection } from '@/hooks/use-scroll-direction';
+import { IdentityTagSelector } from '@/components/identity-tag-selector';
+import { AvatarCoverSelector } from '@/components/avatar-cover-selector';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -22,6 +24,7 @@ interface Profile {
     date_of_birth: string;
     gender: string;
     relationship_status: string;
+    identity_tag: string | null;
   }
 
 export default function EditProfilePage() {
@@ -36,12 +39,14 @@ export default function EditProfilePage() {
   const [dateOfBirth, setDateOfBirth] = useState('');
     const [gender, setGender] = useState('');
     const [relationshipStatus, setRelationshipStatus] = useState('');
+  const [identityTag, setIdentityTag] = useState<string | null>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const [newAvatar, setNewAvatar] = useState<File | null>(null);
   const [newCover, setNewCover] = useState<File | null>(null);
+  const [selectorOpen, setSelectorOpen] = useState<'avatar' | 'cover' | null>(null);
 
   useEffect(() => {
     async function fetchProfile() {
@@ -66,6 +71,7 @@ export default function EditProfilePage() {
           setDateOfBirth(profileData.date_of_birth || '');
             setGender(profileData.gender || '');
             setRelationshipStatus(profileData.relationship_status || '');
+            setIdentityTag(profileData.identity_tag || null);
       }
       
       setLoading(false);
@@ -124,6 +130,18 @@ export default function EditProfilePage() {
     }
   };
 
+  const handleDeleteAvatar = () => {
+    setNewAvatar(null);
+    setAvatarPreview(null);
+    toast.success('Profile picture will be deleted');
+  };
+
+  const handleDeleteCover = () => {
+    setNewCover(null);
+    setCoverPreview(null);
+    toast.success('Cover photo will be deleted');
+  };
+
   const handleSave = async () => {
     if (!profile) return;
 
@@ -133,7 +151,10 @@ export default function EditProfilePage() {
       let avatarUrl = profile.avatar_url;
       let coverUrl = profile.cover_url;
 
-      if (newAvatar) {
+      // Handle avatar deletion or upload
+      if (avatarPreview === null && profile.avatar_url) {
+        avatarUrl = ''; // Delete avatar
+      } else if (newAvatar) {
         const fd = new FormData();
         fd.append('file', newAvatar);
         fd.append('bucket', 'avatars');
@@ -143,7 +164,10 @@ export default function EditProfilePage() {
         avatarUrl = path;
       }
 
-      if (newCover) {
+      // Handle cover deletion or upload
+      if (coverPreview === null && profile.cover_url) {
+        coverUrl = ''; // Delete cover
+      } else if (newCover) {
         const fd = new FormData();
         fd.append('file', newCover);
         fd.append('bucket', 'covers');
@@ -161,6 +185,7 @@ export default function EditProfilePage() {
             date_of_birth: dateOfBirth || null,
             gender: gender,
             relationship_status: relationshipStatus || null,
+            identity_tag: identityTag,
             avatar_url: avatarUrl,
             cover_url: coverUrl,
         })
@@ -248,15 +273,21 @@ export default function EditProfilePage() {
             className="hidden"
           />
             <div 
-              onClick={() => avatarInputRef.current?.click()}
+              onClick={() => setSelectorOpen('avatar')}
               className="absolute -bottom-12 left-4 cursor-pointer group"
             >
                 <div className="w-24 h-24 rounded-full border-4 border-white dark:border-black overflow-hidden bg-zinc-100 dark:bg-zinc-900 relative">
-                <img
-                  src={avatarSrc}
-                  alt={profile?.full_name || 'User'}
-                  className="w-full h-full object-cover"
-                />
+                {avatarSrc && avatarSrc !== '' ? (
+                  <img
+                    src={avatarSrc}
+                    alt={profile?.full_name || 'User'}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-zinc-100 dark:bg-zinc-900">
+                    <CircleUser className="w-12 h-12 text-zinc-400 dark:text-zinc-600" strokeWidth={1} />
+                  </div>
+                )}
                 <div className="absolute inset-0 bg-black/40 flex items-center justify-center rounded-full">
                   <div className="bg-black/60 p-2 rounded-full">
                     <Camera className="w-5 h-5 text-white" />
@@ -306,6 +337,10 @@ export default function EditProfilePage() {
               />
             </div>
 
+            <div className="bg-zinc-50 dark:bg-zinc-900/50 p-4 rounded-xl border border-black/5 dark:border-white/5">
+              <IdentityTagSelector value={identityTag} onChange={setIdentityTag} />
+            </div>
+
               <div>
                 <label className="block text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-2">Date of Birth</label>
                 <input
@@ -350,6 +385,28 @@ export default function EditProfilePage() {
               </div>
         </div>
       </main>
+
+      {/* Avatar Selector */}
+      <AvatarCoverSelector
+        type="avatar"
+        isOpen={selectorOpen === 'avatar'}
+        hasImage={!!avatarSrc && avatarSrc !== ''}
+        onClose={() => setSelectorOpen(null)}
+        onAddNew={() => avatarInputRef.current?.click()}
+        onDelete={handleDeleteAvatar}
+      />
+
+      {/* Cover Selector */}
+      <AvatarCoverSelector
+        type="cover"
+        isOpen={selectorOpen === 'cover'}
+        hasImage={!!coverSrc && coverSrc !== ''}
+        onClose={() => setSelectorOpen(null)}
+        onAddNew={() => coverInputRef.current?.click()}
+        onDelete={handleDeleteCover}
+      />
+
+      <BottomNav />
     </div>
   );
 }

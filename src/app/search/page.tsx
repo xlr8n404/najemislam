@@ -357,7 +357,7 @@ function SearchContent() {
 
               {/* Posts */}
               {(searchType === 'Posts' || searchType === null) && results.posts.length > 0 && (
-                <div>
+                <div className="px-4">
                   {searchType === null && (
                     <div className="flex items-center gap-2 text-sm font-bold text-zinc-500 uppercase tracking-wider px-1 mb-3">
                       <FileText size={14} strokeWidth={2} /> Posts
@@ -376,7 +376,7 @@ function SearchContent() {
 
               {/* Hashtags */}
               {(searchType === 'Hashtags' || searchType === null) && results.hashtags.length > 0 && (
-                <div>
+                <div className="px-4">
                   {searchType === null && (
                     <div className="flex items-center gap-2 text-sm font-bold text-zinc-500 uppercase tracking-wider px-1 mb-3">
                       <Hash size={14} strokeWidth={2} /> Hashtags

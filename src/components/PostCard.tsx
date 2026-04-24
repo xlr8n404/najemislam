@@ -25,6 +25,7 @@ interface PostCardProps {
     full_name: string;
     avatar_url?: string | null;
     username?: string;
+    identity_tag?: string | null;
   };
   content: string;
   media_url?: string | null;
@@ -42,6 +43,7 @@ interface PostCardProps {
   isNested?: boolean;
   community?: { id: string; name: string };
   is_community_post?: boolean;
+  isFollower?: boolean;
 }
 
 interface CommentReply {
@@ -91,7 +93,8 @@ export function PostCard({
   avatarSize = 40,
   isNested = false,
   community,
-  is_community_post
+  is_community_post,
+  isFollower = false
 }: PostCardProps) {
   const router = useRouter();
   const { isGuest } = useGuestMode();
@@ -114,8 +117,9 @@ export function PostCard({
   const [showComments, setShowComments] = useState(false);
   const [comments, setComments] = useState<Comment[]>([]);
   const [loadingComments, setLoadingComments] = useState(false);
-  const [commentSortOrder, setCommentSortOrder] = useState<'top' | 'recent'>('top');
+  const [commentSortOrder, setCommentSortOrder] = useState<'ranked' | 'newest' | 'oldest'>('ranked');
   const [showCommentSortMenu, setShowCommentSortMenu] = useState(false);
+  const [selectedCommentMenu, setSelectedCommentMenu] = useState<string | null>(null);
   const [newComment, setNewComment] = useState('');
   const [submittingComment, setSubmittingComment] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
@@ -644,10 +648,12 @@ export function PostCard({
       `)
       .eq('post_id', id);
     
-    if (commentSortOrder === 'recent') {
+    if (commentSortOrder === 'newest') {
       query = query.order('created_at', { ascending: false });
+    } else if (commentSortOrder === 'oldest') {
+      query = query.order('created_at', { ascending: true });
     } else {
-      // Top comments - order by most voted (oldest first, but will be reordered by vote count after fetching)
+      // Ranked - order by most voted (oldest first, but will be reordered by vote count after fetching)
       query = query.order('created_at', { ascending: true });
     }
     
@@ -713,13 +719,18 @@ export function PostCard({
       }
 
       // Sort comments based on selected order
-      if (commentSortOrder === 'recent') {
-        // Recent: newest first
+      if (commentSortOrder === 'newest') {
+        // Newest: newest first
         topLevel.sort((a, b) => {
           return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
         });
+      } else if (commentSortOrder === 'oldest') {
+        // Oldest: oldest first
+        topLevel.sort((a, b) => {
+          return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+        });
       } else {
-        // Top: by votes (highest first), then by created_at (oldest first)
+        // Ranked: by votes (highest first), then by created_at (oldest first)
         topLevel.sort((a, b) => {
           const voteDiff = (b.votes_count || 0) - (a.votes_count || 0);
           if (voteDiff !== 0) return voteDiff;
@@ -737,9 +748,8 @@ export function PostCard({
     loadComments();
   };
 
-  const handleCommentSortChange = (order: 'top' | 'recent') => {
+  const handleCommentSortChange = (order: 'ranked' | 'newest' | 'oldest') => {
     setCommentSortOrder(order);
-    setShowCommentSortMenu(false);
     // Reload comments with new sort order
     setTimeout(() => {
       loadComments();
@@ -1176,38 +1186,11 @@ export function PostCard({
               ) : (
                 <>
                   <button
-                    onClick={() => setShowCommentMenu(showCommentMenu === comment.id ? null : comment.id)}
+                    onClick={() => setSelectedCommentMenu(comment.id)}
                     className="p-1.5 text-zinc-400 hover:text-black dark:hover:text-white rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
                   >
                     <MoreHorizontal className="w-6 h-6" strokeWidth={1.5} />
                   </button>
-                  {showCommentMenu === comment.id && (
-                    <div className="absolute right-0 bottom-full mb-1 bg-white dark:bg-zinc-800 border border-black/10 dark:border-white/10 rounded-xl shadow-xl z-20 overflow-hidden min-w-[140px]">
-                      {currentUserId === comment.user_id && (
-                        <button
-                          onClick={() => {
-                            setDeletingCommentId(comment.id);
-                            setShowCommentMenu(null);
-                          }}
-                          className="w-full flex items-center gap-2 px-4 py-3 text-red-500 hover:bg-red-500/10 transition-colors text-left"
-                        >
-                          <Trash2 className="w-5 h-5" strokeWidth={1.5} />
-                          <span className="text-base font-medium">Delete</span>
-                        </button>
-                      )}
-                      <button
-                        onClick={() => {
-                          navigator.clipboard.writeText(comment.content);
-                          toast.success('Comment copied');
-                          setShowCommentMenu(null);
-                        }}
-                        className="w-full flex items-center gap-2 px-4 py-3 text-zinc-700 dark:text-zinc-300 hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-left"
-                      >
-                        <Copy className="w-5 h-5" strokeWidth={1.5} />
-                        <span className="text-base font-medium">Copy</span>
-                      </button>
-                    </div>
-                  )}
                 </>
               )}
             </div>
@@ -1506,7 +1489,13 @@ export function PostCard({
                   <div className="flex items-center gap-1.5 flex-wrap">
                     <span className="font-bold text-[16px] tracking-tight truncate">{user?.full_name || user?.username || 'Unknown User'}</span>
                     <VerifiedBadge username={user?.username} className="w-[16px] h-[16px]" />
-                    <span className="text-[14px] text-zinc-500 dark:text-zinc-400 font-medium">@{user?.username || 'user'}</span>
+                    {isFollower && user?.identity_tag ? (
+                      <span className="text-[14px] px-2.5 py-0.5 bg-primary text-primary-foreground rounded-full font-medium">
+                        {user.identity_tag}
+                      </span>
+                    ) : (
+                      <span className="text-[14px] text-zinc-500 dark:text-zinc-400 font-medium">@{user?.username || 'user'}</span>
+                    )}
                   </div>
                 </div>
               </Link>
@@ -1856,73 +1845,58 @@ export function PostCard({
                                 <div className="absolute top-4 left-1/2 -translate-x-1/2 w-12 h-1.5 bg-zinc-300 dark:bg-zinc-700 rounded-full cursor-grab active:cursor-grabbing" />
                                 
                                 {/* Comment Sheet Header - 64dp */}
-                                <div className="flex items-center justify-between px-4 h-16 border-b border-black/5 dark:border-white/5">
-                                  <div className="flex items-center gap-6">
-                                    <button 
-                                      onClick={handleLike}
-                                      disabled={liking}
-                                      className="flex items-center gap-2 p-2 -ml-2 text-zinc-500 hover:text-red-500 dark:hover:text-red-400 transition-colors disabled:opacity-50"
-                                    >
-                                      <Heart className={`w-6 h-6 ${liked ? 'fill-red-500 text-red-500' : ''}`} strokeWidth={1.5} />
-                                    </button>
-                                    <button 
-                                      className="flex items-center gap-2 p-2 text-zinc-500 hover:text-blue-500 dark:hover:text-blue-400 transition-colors"
-                                    >
-                                      <MessageCircle className="w-6 h-6" strokeWidth={1.5} />
-                                    </button>
-                                    <button 
-                                      onClick={handleRepost}
-                                      disabled={reposting}
-                                      className="flex items-center gap-2 p-2 text-zinc-500 hover:text-green-500 dark:hover:text-green-400 transition-colors disabled:opacity-50"
-                                    >
-                                      <Repeat className={`w-6 h-6 ${reposted ? 'text-green-500' : ''}`} strokeWidth={1.5} />
-                                    </button>
-                                    <button 
-                                      onClick={handleSharePost}
-                                      className="flex items-center gap-2 p-2 text-zinc-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                                    >
-                                      <Share2 className="w-6 h-6" strokeWidth={1.5} />
-                                    </button>
-                                  </div>
-                                  <div className="flex items-center gap-2 relative">
-                                    <button 
-                                      onClick={() => setShowCommentSortMenu(!showCommentSortMenu)}
-                                      className="p-2 text-zinc-500 hover:text-black dark:hover:text-white transition-colors"
-                                    >
-                                      <Settings2 className="w-6 h-6" strokeWidth={1.5} />
-                                    </button>
-                                    
-                                    {showCommentSortMenu && (
-                                      <div className="absolute bottom-full right-0 mb-2 bg-white dark:bg-zinc-800 border border-black/10 dark:border-white/10 rounded-xl shadow-xl z-20 overflow-hidden min-w-[160px]">
-                                        <button
-                                          onClick={() => handleCommentSortChange('top')}
-                                          className={`w-full text-left px-4 py-2.5 transition-colors ${
-                                            commentSortOrder === 'top'
-                                              ? 'bg-black/5 dark:bg-white/5 font-medium text-black dark:text-white'
-                                              : 'text-zinc-700 dark:text-zinc-300 hover:bg-black/5 dark:hover:bg-white/5'
-                                          }`}
-                                        >
-                                          Top Comments
-                                        </button>
-                                        <button
-                                          onClick={() => handleCommentSortChange('recent')}
-                                          className={`w-full text-left px-4 py-2.5 border-t border-black/5 dark:border-white/5 transition-colors ${
-                                            commentSortOrder === 'recent'
-                                              ? 'bg-black/5 dark:bg-white/5 font-medium text-black dark:text-white'
-                                              : 'text-zinc-700 dark:text-zinc-300 hover:bg-black/5 dark:hover:bg-white/5'
-                                          }`}
-                                        >
-                                          Recent Comments
-                                        </button>
-                                      </div>
-                                    )}
-                                    
+                                <div className="px-4 py-4 space-y-4 border-b border-black/5 dark:border-white/5">
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-6">
+                                      <button 
+                                        onClick={handleLike}
+                                        disabled={liking}
+                                        className="flex items-center gap-2 p-2 -ml-2 text-zinc-500 hover:text-red-500 dark:hover:text-red-400 transition-colors disabled:opacity-50"
+                                      >
+                                        <Heart className={`w-6 h-6 ${liked ? 'fill-red-500 text-red-500' : ''}`} strokeWidth={1.5} />
+                                      </button>
+                                      <button 
+                                        className="flex items-center gap-2 p-2 text-zinc-500 hover:text-blue-500 dark:hover:text-blue-400 transition-colors"
+                                      >
+                                        <MessageCircle className="w-6 h-6" strokeWidth={1.5} />
+                                      </button>
+                                      <button 
+                                        onClick={handleRepost}
+                                        disabled={reposting}
+                                        className="flex items-center gap-2 p-2 text-zinc-500 hover:text-green-500 dark:hover:text-green-400 transition-colors disabled:opacity-50"
+                                      >
+                                        <Repeat className={`w-6 h-6 ${reposted ? 'text-green-500' : ''}`} strokeWidth={1.5} />
+                                      </button>
+                                      <button 
+                                        onClick={handleSharePost}
+                                        className="flex items-center gap-2 p-2 text-zinc-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                                      >
+                                        <Share2 className="w-6 h-6" strokeWidth={1.5} />
+                                      </button>
+                                    </div>
                                     <button 
                                       onClick={handleSavePost}
                                       className="p-2 text-zinc-500 hover:text-yellow-500 dark:hover:text-yellow-400 transition-colors"
                                     >
                                       <Bookmark className={`w-6 h-6 ${isSaved ? 'fill-yellow-500 text-yellow-500' : ''}`} strokeWidth={1.5} />
                                     </button>
+                                  </div>
+
+                                  {/* Sort Pills */}
+                                  <div className="flex gap-2">
+                                    {(['ranked', 'newest', 'oldest'] as const).map((option) => (
+                                      <button
+                                        key={option}
+                                        onClick={() => handleCommentSortChange(option)}
+                                        className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
+                                          commentSortOrder === option
+                                            ? 'bg-black dark:bg-white text-white dark:text-black'
+                                            : 'bg-black/10 dark:bg-white/10 text-black dark:text-white hover:bg-black/20 dark:hover:bg-white/20'
+                                        }`}
+                                      >
+                                        {option.charAt(0).toUpperCase() + option.slice(1)}
+                                      </button>
+                                    ))}
                                   </div>
                                 </div>
 
@@ -2023,6 +1997,68 @@ export function PostCard({
                       </div>
                     </div>
                   </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Nested Comment Menu Bottom Sheet */}
+            <AnimatePresence>
+              {showComments && selectedCommentMenu && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="fixed inset-0 bg-black/40 z-[70]"
+                  onClick={() => setSelectedCommentMenu(null)}
+                />
+              )}
+              {showComments && selectedCommentMenu && (
+                <motion.div
+                  initial={{ y: '100%' }}
+                  animate={{ y: 0 }}
+                  exit={{ y: '100%' }}
+                  transition={{ type: 'tween', duration: 0.3 }}
+                  className="fixed bottom-0 left-0 right-0 z-[80] max-w-xl mx-auto rounded-t-[30px] bg-zinc-100 dark:bg-zinc-900 overflow-hidden"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="w-12 h-1.5 bg-zinc-300 dark:bg-zinc-700 rounded-full mx-auto mt-4 mb-4" />
+                  
+                  <div className="px-4 pb-6 space-y-3">
+                    {(() => {
+                      const comment = comments.find(c => c.id === selectedCommentMenu || c.replies?.find(r => r.id === selectedCommentMenu));
+                      const targetComment = comment?.id === selectedCommentMenu ? comment : comment?.replies?.find(r => r.id === selectedCommentMenu);
+                      
+                      if (!targetComment) return null;
+                      
+                      return (
+                        <>
+                          {currentUser?.id === targetComment.user_id && (
+                            <button
+                              onClick={() => {
+                                setDeletingCommentId(targetComment.id);
+                                setSelectedCommentMenu(null);
+                              }}
+                              className="w-full flex items-center gap-3 px-4 py-3 text-red-500 hover:bg-red-500/10 rounded-xl transition-colors text-left font-medium"
+                            >
+                              <Trash2 className="w-5 h-5" strokeWidth={1.5} />
+                              <span>Delete</span>
+                            </button>
+                          )}
+                          <button
+                            onClick={() => {
+                              navigator.clipboard.writeText(targetComment.content);
+                              toast.success('Comment copied');
+                              setSelectedCommentMenu(null);
+                            }}
+                            className="w-full flex items-center gap-3 px-4 py-3 text-zinc-700 dark:text-zinc-300 hover:bg-black/5 dark:hover:bg-white/5 rounded-xl transition-colors text-left font-medium"
+                          >
+                            <Copy className="w-5 h-5" strokeWidth={1.5} />
+                            <span>Copy</span>
+                          </button>
+                        </>
+                      );
+                    })()}
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>
