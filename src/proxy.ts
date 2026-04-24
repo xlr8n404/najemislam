@@ -24,7 +24,7 @@ const publicPaths = [
   '/api/auth/logout',
 ];
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // Skip public paths and static files
