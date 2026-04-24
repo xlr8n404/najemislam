@@ -18,11 +18,11 @@ export function PostSkeleton() {
           <Skeleton className="w-6 h-6 rounded-full shrink-0 bg-zinc-100 dark:bg-zinc-900 ml-2" />
         </div>
 
-        {/* Content: 3 lines (75%, 100%, 50%) */}
+        {/* Content: 3 lines (90%, 100%, 75%) */}
         <div className="space-y-2 mb-4">
-          <Skeleton className="h-4 w-[75%] bg-zinc-100 dark:bg-zinc-900" />
+          <Skeleton className="h-4 w-[90%] bg-zinc-100 dark:bg-zinc-900" />
           <Skeleton className="h-4 w-full bg-zinc-100 dark:bg-zinc-900" />
-          <Skeleton className="h-4 w-1/2 bg-zinc-100 dark:bg-zinc-900" />
+          <Skeleton className="h-4 w-3/4 bg-zinc-100 dark:bg-zinc-900" />
         </div>
 
         {/* Interactions: 50% width on left, Save icon on right */}

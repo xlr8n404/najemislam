@@ -21,25 +21,16 @@ export function ProfileSkeleton() {
 
           {/* Stats: Posts, Followers, Following */}
           <div className="flex gap-6 mb-6">
-            <div className="text-center">
-              <Skeleton className="h-5 w-12 bg-zinc-200 dark:bg-zinc-800 mb-1" />
-              <Skeleton className="h-3 w-10 bg-zinc-100 dark:bg-zinc-900" />
-            </div>
-            <div className="text-center">
-              <Skeleton className="h-5 w-12 bg-zinc-200 dark:bg-zinc-800 mb-1" />
-              <Skeleton className="h-3 w-16 bg-zinc-100 dark:bg-zinc-900" />
-            </div>
-            <div className="text-center">
-              <Skeleton className="h-5 w-12 bg-zinc-200 dark:bg-zinc-800 mb-1" />
-              <Skeleton className="h-3 w-16 bg-zinc-100 dark:bg-zinc-900" />
-            </div>
+            <Skeleton className="h-4 w-20 bg-zinc-100 dark:bg-zinc-900" />
+            <Skeleton className="h-4 w-24 bg-zinc-100 dark:bg-zinc-900" />
+            <Skeleton className="h-4 w-24 bg-zinc-100 dark:bg-zinc-900" />
           </div>
 
-          {/* Bio: 3 lines (75%, 100%, 50%) */}
+          {/* Bio: 3 lines (90%, 100%, 75%) */}
           <div className="space-y-2 mb-6">
-            <Skeleton className="h-4 w-[75%] bg-zinc-100 dark:bg-zinc-900" />
+            <Skeleton className="h-4 w-[90%] bg-zinc-100 dark:bg-zinc-900" />
             <Skeleton className="h-4 w-full bg-zinc-100 dark:bg-zinc-900" />
-            <Skeleton className="h-4 w-1/2 bg-zinc-100 dark:bg-zinc-900" />
+            <Skeleton className="h-4 w-3/4 bg-zinc-100 dark:bg-zinc-900" />
           </div>
 
           {/* Edit and Create Post Buttons - 50/50 split */}
