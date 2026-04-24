@@ -205,7 +205,9 @@ export default function UserProfilePage() {
 
   const avatarSrc = profile?.avatar_url && profile.avatar_url.trim() !== ''
     ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/avatars/${profile.avatar_url}`
-    : null;
+    : profile?.full_name
+      ? `https://api.dicebear.com/7.x/avataaars/svg?seed=${profile.full_name}`
+      : `https://api.dicebear.com/7.x/avataaars/svg?seed=default`;
 
   const formatDate = (dateString: string) => {
     if (!dateString) return 'Not set';
