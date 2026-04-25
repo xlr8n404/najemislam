@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, FileText } from 'lucide-react';
+import { X, BookOpen } from 'lucide-react';
 import Link from 'next/link';
 
 interface CreateBottomSheetProps {
@@ -59,7 +59,7 @@ export function CreateBottomSheet({ isOpen, onClose }: CreateBottomSheetProps) {
                 {/* Story option - disabled for now */}
                 <div className="flex items-center gap-4 p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-800 opacity-50 cursor-not-allowed">
                   <div className="w-10 h-10 rounded-xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
-                    <FileText className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                    <BookOpen className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                   </div>
                   <div className="flex-1">
                     <p className="font-semibold text-foreground">Create Story</p>
