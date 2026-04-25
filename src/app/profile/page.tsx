@@ -301,7 +301,7 @@ export default function ProfilePage() {
             )}
           </div>
 
-            <div className="absolute -bottom-14 left-4 w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28">
+            <div className="absolute -bottom-10 left-4 w-20 h-20">
               <div className="w-full h-full rounded-full border-4 border-white dark:border-black overflow-hidden bg-zinc-100 dark:bg-zinc-900">
                 <img
                   src={avatarSrc}
