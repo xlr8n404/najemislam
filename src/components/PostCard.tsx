@@ -1823,58 +1823,93 @@ export function PostCard({
                                 <div className="absolute top-4 left-1/2 -translate-x-1/2 w-12 h-1.5 bg-zinc-300 dark:bg-zinc-700 rounded-full cursor-grab active:cursor-grabbing" />
                                 
                                 {/* Comment Sheet Header - 64dp */}
-                                <div className="px-4 py-4 space-y-4 border-b border-black/5 dark:border-white/5">
+                                <div className="px-4 py-3 border-b border-black/5 dark:border-white/5">
                                   <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-6">
-                                      <button 
+                                    {/* Left: Like, Comment, Repost, Share with counts */}
+                                    <div className="flex items-center gap-1">
+                                      <button
                                         onClick={handleLike}
                                         disabled={liking}
-                                        className="flex items-center gap-2 p-2 -ml-2 text-zinc-500 hover:text-red-500 dark:hover:text-red-400 transition-colors disabled:opacity-50"
+                                        className={`flex items-center gap-1.5 px-2 py-2 rounded-full transition-colors disabled:opacity-50 ${liked ? 'text-red-500' : 'text-zinc-500 hover:text-red-500 dark:hover:text-red-400'}`}
                                       >
-                                        <Heart className={`w-6 h-6 ${liked ? 'fill-red-500 text-red-500' : ''}`} strokeWidth={1.5} />
+                                        <Heart className={`w-5 h-5 ${liked ? 'fill-current' : ''}`} strokeWidth={1.5} />
+                                        <span className="text-sm font-medium">{likesCount}</span>
                                       </button>
-                                      <button 
-                                        className="flex items-center gap-2 p-2 text-zinc-500 hover:text-blue-500 dark:hover:text-blue-400 transition-colors"
+                                      <button
+                                        className="flex items-center gap-1.5 px-2 py-2 rounded-full text-zinc-500 hover:text-blue-500 dark:hover:text-blue-400 transition-colors"
                                       >
-                                        <MessageCircle className="w-6 h-6" strokeWidth={1.5} />
+                                        <MessageCircle className="w-5 h-5" strokeWidth={1.5} />
+                                        <span className="text-sm font-medium">{commentsCount}</span>
                                       </button>
-                                      <button 
+                                      <button
                                         onClick={handleRepost}
                                         disabled={reposting}
-                                        className="flex items-center gap-2 p-2 text-zinc-500 hover:text-green-500 dark:hover:text-green-400 transition-colors disabled:opacity-50"
+                                        className={`flex items-center gap-1.5 px-2 py-2 rounded-full transition-colors disabled:opacity-50 ${reposted ? 'text-green-500' : 'text-zinc-500 hover:text-green-500 dark:hover:text-green-400'}`}
                                       >
-                                        <Repeat className={`w-6 h-6 ${reposted ? 'text-green-500' : ''}`} strokeWidth={1.5} />
+                                        <Repeat className={`w-5 h-5 ${reposted ? 'stroke-[2.5px]' : ''}`} strokeWidth={1.5} />
+                                        <span className="text-sm font-medium">{repostsCount}</span>
                                       </button>
-                                      <button 
+                                      <button
                                         onClick={handleSharePost}
-                                        className="flex items-center gap-2 p-2 text-zinc-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                                        className="flex items-center gap-1.5 px-2 py-2 rounded-full text-zinc-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                                       >
-                                        <Share2 className="w-6 h-6" strokeWidth={1.5} />
+                                        <Share2 className="w-5 h-5" strokeWidth={1.5} />
                                       </button>
                                     </div>
-                                    <button 
-                                      onClick={handleSavePost}
-                                      className="p-2 text-zinc-500 hover:text-yellow-500 dark:hover:text-yellow-400 transition-colors"
-                                    >
-                                      <Bookmark className={`w-6 h-6 ${isSaved ? 'fill-yellow-500 text-yellow-500' : ''}`} strokeWidth={1.5} />
-                                    </button>
-                                  </div>
-
-                                  {/* Sort Pills */}
-                                  <div className="flex gap-2">
-                                    {(['ranked', 'newest', 'oldest'] as const).map((option) => (
+                                    {/* Right: Save + Settings2 sort */}
+                                    <div className="flex items-center gap-1">
                                       <button
-                                        key={option}
-                                        onClick={() => handleCommentSortChange(option)}
-                                        className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
-                                          commentSortOrder === option
-                                            ? 'bg-black dark:bg-white text-white dark:text-black'
-                                            : 'bg-black/10 dark:bg-white/10 text-black dark:text-white hover:bg-black/20 dark:hover:bg-white/20'
-                                        }`}
+                                        onClick={handleSavePost}
+                                        className={`p-2 rounded-full transition-colors ${isSaved ? 'text-black dark:text-white' : 'text-zinc-500 hover:text-yellow-500 dark:hover:text-yellow-400'}`}
                                       >
-                                        {option.charAt(0).toUpperCase() + option.slice(1)}
+                                        <Bookmark className={`w-5 h-5 ${isSaved ? 'fill-current' : ''}`} strokeWidth={1.5} />
                                       </button>
-                                    ))}
+                                      <div className="relative">
+                                        <button
+                                          onClick={() => setShowCommentSortMenu(prev => !prev)}
+                                          className={`p-2 rounded-full transition-colors ${showCommentSortMenu ? 'bg-black/10 dark:bg-white/10 text-black dark:text-white' : 'text-zinc-500 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5'}`}
+                                        >
+                                          <Settings2 className="w-5 h-5" strokeWidth={1.5} />
+                                        </button>
+                                        <AnimatePresence>
+                                          {showCommentSortMenu && (
+                                            <>
+                                              <motion.div
+                                                initial={{ opacity: 0 }}
+                                                animate={{ opacity: 1 }}
+                                                exit={{ opacity: 0 }}
+                                                className="fixed inset-0 z-[5]"
+                                                onClick={() => setShowCommentSortMenu(false)}
+                                              />
+                                              <motion.div
+                                                initial={{ opacity: 0, scale: 0.92, y: -4 }}
+                                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                                exit={{ opacity: 0, scale: 0.92, y: -4 }}
+                                                transition={{ duration: 0.15 }}
+                                                className="absolute right-0 top-full mt-1 z-[10] min-w-[140px] bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-2xl shadow-xl overflow-hidden"
+                                              >
+                                                {(['ranked', 'newest', 'oldest'] as const).map((option) => (
+                                                  <button
+                                                    key={option}
+                                                    onClick={() => { handleCommentSortChange(option); setShowCommentSortMenu(false); }}
+                                                    className={`w-full flex items-center justify-between px-4 py-3 text-sm font-medium transition-colors text-left ${
+                                                      commentSortOrder === option
+                                                        ? 'text-black dark:text-white bg-black/5 dark:bg-white/10'
+                                                        : 'text-zinc-600 dark:text-zinc-400 hover:bg-black/5 dark:hover:bg-white/5'
+                                                    }`}
+                                                  >
+                                                    <span>{option.charAt(0).toUpperCase() + option.slice(1)}</span>
+                                                    {commentSortOrder === option && (
+                                                      <span className="w-2 h-2 rounded-full bg-black dark:bg-white ml-3 shrink-0" />
+                                                    )}
+                                                  </button>
+                                                ))}
+                                              </motion.div>
+                                            </>
+                                          )}
+                                        </AnimatePresence>
+                                      </div>
+                                    </div>
                                   </div>
                                 </div>
 
