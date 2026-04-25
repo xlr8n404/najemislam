@@ -188,19 +188,37 @@ export default function CommunityDetailPage() {
     return (
       <div className="min-h-screen bg-background pb-28 animate-pulse">
         <div className="max-w-xl mx-auto">
+          {/* Cover */}
           <Skeleton className="w-full bg-zinc-100 dark:bg-zinc-900" style={{height: '120px'}} />
           <div className="px-4">
+            {/* DP halfway down */}
             <div className="-mt-10 mb-6">
               <Skeleton className="w-20 h-20 rounded-full bg-zinc-200 dark:bg-zinc-800 border-4 border-white dark:border-black" />
             </div>
-            <Skeleton className="h-6 w-48 bg-zinc-200 dark:bg-zinc-800 mb-3" />
-            <div className="flex gap-4 mb-4">
+            {/* Name + username */}
+            <div className="flex items-center gap-2 mb-3">
+              <Skeleton className="h-6 w-36 bg-zinc-200 dark:bg-zinc-800" />
               <Skeleton className="h-4 w-20 bg-zinc-100 dark:bg-zinc-900" />
-              <Skeleton className="h-4 w-24 bg-zinc-100 dark:bg-zinc-900" />
             </div>
+            {/* Stats */}
+            <div className="flex gap-4 mb-4">
+              <Skeleton className="h-4 w-16 bg-zinc-100 dark:bg-zinc-900" />
+              <Skeleton className="h-4 w-20 bg-zinc-100 dark:bg-zinc-900" />
+            </div>
+            {/* Description */}
             <Skeleton className="h-4 w-full bg-zinc-100 dark:bg-zinc-900 mb-2" />
-            <Skeleton className="h-4 w-3/4 bg-zinc-100 dark:bg-zinc-900 mb-6" />
-            <Skeleton className="h-10 w-full rounded-full bg-zinc-200 dark:bg-zinc-800" />
+            <Skeleton className="h-4 w-3/4 bg-zinc-100 dark:bg-zinc-900 mb-5" />
+            {/* Join button */}
+            <Skeleton className="h-10 w-full rounded-full bg-zinc-200 dark:bg-zinc-800 mb-5" />
+            {/* Post bar */}
+            <div className="flex items-center gap-3">
+              <Skeleton className="w-10 h-10 rounded-full bg-zinc-200 dark:bg-zinc-800 flex-shrink-0" />
+              <Skeleton className="flex-1 h-10 rounded-full bg-zinc-100 dark:bg-zinc-900" />
+            </div>
+          </div>
+          {/* Post skeletons */}
+          <div className="mt-6">
+            {[...Array(3)].map((_, i) => <PostSkeleton key={i} />)}
           </div>
         </div>
         <BottomNav />
