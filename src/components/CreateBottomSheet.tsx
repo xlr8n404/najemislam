@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, BookOpen } from 'lucide-react';
+import { X, BookOpen, FileText } from 'lucide-react';
 import Link from 'next/link';
 
 interface CreateBottomSheetProps {
