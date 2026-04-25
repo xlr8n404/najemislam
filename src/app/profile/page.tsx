@@ -148,10 +148,10 @@ export default function ProfilePage() {
                 .from('posts')
                 .select(`
                   *,
-                  user:profiles(full_name, avatar_url, username),
+                  user:profiles(full_name, avatar_url, username, identity_tag),
                   original_post:reposted_id(
                     *,
-                    user:profiles(full_name, avatar_url, username)
+                    user:profiles(full_name, avatar_url, username, identity_tag)
                   )
                 `)
                 .eq('user_id', user.id)
@@ -167,10 +167,10 @@ export default function ProfilePage() {
               .select(`
                   post:posts(
                     *,
-                    user:profiles(full_name, avatar_url, username),
+                    user:profiles(full_name, avatar_url, username, identity_tag),
                     original_post:reposted_id(
                       *,
-                      user:profiles(full_name, avatar_url, username)
+                      user:profiles(full_name, avatar_url, username, identity_tag)
                     )
                   )
               `)

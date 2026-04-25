@@ -74,10 +74,10 @@ export default function UserProfilePage() {
           .from('posts')
           .select(`
             *,
-            user:profiles(full_name, avatar_url, username),
+            user:profiles(full_name, avatar_url, username, identity_tag),
             original_post:reposted_id(
               *,
-              user:profiles(full_name, avatar_url, username)
+              user:profiles(full_name, avatar_url, username, identity_tag)
             )
           `)
           .eq('user_id', profileData.id)
@@ -258,7 +258,7 @@ export default function UserProfilePage() {
         </header>
         <main className="max-w-xl mx-auto pb-20">
         <div className="relative">
-          <div className="w-full bg-zinc-100 dark:bg-zinc-900 overflow-hidden" style={{aspectRatio: '3/1'}}>
+          <div className="w-full bg-zinc-100 dark:bg-zinc-900 overflow-hidden" style={{height: '120px'}}>
           {coverSrc ? (
             <img
               src={coverSrc}
@@ -273,7 +273,7 @@ export default function UserProfilePage() {
           )}
         </div>
 
-        <div className="absolute -bottom-14 left-4 w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28">
+        <div className="absolute -bottom-10 left-4 w-20 h-20">
           <div className="w-full h-full rounded-full border-4 border-white dark:border-black overflow-hidden bg-zinc-100 dark:bg-zinc-900">
             <img
               src={avatarSrc}
