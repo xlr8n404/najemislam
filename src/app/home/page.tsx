@@ -6,7 +6,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/lib/supabase';
 import { PostCard } from '@/components/PostCard';
 import { BottomNav } from '@/components/BottomNav';
-import { Share2, Search, Settings, Settings2, LogOut, X, MessageCircle, MessageSquare, Plus, Users, TrendingUp, Navigation, UserRoundPlus, UsersRound } from 'lucide-react';
+import { Share2, Search, Settings, Settings2, LogOut, X, MessageCircle, MessageSquare, Plus, Users, TrendingUp, Navigation, UserRoundPlus, UsersRound, Home, Bell, UserCircle, PlusSquare } from 'lucide-react';
+import { useTheme } from 'next-themes';
 import { Loader } from '@/components/ui/loader';
 import { PostSkeleton } from '@/components/PostSkeleton';
 import { toast } from 'sonner';
@@ -50,7 +51,9 @@ export default function HomePage() {
   const [feedMode, setFeedMode] = useState<'trending' | 'explore' | 'following' | 'sharable' | 'communities'>('trending');
   const [profile, setProfile] = useState<Profile | null>(null);
   const [followingIds, setFollowingIds] = useState<Set<string>>(new Set());
-  
+  const [alertsEnabled, setAlertsEnabled] = useState(true);
+  const { theme, setTheme } = useTheme();
+
   const observer = useRef<IntersectionObserver | null>(null);
 
   const handleLogout = async () => {
@@ -368,239 +371,194 @@ export default function HomePage() {
               className="absolute inset-0 bg-black/60 backdrop-blur-sm"
               onClick={() => setLeftSidebarOpen(false)}
             />
-            <motion.div 
+            <motion.div
               key="sidebar-content"
               initial={{ x: '-100%' }}
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="absolute top-0 left-0 h-full w-[85%] max-w-[320px] bg-white dark:bg-black shadow-2xl flex flex-col overflow-y-auto"
+              className="absolute top-0 left-0 h-full w-[85%] max-w-[320px] bg-white dark:bg-black shadow-2xl flex flex-col"
             >
-              {/* Top Search Bar - 64dp */}
-              <div className="h-16 px-4 py-3 flex items-center gap-2 border-b border-zinc-200 dark:border-zinc-800 shrink-0">
-                <div className="flex-1 flex items-center gap-2 bg-zinc-100 dark:bg-zinc-900 rounded-full px-3 py-2">
-                  <Search size={24} className="text-zinc-500 dark:text-zinc-400 shrink-0" />
-                  <input
-                    type="text"
-                    placeholder="Search"
-                    className="flex-1 bg-transparent text-sm outline-none text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-500 dark:placeholder:text-zinc-400"
-                  />
-                </div>
-                <button className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-full transition-colors">
-                  <Settings2 size={24} className="text-zinc-700 dark:text-zinc-300" />
-                </button>
-              </div>
+              {/* Scrollable content area */}
+              <div className="flex-1 overflow-y-auto flex flex-col">
 
-              {/* Feed Mode Selection - Icon Only */}
-              <div className="px-4 py-4 border-b border-zinc-200 dark:border-zinc-800">
-                <div className="flex justify-around gap-2">
-                  <button
-                    onClick={() => {
-                      setFeedMode('trending');
-                      setLeftSidebarOpen(false);
-                    }}
-                    className={`flex items-center justify-center p-3 rounded-lg transition-all ${
-                      feedMode === 'trending' 
-                      ? 'bg-black dark:bg-white text-white dark:text-black' 
-                      : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900'
-                    }`}
-                    title="Trending"
-                  >
-                    <TrendingUp size={24} />
-                  </button>
-                  <button
-                    onClick={() => {
-                      setFeedMode('explore');
-                      setLeftSidebarOpen(false);
-                    }}
-                    className={`flex items-center justify-center p-3 rounded-lg transition-all ${
-                      feedMode === 'explore' 
-                      ? 'bg-black dark:bg-white text-white dark:text-black' 
-                      : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900'
-                    }`}
-                    title="Explore"
-                  >
-                    <Navigation size={24} />
-                  </button>
-                  <button
-                    onClick={() => {
-                      setFeedMode('following');
-                      setLeftSidebarOpen(false);
-                    }}
-                    className={`flex items-center justify-center p-3 rounded-lg transition-all ${
-                      feedMode === 'following' 
-                      ? 'bg-black dark:bg-white text-white dark:text-black' 
-                      : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900'
-                    }`}
-                    title="Following"
-                  >
-                    <UserRoundPlus size={24} />
-                  </button>
-                  <button
-                    onClick={() => {
-                      setFeedMode('communities');
-                      setLeftSidebarOpen(false);
-                    }}
-                    className={`flex items-center justify-center p-3 rounded-lg transition-all ${
-                      feedMode === 'communities' 
-                      ? 'bg-black dark:bg-white text-white dark:text-black' 
-                      : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900'
-                    }`}
-                    title="Communities"
-                  >
-                    <UsersRound size={24} />
-                  </button>
-                  <button
-                    onClick={() => {
-                      setFeedMode('sharable');
-                      setLeftSidebarOpen(false);
-                    }}
-                    className={`flex items-center justify-center p-3 rounded-lg transition-all ${
-                      feedMode === 'sharable' 
-                      ? 'bg-black dark:bg-white text-white dark:text-black' 
-                      : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900'
-                    }`}
-                    title="Sharable"
-                  >
-                    <Share2 size={24} />
-                  </button>
-                </div>
-              </div>
-
-
-              {/* Profile Pill Section */}
-              <div className="px-4 py-4 border-b border-zinc-200 dark:border-zinc-800">
-                <Link
-                  href="/post/create"
-                  onClick={() => setLeftSidebarOpen(false)}
-                  className="flex items-center gap-3 px-4 py-3 bg-zinc-100 dark:bg-zinc-900 rounded-full hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-all"
-                >
-                  <div className="shrink-0 w-10 h-10 rounded-full overflow-hidden bg-zinc-200 dark:bg-zinc-800">
-                    <img
-                      src={avatarSrc}
-                      alt="Profile"
-                      className="w-full h-full object-cover"
+                {/* ── 1. Top Search Bar ── 64px */}
+                <div className="h-16 shrink-0 flex items-center gap-0 border-b border-zinc-200 dark:border-zinc-800 px-3">
+                  <div className="flex-1 flex items-center gap-2 bg-zinc-100 dark:bg-zinc-900 rounded-full px-3 h-10">
+                    <Search size={24} className="text-zinc-500 dark:text-zinc-400 shrink-0" />
+                    <input
+                      type="text"
+                      placeholder="Search"
+                      className="flex-1 bg-transparent text-sm outline-none text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-500 dark:placeholder:text-zinc-400"
                     />
                   </div>
-                  <span className="flex-1 font-medium text-sm text-zinc-700 dark:text-zinc-300 truncate">Anything Sharable Today?</span>
-                </Link>
-              </div>
-
-              {/* Quick Action Buttons */}
-              <div className="px-4 py-4 border-b border-zinc-200 dark:border-zinc-800">
-                <div className="grid grid-cols-5 gap-2">
                   <button
-                    onClick={() => {
-                      setFeedMode('trending');
-                      setLeftSidebarOpen(false);
-                    }}
-                    className="flex flex-col items-center justify-center py-3 px-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-all"
+                    onClick={() => { setLeftSidebarOpen(false); router.push('/settings'); }}
+                    className="ml-2 p-2 shrink-0 hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-full transition-colors"
+                  >
+                    <Settings2 size={24} className="text-zinc-700 dark:text-zinc-300" />
+                  </button>
+                </div>
+
+                {/* ── 2. Ranked / Explore pill buttons ── 64px */}
+                <div className="h-16 shrink-0 flex items-center gap-3 px-4 border-b border-zinc-200 dark:border-zinc-800">
+                  <button
+                    onClick={() => { setFeedMode('trending'); setLeftSidebarOpen(false); }}
+                    className={`flex-1 h-10 rounded-full text-sm font-semibold transition-all ${
+                      feedMode === 'trending'
+                        ? 'bg-black dark:bg-white text-white dark:text-black'
+                        : 'bg-zinc-100 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-800'
+                    }`}
+                  >
+                    Ranked
+                  </button>
+                  <button
+                    onClick={() => { setFeedMode('explore'); setLeftSidebarOpen(false); }}
+                    className={`flex-1 h-10 rounded-full text-sm font-semibold transition-all ${
+                      feedMode === 'explore'
+                        ? 'bg-black dark:bg-white text-white dark:text-black'
+                        : 'bg-zinc-100 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-800'
+                    }`}
+                  >
+                    Explore
+                  </button>
+                </div>
+
+                {/* ── 3. Post Create Shortcut ── 64px */}
+                <div className="h-16 shrink-0 flex items-center px-4 border-b border-zinc-200 dark:border-zinc-800">
+                  <Link
+                    href="/post/create"
+                    onClick={() => setLeftSidebarOpen(false)}
+                    className="flex-1 flex items-center gap-3 px-4 h-11 bg-zinc-100 dark:bg-zinc-900 rounded-full hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-all"
+                  >
+                    <div className="shrink-0 w-7 h-7 rounded-full overflow-hidden bg-zinc-300 dark:bg-zinc-700">
+                      <img src={avatarSrc} alt="Profile" className="w-full h-full object-cover" />
+                    </div>
+                    <span className="flex-1 text-sm font-medium text-zinc-500 dark:text-zinc-400 truncate">Anything Sharable Today?</span>
+                    <Plus size={18} className="text-zinc-500 dark:text-zinc-400 shrink-0" />
+                  </Link>
+                </div>
+
+                {/* ── 4. Bottom Nav Shortcuts ── 64px */}
+                <div className="h-16 shrink-0 flex items-center justify-around px-2 border-b border-zinc-200 dark:border-zinc-800">
+                  <button
+                    onClick={() => { setFeedMode('trending'); setLeftSidebarOpen(false); }}
+                    className="flex flex-col items-center justify-center gap-0.5 w-12 h-12 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-all"
                     title="Home"
                   >
-                    <span className="text-xl mb-1">🏠</span>
-                    <span className="text-xs text-zinc-600 dark:text-zinc-400">Home</span>
+                    <Home size={22} className="text-zinc-700 dark:text-zinc-300" />
+                    <span className="text-[10px] text-zinc-500 dark:text-zinc-400 leading-none">Home</span>
                   </button>
                   <button
-                    onClick={() => {
-                      setLeftSidebarOpen(false);
-                      router.push('/search');
-                    }}
-                    className="flex flex-col items-center justify-center py-3 px-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-all"
+                    onClick={() => { setLeftSidebarOpen(false); router.push('/search'); }}
+                    className="flex flex-col items-center justify-center gap-0.5 w-12 h-12 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-all"
                     title="Search"
                   >
-                    <Search size={20} className="mb-1 text-zinc-700 dark:text-zinc-300" />
-                    <span className="text-xs text-zinc-600 dark:text-zinc-400">Search</span>
+                    <Search size={22} className="text-zinc-700 dark:text-zinc-300" />
+                    <span className="text-[10px] text-zinc-500 dark:text-zinc-400 leading-none">Search</span>
                   </button>
                   <button
-                    onClick={() => {
-                      setLeftSidebarOpen(false);
-                      router.push('/post/create');
-                    }}
-                    className="flex flex-col items-center justify-center py-3 px-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-all"
+                    onClick={() => { setLeftSidebarOpen(false); router.push('/post/create'); }}
+                    className="flex flex-col items-center justify-center gap-0.5 w-12 h-12 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-all"
                     title="Create"
                   >
-                    <Plus size={20} className="mb-1 text-zinc-700 dark:text-zinc-300" />
-                    <span className="text-xs text-zinc-600 dark:text-zinc-400">Create</span>
+                    <PlusSquare size={22} className="text-zinc-700 dark:text-zinc-300" />
+                    <span className="text-[10px] text-zinc-500 dark:text-zinc-400 leading-none">Create</span>
                   </button>
                   <button
-                    onClick={() => {
-                      setLeftSidebarOpen(false);
-                      router.push('/alerts');
-                    }}
-                    className="flex flex-col items-center justify-center py-3 px-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-all"
+                    onClick={() => { setLeftSidebarOpen(false); router.push('/alerts'); }}
+                    className="flex flex-col items-center justify-center gap-0.5 w-12 h-12 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-all"
                     title="Alerts"
                   >
-                    <span className="text-xl mb-1">🔔</span>
-                    <span className="text-xs text-zinc-600 dark:text-zinc-400">Alerts</span>
+                    <Bell size={22} className="text-zinc-700 dark:text-zinc-300" />
+                    <span className="text-[10px] text-zinc-500 dark:text-zinc-400 leading-none">Alerts</span>
                   </button>
                   <button
-                    onClick={() => {
-                      setLeftSidebarOpen(false);
-                      router.push('/profile');
-                    }}
-                    className="flex flex-col items-center justify-center py-3 px-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-all"
+                    onClick={() => { setLeftSidebarOpen(false); router.push('/profile'); }}
+                    className="flex flex-col items-center justify-center gap-0.5 w-12 h-12 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-all"
                     title="Profile"
                   >
-                    <span className="text-xl mb-1">👤</span>
-                    <span className="text-xs text-zinc-600 dark:text-zinc-400">Profile</span>
+                    <UserCircle size={22} className="text-zinc-700 dark:text-zinc-300" />
+                    <span className="text-[10px] text-zinc-500 dark:text-zinc-400 leading-none">Profile</span>
                   </button>
                 </div>
-              </div>
 
-              {/* Settings Toggles */}
-              <div className="flex-1 px-4 py-4 border-b border-zinc-200 dark:border-zinc-800">
-                <div className="flex flex-col gap-3">
+                {/* ── 5. Alerts on/off card */}
+                <div className="mx-4 mt-4 px-4 py-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Alerts</span>
-                    <button className="relative inline-flex h-6 w-10 items-center rounded-full bg-zinc-300 dark:bg-zinc-700 transition-colors hover:bg-zinc-400 dark:hover:bg-zinc-600">
-                      <span className="inline-block h-5 w-5 transform rounded-full bg-white dark:bg-black transition-transform translate-x-0.5"></span>
+                    <div>
+                      <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Alerts</p>
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                        {alertsEnabled ? 'Notifications on' : 'Notifications off'}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => setAlertsEnabled(prev => !prev)}
+                      className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus:outline-none ${
+                        alertsEnabled ? 'bg-black dark:bg-white' : 'bg-zinc-300 dark:bg-zinc-700'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-5 w-5 transform rounded-full bg-white dark:bg-black shadow transition-transform ${
+                          alertsEnabled ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
                     </button>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Dark Mode</span>
-                    <button className="relative inline-flex h-6 w-10 items-center rounded-full bg-zinc-300 dark:bg-zinc-700 transition-colors hover:bg-zinc-400 dark:hover:bg-zinc-600">
-                      <span className="inline-block h-5 w-5 transform rounded-full bg-white dark:bg-black transition-transform translate-x-4 dark:translate-x-0.5"></span>
-                    </button>
-                  </div>
-                  <button
-                    onClick={() => {
-                      setLeftSidebarOpen(false);
-                      router.push('/settings');
-                    }}
-                    className="w-full text-left px-4 py-3 rounded-lg font-medium text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-all"
-                  >
-                    Settings
-                  </button>
                 </div>
+
+                {/* ── 6. Dark Mode on/off card */}
+                <div className="mx-4 mt-3 px-4 py-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Dark Mode</p>
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                        {theme === 'dark' ? 'Dark theme active' : 'Light theme active'}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                      className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus:outline-none ${
+                        theme === 'dark' ? 'bg-black dark:bg-white' : 'bg-zinc-300 dark:bg-zinc-700'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-5 w-5 transform rounded-full bg-white dark:bg-black shadow transition-transform ${
+                          theme === 'dark' ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+                </div>
+
+                {/* ── 7. Settings card */}
+                <button
+                  onClick={() => { setLeftSidebarOpen(false); router.push('/settings'); }}
+                  className="mx-4 mt-3 px-4 py-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 flex items-center gap-3 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all text-left"
+                >
+                  <Settings size={20} className="text-zinc-700 dark:text-zinc-300 shrink-0" />
+                  <div>
+                    <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Settings</p>
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">App preferences</p>
+                  </div>
+                </button>
+
+                {/* Bottom spacer so logout doesn't overlap scrollable content */}
+                <div className="h-24 shrink-0" />
+
               </div>
 
-              {/* Bottom Action Bar */}
-              <div className="px-4 py-4 border-t border-zinc-200 dark:border-zinc-800 shrink-0 space-y-2">
-                <button
-                  onClick={() => {
-                    setLeftSidebarOpen(false);
-                    // Handle download app
-                  }}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-zinc-900 dark:bg-white text-white dark:text-black rounded-lg font-medium text-sm hover:opacity-90 transition-opacity"
-                >
-                  <span>⬇️</span>
-                  Download App
-                </button>
-                <button
-                  onClick={() => {
-                    // Handle share app
-                  }}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-black dark:bg-zinc-800 text-white rounded-lg font-medium text-sm hover:bg-zinc-900 dark:hover:bg-zinc-700 transition-colors"
-                >
-                  <Share2 size={18} />
-                  Share
-                </button>
+              {/* ── 8. Logout card — fixed at bottom */}
+              <div className="shrink-0 px-4 py-4 border-t border-zinc-200 dark:border-zinc-800 bg-white dark:bg-black">
                 <button
                   onClick={handleLogout}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-3 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg font-medium text-sm transition-colors"
+                  className="w-full flex items-center gap-3 px-4 py-4 rounded-2xl bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/50 hover:bg-red-100 dark:hover:bg-red-950/40 transition-all"
                 >
-                  <LogOut size={18} />
-                  Log out
+                  <LogOut size={20} className="text-red-600 dark:text-red-400 shrink-0" />
+                  <div className="text-left">
+                    <p className="text-sm font-semibold text-red-600 dark:text-red-400">Log out</p>
+                    <p className="text-xs text-red-400 dark:text-red-600 mt-0.5">Sign out of your account</p>
+                  </div>
                 </button>
               </div>
             </motion.div>
