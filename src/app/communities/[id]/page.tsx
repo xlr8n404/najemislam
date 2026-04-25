@@ -182,7 +182,7 @@ export default function CommunityDetailPage() {
 
   const userAvatarSrc = currentUser?.profile?.avatar_url
     ? `${SUPABASE_STORAGE_URL}/avatars/${currentUser.profile.avatar_url}`
-    : `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser?.user_metadata?.full_name || 'user'}`;
+    : null;
 
   if (!community) {
     return (
@@ -308,11 +308,12 @@ export default function CommunityDetailPage() {
             <div className="mt-5 mb-2">
               {!showPostForm ? (
                 <div className="flex items-center gap-3">
-                  <img
-                    src={userAvatarSrc}
-                    alt="You"
-                    className="w-10 h-10 rounded-full object-cover flex-shrink-0"
-                  />
+                  <div className="w-10 h-10 rounded-full overflow-hidden bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center flex-shrink-0">
+                    {userAvatarSrc
+                      ? <img src={userAvatarSrc} alt="You" className="w-full h-full object-cover" />
+                      : <CircleUser size={28} strokeWidth={1} className="text-zinc-400 dark:text-zinc-600" />
+                    }
+                  </div>
                   <button
                     onClick={() => setShowPostForm(true)}
                     className="flex-1 text-left px-4 py-2.5 bg-zinc-100 dark:bg-zinc-900 text-zinc-400 rounded-full text-sm border border-black/5 dark:border-white/5 hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors"
@@ -323,7 +324,12 @@ export default function CommunityDetailPage() {
               ) : (
                 <form onSubmit={handleCreatePost} className="space-y-3 bg-zinc-50 dark:bg-zinc-900/50 p-4 rounded-2xl border border-black/5 dark:border-white/5">
                   <div className="flex items-start gap-3">
-                    <img src={userAvatarSrc} alt="You" className="w-10 h-10 rounded-full object-cover flex-shrink-0 mt-0.5" />
+                    <div className="w-10 h-10 rounded-full overflow-hidden bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      {userAvatarSrc
+                        ? <img src={userAvatarSrc} alt="You" className="w-full h-full object-cover" />
+                        : <CircleUser size={28} strokeWidth={1} className="text-zinc-400 dark:text-zinc-600" />
+                      }
+                    </div>
                     <textarea
                       value={postContent}
                       onChange={(e) => setPostContent(e.target.value)}
