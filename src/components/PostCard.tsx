@@ -1822,7 +1822,7 @@ export function PostCard({
                                 {/* Pull Bar */}
                                 <div className="absolute top-4 left-1/2 -translate-x-1/2 w-12 h-1.5 bg-zinc-300 dark:bg-zinc-700 rounded-full cursor-grab active:cursor-grabbing" />
                                 
-                                {/* Comment Sheet Header - 64dp */}
+                                {/* Comment Sheet Header */}
                                 <div className="px-4 py-3 border-b border-black/5 dark:border-white/5">
                                   <div className="flex items-center justify-between">
                                     {/* Left: Like, Comment, Repost, Share with counts */}
@@ -1832,13 +1832,13 @@ export function PostCard({
                                         disabled={liking}
                                         className={`flex items-center gap-1.5 px-2 py-2 rounded-full transition-colors disabled:opacity-50 ${liked ? 'text-red-500' : 'text-zinc-500 hover:text-red-500 dark:hover:text-red-400'}`}
                                       >
-                                        <Heart className={`w-5 h-5 ${liked ? 'fill-current' : ''}`} strokeWidth={1.5} />
+                                        <Heart className={`w-6 h-6 ${liked ? 'fill-current' : ''}`} strokeWidth={1.5} />
                                         <span className="text-sm font-medium">{likesCount}</span>
                                       </button>
                                       <button
                                         className="flex items-center gap-1.5 px-2 py-2 rounded-full text-zinc-500 hover:text-blue-500 dark:hover:text-blue-400 transition-colors"
                                       >
-                                        <MessageCircle className="w-5 h-5" strokeWidth={1.5} />
+                                        <MessageCircle className="w-6 h-6" strokeWidth={1.5} />
                                         <span className="text-sm font-medium">{commentsCount}</span>
                                       </button>
                                       <button
@@ -1846,30 +1846,23 @@ export function PostCard({
                                         disabled={reposting}
                                         className={`flex items-center gap-1.5 px-2 py-2 rounded-full transition-colors disabled:opacity-50 ${reposted ? 'text-green-500' : 'text-zinc-500 hover:text-green-500 dark:hover:text-green-400'}`}
                                       >
-                                        <Repeat className={`w-5 h-5 ${reposted ? 'stroke-[2.5px]' : ''}`} strokeWidth={1.5} />
+                                        <Repeat className={`w-6 h-6 ${reposted ? 'stroke-[2.5px]' : ''}`} strokeWidth={1.5} />
                                         <span className="text-sm font-medium">{repostsCount}</span>
                                       </button>
                                       <button
                                         onClick={handleSharePost}
                                         className="flex items-center gap-1.5 px-2 py-2 rounded-full text-zinc-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                                       >
-                                        <Share2 className="w-5 h-5" strokeWidth={1.5} />
+                                        <Share2 className="w-6 h-6" strokeWidth={1.5} />
                                       </button>
                                     </div>
-                                    {/* Right: Save + Settings2 sort */}
-                                    <div className="flex items-center gap-1">
-                                      <button
-                                        onClick={handleSavePost}
-                                        className={`p-2 rounded-full transition-colors ${isSaved ? 'text-black dark:text-white' : 'text-zinc-500 hover:text-yellow-500 dark:hover:text-yellow-400'}`}
-                                      >
-                                        <Bookmark className={`w-5 h-5 ${isSaved ? 'fill-current' : ''}`} strokeWidth={1.5} />
-                                      </button>
-                                      <div className="relative">
+                                    {/* Right: Settings2 sort only */}
+                                    <div className="relative">
                                         <button
                                           onClick={() => setShowCommentSortMenu(prev => !prev)}
                                           className={`p-2 rounded-full transition-colors ${showCommentSortMenu ? 'bg-black/10 dark:bg-white/10 text-black dark:text-white' : 'text-zinc-500 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5'}`}
                                         >
-                                          <Settings2 className="w-5 h-5" strokeWidth={1.5} />
+                                          <Settings2 className="w-6 h-6" strokeWidth={1.5} />
                                         </button>
                                         <AnimatePresence>
                                           {showCommentSortMenu && (
@@ -1909,7 +1902,6 @@ export function PostCard({
                                           )}
                                         </AnimatePresence>
                                       </div>
-                                    </div>
                                   </div>
                                 </div>
 
