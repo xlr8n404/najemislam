@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { Users, ArrowLeft } from 'lucide-react';
+import { Users, ArrowLeft, CircleUser } from 'lucide-react';
 import CommunityPostCard from '@/components/CommunityPostCard';
 import { supabase } from '@/lib/supabase';
 import { BottomNav } from '@/components/BottomNav';
@@ -253,7 +253,7 @@ export default function CommunityDetailPage() {
               {community.avatar_url ? (
                 <img src={community.avatar_url} alt={community.name} className="w-full h-full object-cover" />
               ) : (
-                <Users size={32} strokeWidth={1.5} className="text-zinc-400" />
+                <CircleUser size={40} strokeWidth={1} className="text-zinc-400 dark:text-zinc-600" />
               )}
             </div>
           </div>
