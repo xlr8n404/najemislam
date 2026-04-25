@@ -175,18 +175,14 @@ export default function HomePage() {
         } else {
           let query = supabase
             .from('posts')
-	            .select(`
-	              *,
-	              media_urls,
-	              media_types,
-	              user:profiles!inner(full_name, avatar_url, username, identity_tag, is_deactivated),
-	              original_post:reposted_id(
-	                *,
-	                media_urls,
-	                media_types,
-	                user:profiles(full_name, avatar_url, username, identity_tag)
-	              )
-	            `)
+            .select(`
+              *,
+              user:profiles!inner(full_name, avatar_url, username, identity_tag, is_deactivated),
+              original_post:reposted_id(
+                *,
+                user:profiles(full_name, avatar_url, username, identity_tag)
+              )
+            `)
             .eq('user.is_deactivated', false);
 
           if (mode === 'following') {
