@@ -46,6 +46,8 @@ export default function EditProfilePage() {
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const [newAvatar, setNewAvatar] = useState<File | null>(null);
   const [newCover, setNewCover] = useState<File | null>(null);
+  const [deleteAvatar, setDeleteAvatar] = useState(false);
+  const [deleteCover, setDeleteCover] = useState(false);
   const [selectorOpen, setSelectorOpen] = useState<'avatar' | 'cover' | null>(null);
 
   useEffect(() => {
@@ -133,12 +135,14 @@ export default function EditProfilePage() {
   const handleDeleteAvatar = () => {
     setNewAvatar(null);
     setAvatarPreview(null);
+    setDeleteAvatar(true);
     toast.success('Profile picture will be deleted');
   };
 
   const handleDeleteCover = () => {
     setNewCover(null);
     setCoverPreview(null);
+    setDeleteCover(true);
     toast.success('Cover photo will be deleted');
   };
 
@@ -152,8 +156,8 @@ export default function EditProfilePage() {
       let coverUrl = profile.cover_url;
 
       // Handle avatar deletion or upload
-      if (avatarPreview === null && profile.avatar_url) {
-        avatarUrl = ''; // Delete avatar
+      if (deleteAvatar) {
+        avatarUrl = '';
       } else if (newAvatar) {
         const fd = new FormData();
         fd.append('file', newAvatar);
@@ -165,8 +169,8 @@ export default function EditProfilePage() {
       }
 
       // Handle cover deletion or upload
-      if (coverPreview === null && profile.cover_url) {
-        coverUrl = ''; // Delete cover
+      if (deleteCover) {
+        coverUrl = '';
       } else if (newCover) {
         const fd = new FormData();
         fd.append('file', newCover);
@@ -337,8 +341,11 @@ export default function EditProfilePage() {
               />
             </div>
 
-            <div className="bg-zinc-50 dark:bg-zinc-900/50 p-4 rounded-xl border border-black/5 dark:border-white/5">
-              <IdentityTagSelector value={identityTag} onChange={setIdentityTag} />
+            <div>
+              <label className="block text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-2">Highlight Your Identity</label>
+              <div className="bg-zinc-50 dark:bg-zinc-900/50 p-4 rounded-xl border border-black/5 dark:border-white/5">
+                <IdentityTagSelector value={identityTag} onChange={setIdentityTag} />
+              </div>
             </div>
 
               <div>

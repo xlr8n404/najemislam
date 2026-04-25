@@ -361,7 +361,7 @@ export default function ProfilePage() {
                 href="/post/create"
                 className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-black dark:bg-white text-white dark:text-black font-bold text-sm rounded-full hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors"
               >
-                Share
+                Create
               </Link>
             </div>
 
