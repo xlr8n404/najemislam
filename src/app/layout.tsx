@@ -7,8 +7,6 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { LanguageProvider } from "@/components/LanguageProvider";
 import { ThemedToaster } from "@/components/ThemedToaster";
 import RealtimeNotifications from "@/components/RealtimeNotifications";
-import { GuestModeProvider } from "@/context/GuestModeContext";
-import { GuestBannerWrapper } from "@/components/GuestBannerWrapper";
 
 export const metadata: Metadata = {
   title: "Sharable",
@@ -50,7 +48,6 @@ export default function RootLayout({
       <html lang="en" suppressHydrationWarning>
         <body className="antialiased font-sans bg-background text-foreground">
         <ThemeProvider>
-          <GuestModeProvider>
           <LanguageProvider>
               <Script
                 id="orchids-browser-logs"
@@ -70,12 +67,10 @@ export default function RootLayout({
                 data-custom-data='{"appName": "YourApp", "version": "1.0.0", "greeting": "hi"}'
               />
               {children}
-                <GuestBannerWrapper />
                 <ThemedToaster />
                 <RealtimeNotifications />
                 <VisualEditsMessenger />
             </LanguageProvider>
-          </GuestModeProvider>
           </ThemeProvider>
         </body>
       </html>

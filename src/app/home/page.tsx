@@ -11,7 +11,6 @@ import { Loader } from '@/components/ui/loader';
 import { PostSkeleton } from '@/components/PostSkeleton';
 import { toast } from 'sonner';
 import Link from 'next/link';
-import { useGuestMode } from '@/context/GuestModeContext';
 import { useScrollDirection } from '@/hooks/use-scroll-direction';
 
 const PAGE_SIZE = 10;
@@ -40,7 +39,6 @@ type Profile = {
 
 export default function HomePage() {
   const router = useRouter();
-  const { isGuest } = useGuestMode();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -85,8 +83,7 @@ export default function HomePage() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
 
-      // Guests can browse without a user session
-      if (!user && !isGuest) {
+      if (!user) {
         setLoading(false);
         setLoadingMore(false);
         return;
@@ -116,7 +113,6 @@ export default function HomePage() {
         if (mode === 'communities') {
           // Fetch user's community posts
           if (!user) {
-            // Guests can't see community feed
             setHasMore(false);
             fetchedPosts = [];
           } else {
@@ -195,7 +191,6 @@ export default function HomePage() {
 
           if (mode === 'following') {
             if (!user) {
-              // Guests can't see following feed — fall back to explore
               query = query.order('created_at', { ascending: false });
             } else {
               const { data: followsData, error: followsError } = await supabase
@@ -287,7 +282,7 @@ export default function HomePage() {
       setLoading(false);
       setLoadingMore(false);
     }
-  }, [profile, feedMode, isGuest]);
+  }, [profile, feedMode]);
 
     useEffect(() => {
       setOffset(0);
@@ -480,17 +475,9 @@ export default function HomePage() {
               {/* Profile Pill Section */}
               <div className="px-4 py-4 border-b border-zinc-200 dark:border-zinc-800">
                 <Link
-                  href={isGuest ? '#' : '/post/create'}
-                  onClick={(e) => {
-                    if (isGuest) {
-                      e.preventDefault();
-                      setLeftSidebarOpen(false);
-                      toast('Sign up to create posts', { description: 'Create an account to share content.' });
-                    } else {
-                      setLeftSidebarOpen(false);
-                    }
-                  }}
-                  className={`flex items-center gap-3 px-4 py-3 bg-zinc-100 dark:bg-zinc-900 rounded-full hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-all ${isGuest ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  href="/post/create"
+                  onClick={() => setLeftSidebarOpen(false)}
+                  className="flex items-center gap-3 px-4 py-3 bg-zinc-100 dark:bg-zinc-900 rounded-full hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-all"
                 >
                   <div className="shrink-0 w-10 h-10 rounded-full overflow-hidden bg-zinc-200 dark:bg-zinc-800">
                     <img
@@ -531,11 +518,7 @@ export default function HomePage() {
                   <button
                     onClick={() => {
                       setLeftSidebarOpen(false);
-                      if (isGuest) {
-                        toast('Sign up to create posts', { description: 'Create an account to share content.' });
-                      } else {
-                        router.push('/post/create');
-                      }
+                      router.push('/post/create');
                     }}
                     className="flex flex-col items-center justify-center py-3 px-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-all"
                     title="Create"
@@ -546,11 +529,7 @@ export default function HomePage() {
                   <button
                     onClick={() => {
                       setLeftSidebarOpen(false);
-                      if (isGuest) {
-                        toast('Sign up to access alerts', { description: 'Create an account to get alerts.' });
-                      } else {
-                        router.push('/alerts');
-                      }
+                      router.push('/alerts');
                     }}
                     className="flex flex-col items-center justify-center py-3 px-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-all"
                     title="Alerts"
@@ -561,11 +540,7 @@ export default function HomePage() {
                   <button
                     onClick={() => {
                       setLeftSidebarOpen(false);
-                      if (isGuest) {
-                        toast('Sign up to access profile', { description: 'Create an account to view your profile.' });
-                      } else {
-                        router.push('/profile');
-                      }
+                      router.push('/profile');
                     }}
                     className="flex flex-col items-center justify-center py-3 px-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-all"
                     title="Profile"
@@ -594,9 +569,7 @@ export default function HomePage() {
                   <button
                     onClick={() => {
                       setLeftSidebarOpen(false);
-                      if (!isGuest) {
-                        router.push('/settings');
-                      }
+                      router.push('/settings');
                     }}
                     className="w-full text-left px-4 py-3 rounded-lg font-medium text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-all"
                   >
@@ -692,20 +665,6 @@ export default function HomePage() {
                 </div>
 
                 <nav className="flex-1 p-4 space-y-2">
-                  {isGuest ? (
-                    <button
-                      onClick={async () => {
-                        setRightSidebarOpen(false);
-                        await fetch('/api/auth/guest', { method: 'DELETE' });
-                        router.push('/');
-                      }}
-                      className="w-full flex items-center gap-3 px-4 py-4 text-black dark:text-white hover:bg-black/10 dark:hover:bg-white/10 rounded-2xl transition-all"
-                    >
-                      <LogOut size={24} strokeWidth={1.5} />
-                      <span className="font-bold">Sign up / Log in</span>
-                    </button>
-                  ) : (
-                    <>
                   <button
                     onClick={() => {
                       setRightSidebarOpen(false);
@@ -743,8 +702,6 @@ export default function HomePage() {
                     <LogOut size={24} strokeWidth={1.5} />
                     <span className="font-bold">Log out</span>
                   </button>
-                    </>
-                  )}
                 </nav>
               </div>
             </motion.div>
@@ -773,13 +730,7 @@ export default function HomePage() {
           </div>
 
           <button
-            onClick={() => {
-              if (isGuest) {
-                toast('Sign up to access messages', { description: 'Create an account to chat with others.' });
-                return;
-              }
-              router.push('/messages');
-            }}
+            onClick={() => router.push('/messages')}
             className="p-2 text-black dark:text-white hover:bg-black/5 dark:hover:bg-white/5 rounded-full transition-colors"
           >
             <MessageCircle size={24} strokeWidth={1.5} />
@@ -798,21 +749,12 @@ export default function HomePage() {
               className="w-full h-full object-cover"
             />
           </div>
-          {isGuest ? (
-            <button
-              onClick={() => toast('Sign up to post', { description: 'Create an account to share content.' })}
-              className="flex-1 h-11 bg-zinc-100 dark:bg-zinc-900 rounded-full flex items-center px-5 text-zinc-400 dark:text-zinc-600 text-[15px] font-medium cursor-not-allowed"
-            >
-              Anything Sharable today?
-            </button>
-          ) : (
-            <Link
-              href="/post/create"
-              className="flex-1 h-11 bg-zinc-100 dark:bg-zinc-900 rounded-full flex items-center px-5 text-zinc-500 text-[15px] font-medium hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors"
-            >
-              Anything Sharable today?
-            </Link>
-          )}
+          <Link
+            href="/post/create"
+            className="flex-1 h-11 bg-zinc-100 dark:bg-zinc-900 rounded-full flex items-center px-5 text-zinc-500 text-[15px] font-medium hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors"
+          >
+            Anything Sharable today?
+          </Link>
         </div>
 
         <div className="flex flex-col">

@@ -5,17 +5,11 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Home, Search, PlusSquare, Bell, UserCircle, Users } from 'lucide-react';
-import { useGuestMode } from '@/context/GuestModeContext';
-import { toast } from 'sonner';
 import { CreateBottomSheet } from './CreateBottomSheet';
-
-// Nav items blocked for guests (require account)
-const GUEST_BLOCKED_PATHS = ['/post/create', '/profile', '/alerts', '/messages'];
 
 export function BottomNav() {
   const pathname = usePathname();
   const router = useRouter();
-  const { isGuest } = useGuestMode();
   const [unreadCount, setUnreadCount] = useState(0);
   const [userId, setUserId] = useState<string | null>(null);
   const [showCreateSheet, setShowCreateSheet] = useState(false);
@@ -96,7 +90,6 @@ export function BottomNav() {
                 {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = item.href !== null && pathname === item.href;
-              const blockedForGuest = isGuest && item.href && GUEST_BLOCKED_PATHS.includes(item.href);
 
               const handleClick = (e: React.MouseEvent) => {
                 if ((item as any).action === 'create') {
@@ -104,29 +97,18 @@ export function BottomNav() {
                   setShowCreateSheet(true);
                   return;
                 }
-                if (blockedForGuest) {
-                  e.preventDefault();
-                  const msgs: Record<string, string> = {
-                    '/post/create': 'Sign up to create posts',
-                    '/profile': 'Sign up to view your Sharable ID',
-                    '/alerts': 'Sign up to see notifications',
-                  };
-                  toast(msgs[item.href!] || 'Sign up to continue', {
-                    description: 'Create an account to unlock all features.',
-                  });
-                }
               };
 
                 return (
                     <Link
                       key={item.href || 'create'}
-                      href={blockedForGuest || (item as any).action === 'create' ? '#' : item.href!}
+                      href={(item as any).action === 'create' ? '#' : item.href!}
                       onClick={handleClick}
                       className={`flex items-center justify-center transition-all relative w-12 h-12 rounded-2xl group ${
                         isActive
                           ? 'text-black dark:text-white'
                           : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
-                      } ${blockedForGuest ? 'opacity-40' : ''}`}
+                      }`}
                       >
                       <div className={`w-10 h-10 flex items-center justify-center rounded-xl transition-colors ${
                         isActive

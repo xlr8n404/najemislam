@@ -8,7 +8,6 @@ import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useGuestMode } from '@/context/GuestModeContext';
 import { MentionText } from '@/components/MentionText';
 import { VerifiedBadge } from '@/components/VerifiedBadge';
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
@@ -97,7 +96,6 @@ export function PostCard({
   isFollower = false
 }: PostCardProps) {
   const router = useRouter();
-  const { isGuest } = useGuestMode();
 
   // Merge legacy single media into arrays if they exist and arrays are empty
   // We use a fallback to media_url if media_urls is explicitly empty or null
@@ -317,10 +315,6 @@ export function PostCard({
   };
 
   const handleSavePost = async () => {
-    if (isGuest) {
-      toast('Sign up to save posts', { description: 'Create an account to interact with content.' });
-      return;
-    }
     if (!currentUserId) {
       toast.error('Please login to save posts');
       return;
@@ -512,10 +506,6 @@ export function PostCard({
   }, [id, showComments]);
 
   const handleLike = async () => {
-    if (isGuest) {
-      toast('Sign up to like posts', { description: 'Create an account to interact with content.' });
-      return;
-    }
     if (!currentUserId) {
       toast.error('Please login to like posts');
       return;
@@ -577,10 +567,6 @@ export function PostCard({
   };
 
   const handleRepost = async () => {
-    if (isGuest) {
-      toast('Sign up to repost', { description: 'Create an account to interact with content.' });
-      return;
-    }
     if (!currentUserId) {
       toast.error('Please login to repost');
       return;
@@ -757,10 +743,6 @@ export function PostCard({
   };
 
   const handleVoteComment = async (commentId: string) => {
-    if (isGuest) {
-      toast('Sign up to vote', { description: 'Create an account to interact with content.' });
-      return;
-    }
     if (!currentUserId) {
       toast.error('Please login to vote');
       return;
@@ -843,10 +825,6 @@ export function PostCard({
   };
 
   const handleSubmitComment = async () => {
-    if (isGuest) {
-      toast('Sign up to comment', { description: 'Create an account to interact with content.' });
-      return;
-    }
     if (!currentUserId) {
       toast.error('Please login to comment');
       return;
