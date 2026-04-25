@@ -286,25 +286,6 @@ export default function UserProfilePage() {
           </div>
         </div>
 
-        <div className="absolute top-4 right-4 flex items-center gap-2">
-              <button 
-                onClick={handleMessage}
-                className="p-2.5 bg-white/90 dark:bg-black/90 backdrop-blur-sm text-black dark:text-white rounded-full border border-black/10 dark:border-white/10 hover:bg-white dark:hover:bg-black transition-colors"
-              >
-              <MessageCircle className="w-5 h-5" />
-            </button>
-            <button
-              onClick={handleFollow}
-              disabled={followLoading}
-                className={`px-4 py-2.5 font-bold text-sm rounded-full transition-colors disabled:opacity-50 ${
-                  isFollowing
-                    ? 'bg-white/90 dark:bg-black/90 backdrop-blur-sm text-black dark:text-white border border-black/10 dark:border-white/10 hover:bg-red-50/90 dark:hover:bg-red-900/50 hover:border-red-500/50 hover:text-red-500'
-                    : 'bg-black/90 dark:bg-white/90 backdrop-blur-sm text-white dark:text-black hover:bg-black dark:hover:bg-white'
-              }`}
-            >
-              {followLoading ? '...' : isFollowing ? 'Following' : 'Follow'}
-            </button>
-          </div>
       </div>
 
             <div className="mt-16 px-4">
