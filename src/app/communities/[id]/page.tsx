@@ -282,24 +282,18 @@ export default function CommunityDetailPage() {
                 <Users size={40} strokeWidth={1} className="text-zinc-400 dark:text-zinc-600" />
               )}
             </div>
-            {/* Community Pill */}
-            <div className="absolute -bottom-7 left-1/2 -translate-x-1/2 whitespace-nowrap">
-              <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-black dark:bg-white text-white dark:text-black border-2 border-white dark:border-black">
-                Community
-              </span>
-            </div>
           </div>
         </div>
 
         {/* ── Info ───────────────────────────────────────────────────────── */}
-        <div className="mt-[4.5rem] px-4">
+        <div className="mt-14 px-4">
 
           {/* Name + username */}
-          <div className="flex items-start gap-x-2 flex-wrap">
-            <h1 className="text-2xl font-bold leading-tight">{community.name}</h1>
-            {community.username && (
-              <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">@{community.username}</p>
-            )}
+          <div className="flex items-center gap-x-2 gap-y-1 flex-wrap">
+            <h1 className="text-2xl font-bold">{community.name}</h1>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              @{community.username || community.name?.toLowerCase().replace(/\s+/g, '')}
+            </p>
           </div>
 
           {/* Stats */}
