@@ -2,10 +2,11 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Camera, Users, CircleUser, Users2, ShieldCheck, Globe } from 'lucide-react';
+import { ArrowLeft, Camera, Users, CircleUser, Users2, ShieldCheck, Globe, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { Loader } from '@/components/ui/loader';
 import { AvatarCoverSelector } from '@/components/avatar-cover-selector';
+import { motion, AnimatePresence } from 'framer-motion';
 import imageCompression from 'browser-image-compression';
 
 const MEDIA_PROXY_BASE = '/api/media';
@@ -56,6 +57,12 @@ export default function CommunitySettingsPage() {
   const [deleteAvatar, setDeleteAvatar] = useState(false);
   const [deleteCover, setDeleteCover] = useState(false);
   const [selectorOpen, setSelectorOpen] = useState<'avatar' | 'cover' | null>(null);
+
+  // Transfer Ownership
+  const [transferStep, setTransferStep] = useState<0 | 1 | 2>(0); // 0=closed, 1=username, 2=password
+  const [transferUsername, setTransferUsername] = useState('');
+  const [transferPassword, setTransferPassword] = useState('');
+  const [transferLoading, setTransferLoading] = useState(false);
 
   useEffect(() => {
     const init = async () => {
@@ -133,6 +140,60 @@ export default function CommunitySettingsPage() {
     setNewCover(null);
     setCoverPreview(null);
     setDeleteCover(true);
+  };
+
+  const handleTransferNext = async () => {
+    const uname = transferUsername.trim().replace(/^@/, '');
+    if (!uname) { toast.error('Enter a username'); return; }
+    if (uname === community?.username) { toast.error('You already own this community'); return; }
+    setTransferLoading(true);
+    try {
+      const res = await fetch(`/api/auth/check-username?username=${encodeURIComponent(uname)}`);
+      const data = await res.json();
+      // available: false means username is taken (user exists)
+      if (data.available) { toast.error('User not found'); setTransferLoading(false); return; }
+      setTransferUsername(uname);
+      setTransferStep(2);
+    } catch {
+      toast.error('Could not verify user');
+    } finally {
+      setTransferLoading(false);
+    }
+  };
+
+  const handleTransferConfirm = async () => {
+    if (!transferPassword.trim()) { toast.error('Enter your password'); return; }
+    setTransferLoading(true);
+    try {
+      // Verify current owner's password
+      const verifyRes = await fetch('/api/auth/verify-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: transferPassword, userId: currentUser.id }),
+      });
+      const verifyData = await verifyRes.json();
+      if (!verifyRes.ok || !verifyData.valid) {
+        toast.error('Incorrect password');
+        setTransferLoading(false);
+        return;
+      }
+
+      // Transfer ownership
+      const res = await fetch(`/api/communities/${communityId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ transfer_to: transferUsername.trim(), creator_id: currentUser.id }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Transfer failed');
+
+      toast.success('Ownership transferred!');
+      router.push('/communities');
+    } catch (err: any) {
+      toast.error(err.message || 'Transfer failed');
+    } finally {
+      setTransferLoading(false);
+    }
   };
 
   const handleSave = async () => {
@@ -381,10 +442,122 @@ export default function CommunitySettingsPage() {
                 })}
               </div>
             </div>
+          {/* Transfer Ownership */}
+          <div className="pt-4 border-t border-black/5 dark:border-white/5">
+            <button
+              type="button"
+              onClick={() => { setTransferUsername(''); setTransferPassword(''); setTransferStep(1); }}
+              className="w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl border border-red-500/30 bg-red-50 dark:bg-red-950/20 text-red-500 hover:bg-red-100 dark:hover:bg-red-950/40 transition-colors text-left"
+            >
+              <div className="w-9 h-9 rounded-xl bg-red-500/10 flex items-center justify-center flex-shrink-0">
+                <AlertTriangle size={18} strokeWidth={1.5} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-bold text-sm">Transfer Ownership</p>
+                <p className="text-xs mt-0.5 opacity-70">Transfer this community to another member</p>
+              </div>
+            </button>
           </div>
 
         </div>
+        </div>
       </main>
+
+      {/* Transfer Ownership Sheet */}
+      <AnimatePresence>
+        {transferStep > 0 && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/50 z-40"
+              onClick={() => { setTransferStep(0); setTransferPassword(''); }}
+            />
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'tween', duration: 0.3, ease: 'easeOut' }}
+              className="fixed bottom-0 left-0 right-0 z-50 max-w-xl mx-auto rounded-t-[30px] bg-white dark:bg-zinc-950 overflow-hidden shadow-2xl"
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="w-12 h-1.5 bg-zinc-300 dark:bg-zinc-700 rounded-full mx-auto mt-4 mb-6" />
+              <div className="px-4 pb-8">
+                {transferStep === 1 && (
+                  <>
+                    <h2 className="text-xl font-bold text-black dark:text-white mb-1">Transfer Ownership</h2>
+                    <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-6">Enter the username of the member you want to transfer this community to.</p>
+                    <div className="mb-5">
+                      <label className="block text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-2">New Owner's Username</label>
+                      <input
+                        type="text"
+                        value={transferUsername}
+                        onChange={e => setTransferUsername(e.target.value)}
+                        autoFocus
+                        placeholder="@username"
+                        className="w-full bg-zinc-100 dark:bg-zinc-900 text-black dark:text-white px-4 py-3 rounded-xl border border-black/10 dark:border-white/10 outline-none focus:border-black/30 dark:focus:border-white/30 transition-colors"
+                        onKeyDown={e => { if (e.key === 'Enter') handleTransferNext(); }}
+                      />
+                    </div>
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => setTransferStep(0)}
+                        className="flex-1 py-3 font-bold text-sm rounded-2xl border border-black/10 dark:border-white/10 bg-zinc-100 dark:bg-zinc-900 text-black dark:text-white hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={handleTransferNext}
+                        disabled={transferLoading || !transferUsername.trim()}
+                        className="flex-1 py-3 font-bold text-sm rounded-2xl bg-black dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                      >
+                        {transferLoading ? <Loader centered={false} className="text-current" /> : 'Next'}
+                      </button>
+                    </div>
+                  </>
+                )}
+
+                {transferStep === 2 && (
+                  <>
+                    <h2 className="text-xl font-bold text-black dark:text-white mb-1">Confirm Transfer</h2>
+                    <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-6">
+                      You're about to transfer ownership to <span className="font-bold text-black dark:text-white">@{transferUsername}</span>. Enter your password to confirm.
+                    </p>
+                    <div className="mb-5">
+                      <label className="block text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-2">Your Password</label>
+                      <input
+                        type="password"
+                        value={transferPassword}
+                        onChange={e => setTransferPassword(e.target.value)}
+                        autoFocus
+                        placeholder="Enter your password"
+                        className="w-full bg-zinc-100 dark:bg-zinc-900 text-black dark:text-white px-4 py-3 rounded-xl border border-black/10 dark:border-white/10 outline-none focus:border-black/30 dark:focus:border-white/30 transition-colors"
+                        onKeyDown={e => { if (e.key === 'Enter') handleTransferConfirm(); }}
+                      />
+                    </div>
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => { setTransferStep(1); setTransferPassword(''); }}
+                        className="flex-1 py-3 font-bold text-sm rounded-2xl border border-black/10 dark:border-white/10 bg-zinc-100 dark:bg-zinc-900 text-black dark:text-white hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors"
+                      >
+                        Back
+                      </button>
+                      <button
+                        onClick={handleTransferConfirm}
+                        disabled={transferLoading || !transferPassword.trim()}
+                        className="flex-1 py-3 font-bold text-sm rounded-2xl bg-red-500 text-white hover:bg-red-600 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                      >
+                        {transferLoading ? <Loader centered={false} className="text-current" /> : 'Transfer'}
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       {/* Avatar Selector Sheet */}
       <AvatarCoverSelector

@@ -32,7 +32,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    const { name, description, category, avatar_url, cover_url, posting_permission, creator_id } = await req.json();
+    const { name, description, category, avatar_url, cover_url, posting_permission, creator_id, transfer_to } = await req.json();
 
     // Verify user is creator
     const { data: community } = await supabaseAdmin
@@ -43,6 +43,29 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
     if (!community || community.creator_id !== creator_id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+    }
+
+    // Handle ownership transfer
+    if (transfer_to) {
+      const { data: newOwner, error: userErr } = await supabaseAdmin
+        .from('profiles')
+        .select('id')
+        .eq('username', transfer_to)
+        .maybeSingle();
+      if (userErr || !newOwner) {
+        return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      }
+      const { error: transferErr } = await supabaseAdmin
+        .from('communities')
+        .update({ creator_id: newOwner.id })
+        .eq('id', id);
+      if (transferErr) throw transferErr;
+      // Ensure new owner is an admin member
+      await supabaseAdmin.from('community_members').upsert(
+        { community_id: id, user_id: newOwner.id, role: 'admin' },
+        { onConflict: 'community_id,user_id' }
+      );
+      return NextResponse.json({ success: true, transferred: true });
     }
 
     const updatePayload: Record<string, any> = { name, description, category };
