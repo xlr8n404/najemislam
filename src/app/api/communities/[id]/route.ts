@@ -32,7 +32,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    const { name, description, category, avatar_url, creator_id } = await req.json();
+    const { name, description, category, avatar_url, cover_url, posting_permission, creator_id } = await req.json();
 
     // Verify user is creator
     const { data: community } = await supabaseAdmin
@@ -45,9 +45,14 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
+    const updatePayload: Record<string, any> = { name, description, category };
+    if (avatar_url !== undefined) updatePayload.avatar_url = avatar_url;
+    if (cover_url !== undefined) updatePayload.cover_url = cover_url;
+    if (posting_permission !== undefined) updatePayload.posting_permission = posting_permission;
+
     const { data, error } = await supabaseAdmin
       .from('communities')
-      .update({ name, description, category, avatar_url })
+      .update(updatePayload)
       .eq('id', id)
       .select()
       .single();

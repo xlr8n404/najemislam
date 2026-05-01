@@ -3,7 +3,7 @@ import { useNavBack } from '@/components/NavigationHistoryProvider';
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { Users, ArrowLeft, Share2, Pin, Info, FileText, UserCircle } from 'lucide-react';
+import { Users, ArrowLeft, Share2, Pin, Info, FileText, UserCircle, Settings } from 'lucide-react';
 import CommunityPostCard from '@/components/CommunityPostCard';
 import { supabase } from '@/lib/supabase';
 import { BottomNav } from '@/components/BottomNav';
@@ -263,6 +263,16 @@ export default function CommunityDetailPage() {
           >
             <ArrowLeft size={18} />
           </button>
+
+          {/* Settings — admin only */}
+          {isAdmin && (
+            <button
+              onClick={() => router.push(`/communities/${communityId}/settings`)}
+              className="absolute top-3 right-3 z-10 p-2 bg-black/40 backdrop-blur-sm text-white rounded-full hover:bg-black/60 transition-colors"
+            >
+              <Settings size={18} />
+            </button>
+          )}
 
           {/* Cover */}
           <div className="w-full overflow-hidden" style={{ height: '120px' }}>
