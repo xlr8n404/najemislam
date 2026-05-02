@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { LoginForm } from '@/components/auth/login-form';
 import { ArrowLeft, Sun, Moon } from 'lucide-react';
 import { useTheme } from 'next-themes';
@@ -9,28 +8,23 @@ import { Loader } from '@/components/ui/loader';
 import { Share2 } from 'lucide-react';
 
 export default function LoginPage() {
-  const router = useRouter();
   const { theme, setTheme } = useTheme();
   const [checking, setChecking] = useState(true);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    const checkSession = async () => {
-      try {
-        const res = await fetch('/api/auth/session');
-        const data = await res.json();
+    fetch('/api/auth/session')
+      .then((r) => r.json())
+      .then((data) => {
         if (data.user) {
-          router.replace('/home');
+          window.location.href = '/home';
         } else {
           setChecking(false);
         }
-      } catch {
-        setChecking(false);
-      }
-    };
-    checkSession();
-  }, [router]);
+      })
+      .catch(() => setChecking(false));
+  }, []);
 
   if (checking) {
     return (
@@ -44,7 +38,7 @@ export default function LoginPage() {
     <div className="min-h-screen w-full flex flex-col bg-background text-foreground font-sans transition-colors duration-300">
       <div className="fixed top-0 left-0 w-full p-6 z-50 flex items-center justify-between">
         <button
-          onClick={() => router.push('/')}
+          onClick={() => { window.location.href = '/'; }}
           className="flex items-center justify-center p-2 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-900 transition-colors"
         >
           <ArrowLeft className="w-6 h-6" />
@@ -64,7 +58,7 @@ export default function LoginPage() {
           <Share2 className="w-8 h-8" />
           <span className="font-bold text-2xl tracking-tighter">Sharable</span>
         </div>
-        <LoginForm onSwitchToRegister={() => router.push('/register')} />
+        <LoginForm onSwitchToRegister={() => { window.location.href = '/register'; }} />
       </main>
     </div>
   );
