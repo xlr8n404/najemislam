@@ -447,7 +447,7 @@ export default function HomePage() {
             )}
           </div>
           <Link
-            href="/post/create"
+            href="/create/post"
             className="flex-1 h-11 bg-zinc-100 dark:bg-zinc-900 rounded-full flex items-center px-5 text-zinc-500 text-[15px] font-medium hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors"
           >
             Anything Sharable today?

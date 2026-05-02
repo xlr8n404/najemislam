@@ -102,7 +102,7 @@ export default function StoriesPage() {
         <div className="max-w-xl mx-auto flex items-center justify-between px-4 h-full">
           <h1 className="text-xl font-bold tracking-tight">Stories</h1>
           <Link
-            href="/stories/create"
+            href="/create/story"
             className="p-2 rounded-xl text-black dark:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
           >
             <SquarePen size={24} strokeWidth={1.5} />
@@ -127,7 +127,7 @@ export default function StoriesPage() {
               Be the first to share a story!
             </p>
             <Link
-              href="/stories/create"
+              href="/create/story"
               className="px-6 py-2.5 bg-black dark:bg-white text-white dark:text-black font-bold rounded-full text-sm"
             >
               Create Story
@@ -152,7 +152,7 @@ function StoryCard({ story }: { story: Story }) {
 
   return (
     <Link
-      href={`/stories/view?id=${story.id}`}
+      href={`/create/story/view?id=${story.id}`}
       className="relative rounded-2xl overflow-hidden group cursor-pointer"
       style={{ aspectRatio: '9/16' }}
     >

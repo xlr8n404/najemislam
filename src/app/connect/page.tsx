@@ -270,7 +270,7 @@ export default function ConnectPage() {
                   <div
                     className="w-full bg-zinc-100 dark:bg-zinc-900 overflow-hidden cursor-pointer"
                     style={{ height: '120px' }}
-                    onClick={() => router.push(`/user/${user.username}`)}
+                    onClick={() => router.push(`/${user.username}`)}
                   >
                     {coverSrc ? (
                       <img
@@ -288,7 +288,7 @@ export default function ConnectPage() {
                     {/* Avatar 80px — overlapping cover */}
                     <div
                       className="w-20 h-20 rounded-full border-4 border-white dark:border-zinc-950 overflow-hidden bg-zinc-100 dark:bg-zinc-900 -mt-10 mb-3 cursor-pointer shadow-sm"
-                      onClick={() => router.push(`/user/${user.username}`)}
+                      onClick={() => router.push(`/${user.username}`)}
                     >
                       {user.avatar_url ? (
                         <img
@@ -305,7 +305,7 @@ export default function ConnectPage() {
                     {/* Full name + username */}
                     <div
                       className="cursor-pointer"
-                      onClick={() => router.push(`/user/${user.username}`)}
+                      onClick={() => router.push(`/${user.username}`)}
                     >
                       <div className="flex items-center gap-1.5 flex-wrap">
                         <h3 className="text-base font-bold leading-tight">{user.full_name || user.username}</h3>

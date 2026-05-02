@@ -1527,7 +1527,7 @@ export function PostCard({
       >
           {!isNested && (
             <div className="flex items-center justify-between px-4 pt-4 pb-2">
-              <Link href={user?.username ? `/user/${user.username}` : '#'} className="flex items-center gap-2 min-w-0">
+              <Link href={user?.username ? `/${user.username}` : '#'} className="flex items-center gap-2 min-w-0">
                 <div 
                   className="rounded-full overflow-hidden border border-black/10 dark:border-white/10 bg-zinc-100 dark:bg-zinc-900 flex-shrink-0"
                   style={{ width: '40px', height: '40px' }}

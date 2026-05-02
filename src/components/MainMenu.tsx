@@ -112,7 +112,7 @@ export function MainMenu({ open, onClose, avatarSrc, feedMode, onFeedModeChange 
                 )}
               </div>
               <Link
-                href="/post/create"
+                href="/create/post"
                 onClick={onClose}
                 className="flex-1 flex items-center justify-between h-11 bg-zinc-100 dark:bg-zinc-900 rounded-full px-4 hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-all"
               >
@@ -126,7 +126,7 @@ export function MainMenu({ open, onClose, avatarSrc, feedMode, onFeedModeChange 
               {[
                 { href: '/home', icon: Home, label: 'Home' },
                 { href: '/search', icon: Search, label: 'Search' },
-                { href: '/post/create', icon: PlusSquare, label: 'Create' },
+                { href: '/create/post', icon: PlusSquare, label: 'Create' },
                 { href: '/alerts', icon: Bell, label: 'Alerts' },
                 { href: '/profile', icon: UserCircle, label: 'Profile' },
               ].map(({ href, icon: Icon, label }) => {

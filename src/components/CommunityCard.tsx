@@ -26,7 +26,7 @@ export default function CommunityCard({ community, onJoin, isMember = false }: C
   const memberCount = community.members?.length || 0;
 
   return (
-    <Link href={`/communities/${community.id}`}>
+    <Link href={`/community/${community.id}`}>
       <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-4 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors cursor-pointer">
         {community.avatar_url && (
           <img

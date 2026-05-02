@@ -177,7 +177,7 @@ export default function AlertsPage() {
                 key={alert.id}
                 onClick={() => {
                   if (alert.type === 'follow') {
-                    router.push(`/user/${alert.from_user.username}`);
+                    router.push(`/${alert.from_user.username}`);
                   } else if (alert.post_id) {
                     router.push(`/post/${alert.post_id}`);
                   }

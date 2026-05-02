@@ -324,7 +324,7 @@ function SearchContent() {
                     {results.users.map((user) => (
                       <button
                         key={user.id}
-                        onClick={() => router.push(`/user/${user.username}`)}
+                        onClick={() => router.push(`/${user.username}`)}
                         className="w-full flex items-center gap-4 p-3 bg-zinc-50 dark:bg-zinc-900/50 rounded-2xl border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors text-left"
                       >
                         <div className="w-12 h-12 rounded-full overflow-hidden bg-zinc-200 dark:bg-zinc-800 shrink-0">
@@ -408,7 +408,7 @@ function SearchContent() {
                       return (
                         <button
                           key={story.id}
-                          onClick={() => router.push(`/stories/view?id=${story.id}`)}
+                          onClick={() => router.push(`/create/story/view?id=${story.id}`)}
                           className="relative rounded-2xl overflow-hidden bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 aspect-[9/16] text-left hover:opacity-90 transition-opacity"
                         >
                           {photoUrl ? (

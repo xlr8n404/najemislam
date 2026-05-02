@@ -43,7 +43,7 @@ export function CreateBottomSheet({ isOpen, onClose }: CreateBottomSheetProps) {
               {/* Options */}
               <div className="space-y-3 mb-6">
                 <Link
-                  href="/post/create"
+                  href="/create/post"
                   onClick={onClose}
                   className="flex items-center gap-4 p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
                 >

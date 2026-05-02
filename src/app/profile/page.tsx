@@ -77,7 +77,7 @@ export default function ProfilePage() {
   // Generate QR code when sheet opens
   useEffect(() => {
     if (shareSheetOpen && profile?.username) {
-      const profileUrl = `${window.location.origin}/user/${profile.username}`;
+      const profileUrl = `${window.location.origin}/${profile.username}`;
       QRCode.toDataURL(profileUrl, {
         width: 400,
         margin: 2,
@@ -134,9 +134,9 @@ export default function ProfilePage() {
               const rawValue: string = barcodes[0].rawValue;
               stopScan();
               // Parse username from URL or direct username
-              const match = rawValue.match(/\/user\/([^/?#]+)/);
+              const match = rawValue.match(/\/(?:user\/)?([^/?#]+)$/);
               if (match) {
-                router.push(`/user/${match[1]}`);
+                router.push(`/${match[1]}`);
                 setShareSheetOpen(false);
               } else {
                 toast.error('No valid profile QR code found');
@@ -164,7 +164,7 @@ export default function ProfilePage() {
 
   const handleShareTo = async () => {
     if (!profile?.username) return;
-    const profileUrl = `${window.location.origin}/user/${profile.username}`;
+    const profileUrl = `${window.location.origin}/${profile.username}`;
     if (navigator.share) {
       try {
         await navigator.share({
@@ -181,7 +181,7 @@ export default function ProfilePage() {
 
   const handleCopyLink = async () => {
     if (!profile?.username) return;
-    const profileUrl = `${window.location.origin}/user/${profile.username}`;
+    const profileUrl = `${window.location.origin}/${profile.username}`;
     await navigator.clipboard.writeText(profileUrl);
     toast.success('Link copied!');
   };
@@ -553,7 +553,7 @@ export default function ProfilePage() {
                 {stories.map((story) => (
                   <Link
                     key={story.id}
-                    href={`/stories/view?id=${story.id}`}
+                    href={`/create/story/view?id=${story.id}`}
                     className="relative rounded-2xl overflow-hidden group"
                     style={{ aspectRatio: '9/16' }}
                   >

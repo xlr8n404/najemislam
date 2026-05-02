@@ -442,7 +442,7 @@ export default function MessagesPage() {
                             <p className="text-xs text-muted-foreground truncate">@{user.username}</p>
                           </div>
                           <Link
-                            href={`/user/${user.username}`}
+                            href={`/${user.username}`}
                             onClick={(e) => e.stopPropagation()}
                             className="px-6 py-2 rounded-full text-sm font-bold bg-foreground text-background hover:opacity-90 transition-all flex-shrink-0"
                           >

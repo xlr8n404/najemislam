@@ -24,7 +24,7 @@ export function MentionText({ text, className }: MentionTextProps) {
           return (
             <Link
               key={i}
-              href={`/user/${username}`}
+              href={`/${username}`}
               className="text-blue-500 font-semibold hover:underline"
               onClick={(e) => e.stopPropagation()}
             >
