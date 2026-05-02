@@ -203,6 +203,10 @@ export function PostCard({
   const [liked, setLiked] = useState(initialLiked);
   const [liking, setLiking] = useState(false);
   const [likesCount, setLikesCount] = useState(initialLikes);
+
+  // Sync liked/reposted/saved state when parent updates userPostStatus
+  useEffect(() => { if (!liking) setLiked(initialLiked); }, [initialLiked]);
+  useEffect(() => { setLikesCount(initialLikes); }, [initialLikes]);
   const [commentsCount, setCommentsCount] = useState(initialComments);
   const [repostsCount, setRepostsCount] = useState(initialReposts);
   const [reposted, setReposted] = useState(initialReposted);
@@ -599,9 +603,25 @@ export function PostCard({
           .update({ likes_count: likesCount - 1 })
           .eq('id', id);
       } else {
+          // Check if already liked in DB to prevent duplicates
+          const { data: existingLike } = await supabase
+            .from('likes')
+            .select('id')
+            .eq('user_id', currentUserId)
+            .eq('post_id', id)
+            .maybeSingle();
+
+          if (existingLike) {
+            // Already liked — sync local state and bail
+            setLiked(true);
+            setLikesCount(prev => prev); // no change
+            setLiking(false);
+            return;
+          }
+
           await supabase
             .from('likes')
-            .insert({ user_id: currentUserId, post_id: id });
+            .upsert({ user_id: currentUserId, post_id: id }, { onConflict: 'user_id,post_id', ignoreDuplicates: true });
           
           // Sync like to Drive
           const driveFormData = new FormData();
