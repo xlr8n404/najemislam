@@ -407,7 +407,7 @@ export default function ProfilePage() {
           </button>
         </div>
 
-        <div className="mt-[4.5rem] px-4">
+        <div className="mt-12 px-4">
           <div className="flex items-center gap-x-2 gap-y-1 flex-wrap">
             <h1 className="text-2xl font-bold">{profile?.full_name || profile?.username}</h1>
             <VerifiedBadge username={profile?.username} />

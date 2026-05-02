@@ -21,8 +21,8 @@ export function AvatarCoverSelector({
 }: AvatarCoverSelectorProps) {
   const isCover = type === 'cover';
   const title = isCover ? 'Cover Photo' : 'Profile Photo';
-  const deleteLabel = isCover ? 'Remove Cover Photo' : 'Remove Profile Photo';
-  const addLabel = isCover ? 'Add Cover Photo' : 'Add Profile Photo';
+  const deleteLabel = 'Remove Photo';
+  const addLabel = 'Add Photo';
 
   return (
     <AnimatePresence>
