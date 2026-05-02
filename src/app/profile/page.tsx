@@ -74,20 +74,65 @@ export default function ProfilePage() {
     };
   }, [menuOpen, shareSheetOpen]);
 
-  // Generate QR code when sheet opens
+  // Generate QR code with Sharable logo overlay when sheet opens
   useEffect(() => {
     if (shareSheetOpen && profile?.username) {
       const profileUrl = `${window.location.origin}/${profile.username}`;
+      const size = 400;
+
       QRCode.toDataURL(profileUrl, {
-        width: 400,
+        width: size,
         margin: 2,
-        color: {
-          dark: '#000000',
-          light: '#ffffff',
-        },
+        color: { dark: '#000000', light: '#ffffff' },
         errorCorrectionLevel: 'H',
-      }).then((url) => {
-        setQrDataUrl(url);
+      }).then((qrUrl) => {
+        const canvas = document.createElement('canvas');
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext('2d')!;
+
+        const qrImg = new Image();
+        qrImg.onload = () => {
+          ctx.drawImage(qrImg, 0, 0, size, size);
+
+          // Logo background circle
+          const logoSize = size * 0.18;
+          const cx = size / 2;
+          const cy = size / 2;
+          const radius = logoSize / 2 + 8;
+
+          ctx.beginPath();
+          ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+          ctx.fillStyle = '#ffffff';
+          ctx.fill();
+
+          // Draw Sharable logo image
+          const logo = new Image();
+          logo.onload = () => {
+            ctx.save();
+            // Clip to rounded square
+            const lx = cx - logoSize / 2;
+            const ly = cy - logoSize / 2;
+            const r = logoSize * 0.22;
+            ctx.beginPath();
+            ctx.moveTo(lx + r, ly);
+            ctx.lineTo(lx + logoSize - r, ly);
+            ctx.quadraticCurveTo(lx + logoSize, ly, lx + logoSize, ly + r);
+            ctx.lineTo(lx + logoSize, ly + logoSize - r);
+            ctx.quadraticCurveTo(lx + logoSize, ly + logoSize, lx + logoSize - r, ly + logoSize);
+            ctx.lineTo(lx + r, ly + logoSize);
+            ctx.quadraticCurveTo(lx, ly + logoSize, lx, ly + logoSize - r);
+            ctx.lineTo(lx, ly + r);
+            ctx.quadraticCurveTo(lx, ly, lx + r, ly);
+            ctx.closePath();
+            ctx.clip();
+            ctx.drawImage(logo, lx, ly, logoSize, logoSize);
+            ctx.restore();
+            setQrDataUrl(canvas.toDataURL('image/png'));
+          };
+          logo.src = '/icon.png';
+        };
+        qrImg.src = qrUrl;
       });
     }
   }, [shareSheetOpen, profile?.username]);
