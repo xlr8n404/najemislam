@@ -1882,7 +1882,7 @@ export function PostCard({
                   <button 
                     onClick={handleSavePost}
                     className={`p-2 -mr-2 rounded-full group transition-colors ${
-                      isSaved ? 'text-orange-500' : 'text-zinc-500 dark:text-zinc-400 hover:text-orange-500 hover:bg-orange-500/10'
+                      isSaved ? 'text-yellow-400' : 'text-zinc-500 dark:text-zinc-400 hover:text-yellow-400 hover:bg-yellow-400/10'
                     }`}
                   >
                     <Bookmark className={`w-6 h-6 group-active:scale-110 transition-transform ${isSaved ? 'fill-current' : ''}`} strokeWidth={1.5} />
@@ -2037,7 +2037,7 @@ export function PostCard({
                                       </div>
                                       <button
                                         onClick={handleSavePost}
-                                        className={`p-2 rounded-full transition-colors ${isSaved ? 'text-orange-500' : 'text-zinc-500 hover:text-orange-500 hover:bg-orange-500/10'}`}
+                                        className={`p-2 rounded-full transition-colors ${isSaved ? 'text-yellow-400' : 'text-zinc-500 hover:text-yellow-400 hover:bg-yellow-400/10'}`}
                                       >
                                         <Bookmark className={`w-6 h-6 ${isSaved ? 'fill-current' : ''}`} strokeWidth={1.5} />
                                       </button>
