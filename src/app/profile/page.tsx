@@ -277,14 +277,6 @@ export default function ProfilePage() {
                   <UserCircle size={52} strokeWidth={1} className="text-zinc-400 dark:text-zinc-600" />
                 )}
               </div>
-              {/* Account Type Pill */}
-              {profile && (
-                <div className="absolute -bottom-7 left-1/2 -translate-x-1/2 whitespace-nowrap">
-                  <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-black dark:bg-white text-white dark:text-black border-2 border-white dark:border-black">
-                    {profile.account_type === 'brand' ? 'Brand Account' : profile.account_type === 'community' ? 'Community' : 'Personal Account'}
-                  </span>
-                </div>
-              )}
             </div>
 
             <button
