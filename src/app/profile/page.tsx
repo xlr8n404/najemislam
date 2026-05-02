@@ -1,11 +1,11 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { PostCard } from '@/components/PostCard';
 import { VerifiedBadge } from '@/components/VerifiedBadge';
 import { BottomNav } from '@/components/BottomNav';
-import { Calendar, User, UserPen, Menu, Globe, Lock, Eye, EyeOff, UserCircle, AtSign, Cake, Mars, Venus, Heart, Briefcase } from 'lucide-react';
+import { Calendar, User, Menu, Globe, Lock, Eye, EyeOff, UserCircle, AtSign, Cake, Mars, Venus, Heart, Briefcase, QrCode, Download, ScanLine, Share2, Copy, X, Camera } from 'lucide-react';
 import { MainMenu } from '@/components/MainMenu';
 import { Loader } from '@/components/ui/loader';
 import { ProfileSkeleton } from '@/components/ProfileSkeleton';
@@ -15,6 +15,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { MentionText } from '@/components/MentionText';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
+import QRCode from 'qrcode';
 
 type Tab = 'posts' | 'stories' | 'saved' | 'about';
 
@@ -51,17 +52,139 @@ export default function ProfilePage() {
   const [followingCount, setFollowingCount] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
 
+  // Share Profile Bottom Sheet
+  const [shareSheetOpen, setShareSheetOpen] = useState(false);
+  const [qrDataUrl, setQrDataUrl] = useState<string>('');
+  const qrCanvasRef = useRef<HTMLCanvasElement>(null);
+
+  // Scan QR
+  const [scanning, setScanning] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const scanStreamRef = useRef<MediaStream | null>(null);
+  const scanIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
   useEffect(() => {
-    if (menuOpen) {
+    if (menuOpen || shareSheetOpen) {
       document.body.classList.add('no-scroll');
     } else {
       document.body.classList.remove('no-scroll');
     }
-
     return () => {
       document.body.classList.remove('no-scroll');
     };
-  }, [menuOpen]);
+  }, [menuOpen, shareSheetOpen]);
+
+  // Generate QR code when sheet opens
+  useEffect(() => {
+    if (shareSheetOpen && profile?.username) {
+      const profileUrl = `${window.location.origin}/user/${profile.username}`;
+      QRCode.toDataURL(profileUrl, {
+        width: 400,
+        margin: 2,
+        color: {
+          dark: '#000000',
+          light: '#ffffff',
+        },
+        errorCorrectionLevel: 'H',
+      }).then((url) => {
+        setQrDataUrl(url);
+      });
+    }
+  }, [shareSheetOpen, profile?.username]);
+
+  // Cleanup scan on unmount
+  useEffect(() => {
+    return () => {
+      stopScan();
+    };
+  }, []);
+
+  const stopScan = () => {
+    if (scanIntervalRef.current) {
+      clearInterval(scanIntervalRef.current);
+      scanIntervalRef.current = null;
+    }
+    if (scanStreamRef.current) {
+      scanStreamRef.current.getTracks().forEach(t => t.stop());
+      scanStreamRef.current = null;
+    }
+    setScanning(false);
+  };
+
+  const handleScanQR = async () => {
+    setScanning(true);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment' },
+      });
+      scanStreamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        await videoRef.current.play();
+      }
+
+      // Use BarcodeDetector if available
+      if ('BarcodeDetector' in window) {
+        const detector = new (window as any).BarcodeDetector({ formats: ['qr_code'] });
+        scanIntervalRef.current = setInterval(async () => {
+          if (!videoRef.current) return;
+          try {
+            const barcodes = await detector.detect(videoRef.current);
+            if (barcodes.length > 0) {
+              const rawValue: string = barcodes[0].rawValue;
+              stopScan();
+              // Parse username from URL or direct username
+              const match = rawValue.match(/\/user\/([^/?#]+)/);
+              if (match) {
+                router.push(`/user/${match[1]}`);
+                setShareSheetOpen(false);
+              } else {
+                toast.error('No valid profile QR code found');
+              }
+            }
+          } catch {}
+        }, 300);
+      } else {
+        toast.error('QR scanning not supported on this browser');
+        stopScan();
+      }
+    } catch {
+      toast.error('Camera access denied');
+      setScanning(false);
+    }
+  };
+
+  const handleDownloadQR = () => {
+    if (!qrDataUrl || !profile?.username) return;
+    const link = document.createElement('a');
+    link.href = qrDataUrl;
+    link.download = `${profile.username}-qr.png`;
+    link.click();
+  };
+
+  const handleShareTo = async () => {
+    if (!profile?.username) return;
+    const profileUrl = `${window.location.origin}/user/${profile.username}`;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: profile.full_name || profile.username,
+          text: `Check out @${profile.username} on Najem Islam`,
+          url: profileUrl,
+        });
+      } catch {}
+    } else {
+      await navigator.clipboard.writeText(profileUrl);
+      toast.success('Link copied to clipboard');
+    }
+  };
+
+  const handleCopyLink = async () => {
+    if (!profile?.username) return;
+    const profileUrl = `${window.location.origin}/user/${profile.username}`;
+    await navigator.clipboard.writeText(profileUrl);
+    toast.success('Link copied!');
+  };
 
   // Privacy Toggle States
   const [showPasswordModal, setShowPasswordModal] = useState(false);
@@ -77,7 +200,7 @@ export default function ProfilePage() {
   const handleLongPressStart = () => {
     longPressTimer.current = setTimeout(() => {
       setShowPasswordModal(true);
-    }, 800); // 800ms for long press
+    }, 800);
   };
 
   const handleLongPressEnd = () => {
@@ -95,7 +218,6 @@ export default function ProfilePage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user || !user.email) throw new Error('User not found');
 
-      // Verify password by attempting to sign in
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -131,86 +253,84 @@ export default function ProfilePage() {
     }
   };
 
-    useEffect(() => {
-      async function fetchProfile() {
-        try {
-          const { data: { user } } = await supabase.auth.getUser();
+  useEffect(() => {
+    async function fetchProfile() {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
 
-          if (user) {
-            const { data: profileData } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('id', user.id)
-              .maybeSingle();
+        if (user) {
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', user.id)
+            .maybeSingle();
 
-            if (profileData) {
-              setProfile(profileData);
-            }
+          if (profileData) {
+            setProfile(profileData);
+          }
 
-              const { data: postsData } = await supabase
-                .from('posts')
-                .select(`
+          const { data: postsData } = await supabase
+            .from('posts')
+            .select(`
+              *,
+              user:profiles(full_name, avatar_url, username, identity_tag),
+              original_post:reposted_id(
+                *,
+                user:profiles(full_name, avatar_url, username, identity_tag)
+              )
+            `)
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: false });
+
+          if (postsData) {
+            setPosts(postsData);
+          }
+
+          const { data: storiesData } = await supabase
+            .from('stories')
+            .select('id, content, bg_color, photo_url, created_at')
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: false });
+
+          if (storiesData) {
+            setStories(storiesData);
+          }
+
+          const { data: savedData } = await supabase
+            .from('saved_posts')
+            .select(`
+                post:posts(
                   *,
                   user:profiles(full_name, avatar_url, username, identity_tag),
                   original_post:reposted_id(
                     *,
                     user:profiles(full_name, avatar_url, username, identity_tag)
                   )
-                `)
-                .eq('user_id', user.id)
-                .order('created_at', { ascending: false });
+                )
+            `)
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: false });
 
-            if (postsData) {
-              setPosts(postsData);
-            }
-
-            // Fetch stories
-            const { data: storiesData } = await supabase
-              .from('stories')
-              .select('id, content, bg_color, photo_url, created_at')
-              .eq('user_id', user.id)
-              .order('created_at', { ascending: false });
-
-            if (storiesData) {
-              setStories(storiesData);
-            }
-
-            // Fetch saved posts
-            const { data: savedData } = await supabase
-              .from('saved_posts')
-              .select(`
-                  post:posts(
-                    *,
-                    user:profiles(full_name, avatar_url, username, identity_tag),
-                    original_post:reposted_id(
-                      *,
-                      user:profiles(full_name, avatar_url, username, identity_tag)
-                    )
-                  )
-              `)
-              .eq('user_id', user.id)
-              .order('created_at', { ascending: false });
-
-            if (savedData) {
-              setSavedPosts(savedData.map((s: any) => s.post).filter(Boolean));
-            }
-
-            const countsRes = await fetch(`/api/follow?user_id=${user.id}`);
-            if (countsRes.ok) {
-              const countsData = await countsRes.json();
-              setFollowersCount(countsData.followers_count || 0);
-              setFollowingCount(countsData.following_count || 0);
-            }
+          if (savedData) {
+            setSavedPosts(savedData.map((s: any) => s.post).filter(Boolean));
           }
-        } catch (err) {
-          console.error('Profile fetch error:', err);
-        } finally {
-          setLoading(false);
-        }
-      }
 
-      fetchProfile();
-    }, []);
+          const countsRes = await fetch(`/api/follow?user_id=${user.id}`);
+          if (countsRes.ok) {
+            const countsData = await countsRes.json();
+            setFollowersCount(countsData.followers_count || 0);
+            setFollowingCount(countsData.following_count || 0);
+          }
+        }
+      } catch (err) {
+        console.error('Profile fetch error:', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchProfile();
+  }, []);
 
 
   const coverSrc = profile?.cover_url && profile.cover_url.trim() !== ''
@@ -239,8 +359,8 @@ export default function ProfilePage() {
     );
   }
 
-    return (
-      <div className="min-h-screen bg-white dark:bg-black text-black dark:text-white selection:bg-black dark:selection:bg-white selection:text-white dark:selection:text-black">
+  return (
+    <div className="min-h-screen bg-white dark:bg-black text-black dark:text-white selection:bg-black dark:selection:bg-white selection:text-white dark:selection:text-black">
 
       <MainMenu
         open={menuOpen}
@@ -265,72 +385,73 @@ export default function ProfilePage() {
             )}
           </div>
 
-            <div className="absolute -bottom-10 left-4 w-20 h-20">
-              <div className="w-full h-full rounded-full border-4 border-white dark:border-black overflow-hidden bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center">
-                {avatarSrc ? (
-                  <img
-                    src={avatarSrc}
-                    alt={profile?.full_name || 'User'}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <UserCircle size={52} strokeWidth={1} className="text-zinc-400 dark:text-zinc-600" />
-                )}
-              </div>
+          <div className="absolute -bottom-10 left-4 w-20 h-20">
+            <div className="w-full h-full rounded-full border-4 border-white dark:border-black overflow-hidden bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center">
+              {avatarSrc ? (
+                <img
+                  src={avatarSrc}
+                  alt={profile?.full_name || 'User'}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <UserCircle size={52} strokeWidth={1} className="text-zinc-400 dark:text-zinc-600" />
+              )}
             </div>
+          </div>
 
-            <button
-              onClick={() => setMenuOpen(true)}
-              className="absolute top-4 right-4 p-2.5 bg-white/90 dark:bg-black/90 backdrop-blur-sm text-black dark:text-white rounded-full border border-black/10 dark:border-white/10 hover:bg-white dark:hover:bg-black transition-colors"
+          <button
+            onClick={() => setMenuOpen(true)}
+            className="absolute top-4 right-4 p-2.5 bg-white/90 dark:bg-black/90 backdrop-blur-sm text-black dark:text-white rounded-full border border-black/10 dark:border-white/10 hover:bg-white dark:hover:bg-black transition-colors"
+          >
+            <Menu size={24} strokeWidth={1.5} />
+          </button>
+        </div>
+
+        <div className="mt-[4.5rem] px-4">
+          <div className="flex items-center gap-x-2 gap-y-1 flex-wrap">
+            <h1 className="text-2xl font-bold">{profile?.full_name || profile?.username}</h1>
+            <VerifiedBadge username={profile?.username} />
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">@{profile?.username}</p>
+          </div>
+          <div className="flex items-center gap-4 mt-4">
+            <div className="text-center">
+              <span className="font-bold">{posts.length}</span>
+              <span className="text-zinc-500 text-sm ml-1">Posts</span>
+            </div>
+            <div className="text-center">
+              <span className="font-bold">{followersCount}</span>
+              <span className="text-zinc-500 text-sm ml-1">Followers</span>
+            </div>
+            <div className="text-center">
+              <span className="font-bold">{followingCount}</span>
+              <span className="text-zinc-500 text-sm ml-1">Following</span>
+            </div>
+          </div>
+
+          {(() => {
+            const blurb = profile?.account_type === 'brand' ? profile?.description : profile?.bio;
+            return blurb ? (
+              <p className="mt-4 text-zinc-700 dark:text-zinc-300 text-[15px] leading-relaxed">
+                <MentionText text={blurb} />
+              </p>
+            ) : null;
+          })()}
+
+          <div className="flex gap-3 mt-6 mb-6">
+            <Link
+              href="/profile/edit"
+              className="flex-1 flex items-center justify-center px-4 py-2.5 bg-zinc-100 dark:bg-zinc-900 text-black dark:text-white font-bold text-sm rounded-full border border-black/10 dark:border-white/10 hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors"
             >
-              <Menu size={24} strokeWidth={1.5} />
+              Edit Profile
+            </Link>
+            <button
+              onClick={() => setShareSheetOpen(true)}
+              className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-black dark:bg-white text-white dark:text-black font-bold text-sm rounded-full hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors"
+            >
+              <QrCode size={16} strokeWidth={2} />
+              Share Profile
             </button>
-            </div>
-
-            <div className="mt-[4.5rem] px-4">
-                <div className="flex items-center gap-x-2 gap-y-1 flex-wrap">
-                  <h1 className="text-2xl font-bold">{profile?.full_name || profile?.username}</h1>
-                  <VerifiedBadge username={profile?.username} />
-                  <p className="text-sm text-zinc-500 dark:text-zinc-400">@{profile?.username}</p>
-                </div>
-              <div className="flex items-center gap-4 mt-4">
-                <div className="text-center">
-                  <span className="font-bold">{posts.length}</span>
-                  <span className="text-zinc-500 text-sm ml-1">Posts</span>
-                </div>
-                <div className="text-center">
-                  <span className="font-bold">{followersCount}</span>
-                  <span className="text-zinc-500 text-sm ml-1">Followers</span>
-                </div>
-                <div className="text-center">
-                  <span className="font-bold">{followingCount}</span>
-                  <span className="text-zinc-500 text-sm ml-1">Following</span>
-                </div>
-              </div>
-
-            {(() => {
-              const blurb = profile?.account_type === 'brand' ? profile?.description : profile?.bio;
-              return blurb ? (
-                <p className="mt-4 text-zinc-700 dark:text-zinc-300 text-[15px] leading-relaxed">
-                  <MentionText text={blurb} />
-                </p>
-              ) : null;
-            })()}
-
-            <div className="flex gap-3 mt-6 mb-6">
-              <Link
-                href="/profile/edit"
-                className="flex-1 flex items-center justify-center px-4 py-2.5 bg-zinc-100 dark:bg-zinc-900 text-black dark:text-white font-bold text-sm rounded-full border border-black/10 dark:border-white/10 hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors"
-              >
-                Edit Profile
-              </Link>
-              <Link
-                href="/post/create"
-                className="flex-1 flex items-center justify-center px-4 py-2.5 bg-black dark:bg-white text-white dark:text-black font-bold text-sm rounded-full hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors"
-              >
-                Create Post
-              </Link>
-            </div>
+          </div>
 
           <div className="flex mt-6">
             <button
@@ -403,238 +524,364 @@ export default function ProfilePage() {
         </div>
 
         <div className="mt-4">
-            {activeTab === 'posts' ? (
-              posts.length > 0 ? (
-                <div className="flex flex-col">
-                  {posts.map((post) => (
-                    <PostCard
-                      key={post.id}
-                      {...post}
-                      onDelete={handleDeletePost}
-                      avatarSize={40}
-                    />
-                  ))}
+          {activeTab === 'posts' ? (
+            posts.length > 0 ? (
+              <div className="flex flex-col">
+                {posts.map((post) => (
+                  <PostCard
+                    key={post.id}
+                    {...post}
+                    onDelete={handleDeletePost}
+                    avatarSize={40}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-16 text-center px-4">
+                <div className="w-16 h-16 bg-zinc-100 dark:bg-zinc-900 rounded-full flex items-center justify-center mb-4">
+                  <span className="text-2xl">📭</span>
                 </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center py-16 text-center px-4">
-                  <div className="w-16 h-16 bg-zinc-100 dark:bg-zinc-900 rounded-full flex items-center justify-center mb-4">
-                    <span className="text-2xl">📭</span>
-                  </div>
-                  <h3 className="text-xl font-bold mb-2">No posts yet</h3>
-                  <p className="text-zinc-500 max-w-[240px]">
-                    Share your first post with the world!
-                  </p>
-                </div>
-              )
-            ) : activeTab === 'stories' ? (
-              stories.length > 0 ? (
-                <div className="grid grid-cols-2 gap-3 px-4">
-                  {stories.map((story) => (
-                    <Link
-                      key={story.id}
-                      href={`/stories/view?id=${story.id}`}
-                      className="relative rounded-2xl overflow-hidden group"
-                      style={{ aspectRatio: '9/16' }}
-                    >
-                      {story.photo_url ? (
-                        <img
-                          src={story.photo_url.startsWith('__posts__') ? `/api/media/posts/${story.photo_url.replace('__posts__', '')}` : story.photo_url.startsWith('/api/') ? story.photo_url : `/api/media/stories/${story.photo_url}`}
-                          alt="Story"
-                          className="absolute inset-0 w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="absolute inset-0 w-full h-full" style={{ backgroundColor: story.bg_color || '#18181b' }} />
-                      )}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                      {story.content && (
-                        <div className="absolute inset-0 flex items-center justify-center px-3">
-                          <p className="text-white text-sm font-medium text-center leading-snug line-clamp-4 drop-shadow-md">
-                            {story.content}
-                          </p>
-                        </div>
-                      )}
-                      <div className="absolute bottom-0 left-0 right-0 px-2.5 pb-2.5 flex items-center gap-2">
-                        <div className="w-10 h-10 rounded-full border-2 border-white/80 overflow-hidden bg-zinc-700 flex-shrink-0">
-                          {avatarSrc ? (
-                            <img src={avatarSrc} alt={profile?.full_name || 'User'} className="w-full h-full object-cover" />
-                          ) : (
-                            <UserCircle size={40} strokeWidth={1} className="text-zinc-400 w-full h-full" />
-                          )}
-                        </div>
-                        <p className="text-white text-[13px] font-semibold leading-tight truncate">
-                          {profile?.full_name || profile?.username || 'User'}
+                <h3 className="text-xl font-bold mb-2">No posts yet</h3>
+                <p className="text-zinc-500 max-w-[240px]">
+                  Share your first post with the world!
+                </p>
+              </div>
+            )
+          ) : activeTab === 'stories' ? (
+            stories.length > 0 ? (
+              <div className="grid grid-cols-2 gap-3 px-4">
+                {stories.map((story) => (
+                  <Link
+                    key={story.id}
+                    href={`/stories/view?id=${story.id}`}
+                    className="relative rounded-2xl overflow-hidden group"
+                    style={{ aspectRatio: '9/16' }}
+                  >
+                    {story.photo_url ? (
+                      <img
+                        src={story.photo_url.startsWith('__posts__') ? `/api/media/posts/${story.photo_url.replace('__posts__', '')}` : story.photo_url.startsWith('/api/') ? story.photo_url : `/api/media/stories/${story.photo_url}`}
+                        alt="Story"
+                        className="absolute inset-0 w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 w-full h-full" style={{ backgroundColor: story.bg_color || '#18181b' }} />
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                    {story.content && (
+                      <div className="absolute inset-0 flex items-center justify-center px-3">
+                        <p className="text-white text-sm font-medium text-center leading-snug line-clamp-4 drop-shadow-md">
+                          {story.content}
                         </p>
                       </div>
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
-                    </Link>
-                  ))}
-                </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center py-16 text-center px-4">
-                  <div className="w-16 h-16 bg-zinc-100 dark:bg-zinc-900 rounded-full flex items-center justify-center mb-4">
-                    <span className="text-2xl">📖</span>
-                  </div>
-                  <h3 className="text-xl font-bold mb-2">No stories yet</h3>
-                  <p className="text-zinc-500 max-w-[240px]">
-                    Share your first story!
-                  </p>
-                </div>
-              )
-            ) : activeTab === 'saved' ? (
-              savedPosts.length > 0 ? (
-                <div className="flex flex-col">
-                  {savedPosts.map((post) => (
-                    <PostCard
-                      key={post.id}
-                      {...post}
-                      avatarSize={40}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center py-16 text-center px-4">
-                  <div className="w-16 h-16 bg-zinc-100 dark:bg-zinc-900 rounded-full flex items-center justify-center mb-4">
-                    <span className="text-2xl">🔖</span>
-                  </div>
-                  <h3 className="text-xl font-bold mb-2">No saved posts</h3>
-                  <p className="text-zinc-500 max-w-[240px]">
-                    Posts you save will appear here.
-                  </p>
-                </div>
-              )
-              ) : (
-                <div className="px-4 py-4 space-y-4">
-                  {/* Bio / Description Box */}
-                  <div className="bg-zinc-100 dark:bg-zinc-900/50 rounded-2xl p-4 border border-black/5 dark:border-white/5">
-                    <div className="flex items-center gap-3 text-zinc-500 dark:text-zinc-400 mb-3">
-                      <span className="text-xs font-bold uppercase tracking-widest">
-                        {profile?.account_type === 'brand' ? 'Description' : 'Bio'}
-                      </span>
-                    </div>
-                    <p className="text-black dark:text-white leading-relaxed text-[15px]">
-                      {profile?.account_type === 'brand'
-                        ? (profile?.description ? <MentionText text={profile.description} /> : 'No description yet.')
-                        : (profile?.bio ? <MentionText text={profile.bio} /> : 'No bio yet.')
-                      }
-                    </p>
-                  </div>
-
-                  {/* Details Box */}
-                  <div className="bg-zinc-100 dark:bg-zinc-900/50 rounded-2xl p-4 border border-black/5 dark:border-white/5 space-y-6">
-                    {/* Account Type — always shown */}
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-xl bg-black/5 dark:bg-white/5 flex items-center justify-center text-zinc-500 dark:text-zinc-400">
-                        {profile?.account_type === 'brand' ? (
-                          <Briefcase size={22} strokeWidth={1.5} />
+                    )}
+                    <div className="absolute bottom-0 left-0 right-0 px-2.5 pb-2.5 flex items-center gap-2">
+                      <div className="w-10 h-10 rounded-full border-2 border-white/80 overflow-hidden bg-zinc-700 flex-shrink-0">
+                        {avatarSrc ? (
+                          <img src={avatarSrc} alt={profile?.full_name || 'User'} className="w-full h-full object-cover" />
                         ) : (
-                          <User size={22} strokeWidth={1.5} />
+                          <UserCircle size={40} strokeWidth={1} className="text-zinc-400 w-full h-full" />
                         )}
                       </div>
-                      <div className="flex-1">
-                        <p className="text-[12px] text-zinc-500 dark:text-zinc-400 font-medium">Account Type</p>
-                        <p className="font-semibold text-black dark:text-white">
-                          {profile?.account_type === 'brand' ? 'Brand Account' : 'Personal Account'}
-                        </p>
-                      </div>
+                      <p className="text-white text-[13px] font-semibold leading-tight truncate">
+                        {profile?.full_name || profile?.username || 'User'}
+                      </p>
                     </div>
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-16 text-center px-4">
+                <div className="w-16 h-16 bg-zinc-100 dark:bg-zinc-900 rounded-full flex items-center justify-center mb-4">
+                  <span className="text-2xl">📖</span>
+                </div>
+                <h3 className="text-xl font-bold mb-2">No stories yet</h3>
+                <p className="text-zinc-500 max-w-[240px]">
+                  Share your first story!
+                </p>
+              </div>
+            )
+          ) : activeTab === 'saved' ? (
+            savedPosts.length > 0 ? (
+              <div className="flex flex-col">
+                {savedPosts.map((post) => (
+                  <PostCard
+                    key={post.id}
+                    {...post}
+                    avatarSize={40}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-16 text-center px-4">
+                <div className="w-16 h-16 bg-zinc-100 dark:bg-zinc-900 rounded-full flex items-center justify-center mb-4">
+                  <span className="text-2xl">🔖</span>
+                </div>
+                <h3 className="text-xl font-bold mb-2">No saved posts</h3>
+                <p className="text-zinc-500 max-w-[240px]">
+                  Posts you save will appear here.
+                </p>
+              </div>
+            )
+          ) : (
+            <div className="px-4 py-4 space-y-4">
+              {/* Bio / Description Box */}
+              <div className="bg-zinc-100 dark:bg-zinc-900/50 rounded-2xl p-4 border border-black/5 dark:border-white/5">
+                <div className="flex items-center gap-3 text-zinc-500 dark:text-zinc-400 mb-3">
+                  <span className="text-xs font-bold uppercase tracking-widest">
+                    {profile?.account_type === 'brand' ? 'Description' : 'Bio'}
+                  </span>
+                </div>
+                <p className="text-black dark:text-white leading-relaxed text-[15px]">
+                  {profile?.account_type === 'brand'
+                    ? (profile?.description ? <MentionText text={profile.description} /> : 'No description yet.')
+                    : (profile?.bio ? <MentionText text={profile.bio} /> : 'No bio yet.')
+                  }
+                </p>
+              </div>
 
-                    {/* Full Name — always shown */}
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-xl bg-black/5 dark:bg-white/5 flex items-center justify-center text-zinc-500 dark:text-zinc-400">
-                        <UserCircle size={22} strokeWidth={1.5} />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-[12px] text-zinc-500 dark:text-zinc-400 font-medium">Full Name</p>
-                        <p className="font-semibold text-black dark:text-white">{profile?.full_name || 'Not set'}</p>
-                      </div>
-                    </div>
-
-                    {/* Username — always shown */}
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-xl bg-black/5 dark:bg-white/5 flex items-center justify-center text-zinc-500 dark:text-zinc-400">
-                        <AtSign size={22} strokeWidth={1.5} />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-[12px] text-zinc-500 dark:text-zinc-400 font-medium">Sharable ID</p>
-                        <p className="font-semibold text-black dark:text-white">@{profile?.username || 'Not set'}</p>
-                      </div>
-                    </div>
-
-                    {/* PERSONAL: Date of Birth */}
-                    {profile?.account_type !== 'brand' && (
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-xl bg-black/5 dark:bg-white/5 flex items-center justify-center text-zinc-500 dark:text-zinc-400">
-                          <Cake size={22} strokeWidth={1.5} />
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-[12px] text-zinc-500 dark:text-zinc-400 font-medium">Date of Birth</p>
-                          <p className="font-semibold text-black dark:text-white">{formatDate(profile?.date_of_birth || '')}</p>
-                        </div>
-                      </div>
+              {/* Details Box */}
+              <div className="bg-zinc-100 dark:bg-zinc-900/50 rounded-2xl p-4 border border-black/5 dark:border-white/5 space-y-6">
+                {/* Account Type — always shown */}
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-black/5 dark:bg-white/5 flex items-center justify-center text-zinc-500 dark:text-zinc-400">
+                    {profile?.account_type === 'brand' ? (
+                      <Briefcase size={22} strokeWidth={1.5} />
+                    ) : (
+                      <User size={22} strokeWidth={1.5} />
                     )}
-
-                    {/* PERSONAL: Gender */}
-                    {profile?.account_type !== 'brand' && (
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-xl bg-black/5 dark:bg-white/5 flex items-center justify-center text-zinc-500 dark:text-zinc-400">
-                          {profile?.gender?.toLowerCase() === 'male' ? (
-                            <Mars size={22} strokeWidth={1.5} className="text-blue-500" />
-                          ) : profile?.gender?.toLowerCase() === 'female' ? (
-                            <Venus size={22} strokeWidth={1.5} className="text-pink-500" />
-                          ) : (
-                            <User size={22} strokeWidth={1.5} />
-                          )}
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-[12px] text-zinc-500 dark:text-zinc-400 font-medium">Gender</p>
-                          <p className="font-semibold text-black dark:text-white capitalize">{profile?.gender || 'Not set'}</p>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* PERSONAL: Relationship Status */}
-                    {profile?.account_type !== 'brand' && (
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-xl bg-black/5 dark:bg-white/5 flex items-center justify-center text-zinc-500 dark:text-zinc-400">
-                          <Heart size={22} strokeWidth={1.5} />
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-[12px] text-zinc-500 dark:text-zinc-400 font-medium">Relationship Status</p>
-                          <p className="font-semibold text-black dark:text-white">{profile?.relationship_status || 'Not set'}</p>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* BRAND: Since */}
-                    {profile?.account_type === 'brand' && (
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-xl bg-black/5 dark:bg-white/5 flex items-center justify-center text-zinc-500 dark:text-zinc-400">
-                          <Calendar size={22} strokeWidth={1.5} />
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-[12px] text-zinc-500 dark:text-zinc-400 font-medium">Since</p>
-                          <p className="font-semibold text-black dark:text-white">{profile?.since ? formatDate(profile.since) : 'Not set'}</p>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Active From — always shown */}
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-xl bg-black/5 dark:bg-white/5 flex items-center justify-center text-zinc-500 dark:text-zinc-400">
-                        <Calendar size={22} strokeWidth={1.5} />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-[12px] text-zinc-500 dark:text-zinc-400 font-medium">Active From</p>
-                        <p className="font-semibold text-black dark:text-white">{formatDate(profile?.created_at || '')}</p>
-                      </div>
-                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-[12px] text-zinc-500 dark:text-zinc-400 font-medium">Account Type</p>
+                    <p className="font-semibold text-black dark:text-white">
+                      {profile?.account_type === 'brand' ? 'Brand Account' : 'Personal Account'}
+                    </p>
                   </div>
                 </div>
-              )}
 
+                {/* Full Name — always shown */}
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-black/5 dark:bg-white/5 flex items-center justify-center text-zinc-500 dark:text-zinc-400">
+                    <UserCircle size={22} strokeWidth={1.5} />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-[12px] text-zinc-500 dark:text-zinc-400 font-medium">Full Name</p>
+                    <p className="font-semibold text-black dark:text-white">{profile?.full_name || 'Not set'}</p>
+                  </div>
+                </div>
+
+                {/* Username — always shown */}
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-black/5 dark:bg-white/5 flex items-center justify-center text-zinc-500 dark:text-zinc-400">
+                    <AtSign size={22} strokeWidth={1.5} />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-[12px] text-zinc-500 dark:text-zinc-400 font-medium">Sharable ID</p>
+                    <p className="font-semibold text-black dark:text-white">@{profile?.username || 'Not set'}</p>
+                  </div>
+                </div>
+
+                {/* PERSONAL: Date of Birth */}
+                {profile?.account_type !== 'brand' && (
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-black/5 dark:bg-white/5 flex items-center justify-center text-zinc-500 dark:text-zinc-400">
+                      <Cake size={22} strokeWidth={1.5} />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-[12px] text-zinc-500 dark:text-zinc-400 font-medium">Date of Birth</p>
+                      <p className="font-semibold text-black dark:text-white">{formatDate(profile?.date_of_birth || '')}</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* PERSONAL: Gender */}
+                {profile?.account_type !== 'brand' && (
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-black/5 dark:bg-white/5 flex items-center justify-center text-zinc-500 dark:text-zinc-400">
+                      {profile?.gender?.toLowerCase() === 'male' ? (
+                        <Mars size={22} strokeWidth={1.5} className="text-blue-500" />
+                      ) : profile?.gender?.toLowerCase() === 'female' ? (
+                        <Venus size={22} strokeWidth={1.5} className="text-pink-500" />
+                      ) : (
+                        <User size={22} strokeWidth={1.5} />
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-[12px] text-zinc-500 dark:text-zinc-400 font-medium">Gender</p>
+                      <p className="font-semibold text-black dark:text-white capitalize">{profile?.gender || 'Not set'}</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* PERSONAL: Relationship Status */}
+                {profile?.account_type !== 'brand' && (
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-black/5 dark:bg-white/5 flex items-center justify-center text-zinc-500 dark:text-zinc-400">
+                      <Heart size={22} strokeWidth={1.5} />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-[12px] text-zinc-500 dark:text-zinc-400 font-medium">Relationship Status</p>
+                      <p className="font-semibold text-black dark:text-white">{profile?.relationship_status || 'Not set'}</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* BRAND: Since */}
+                {profile?.account_type === 'brand' && (
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-black/5 dark:bg-white/5 flex items-center justify-center text-zinc-500 dark:text-zinc-400">
+                      <Calendar size={22} strokeWidth={1.5} />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-[12px] text-zinc-500 dark:text-zinc-400 font-medium">Since</p>
+                      <p className="font-semibold text-black dark:text-white">{profile?.since ? formatDate(profile.since) : 'Not set'}</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Active From — always shown */}
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-black/5 dark:bg-white/5 flex items-center justify-center text-zinc-500 dark:text-zinc-400">
+                    <Calendar size={22} strokeWidth={1.5} />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-[12px] text-zinc-500 dark:text-zinc-400 font-medium">Active From</p>
+                    <p className="font-semibold text-black dark:text-white">{formatDate(profile?.created_at || '')}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </main>
 
+      {/* ── Share Profile Bottom Sheet ── */}
+      <AnimatePresence>
+        {shareSheetOpen && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => { setShareSheetOpen(false); stopScan(); }}
+              className="fixed inset-0 z-[90] bg-black/60 backdrop-blur-sm"
+            />
+
+            {/* Sheet */}
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+              className="fixed bottom-0 left-0 right-0 z-[100] bg-white dark:bg-zinc-950 rounded-t-3xl px-5 pt-4 pb-8 max-w-xl mx-auto shadow-2xl"
+            >
+              {/* Handle */}
+              <div className="w-10 h-1 bg-zinc-300 dark:bg-zinc-700 rounded-full mx-auto mb-5" />
+
+              {/* Close button */}
+              <button
+                onClick={() => { setShareSheetOpen(false); stopScan(); }}
+                className="absolute top-4 right-4 p-1.5 text-zinc-400 hover:text-black dark:hover:text-white transition-colors"
+              >
+                <X size={20} />
+              </button>
+
+              <h2 className="text-lg font-bold text-center mb-6">Share Profile</h2>
+
+              {scanning ? (
+                /* ── Scanner View ── */
+                <div className="flex flex-col items-center gap-4">
+                  <div className="relative w-full max-w-[280px] mx-auto rounded-2xl overflow-hidden bg-black aspect-square">
+                    <video
+                      ref={videoRef}
+                      className="w-full h-full object-cover"
+                      muted
+                      playsInline
+                    />
+                    {/* Scan overlay */}
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                      <div className="w-48 h-48 border-2 border-white/80 rounded-2xl relative">
+                        <span className="absolute top-0 left-0 w-6 h-6 border-t-4 border-l-4 border-white rounded-tl-lg -translate-x-0.5 -translate-y-0.5" />
+                        <span className="absolute top-0 right-0 w-6 h-6 border-t-4 border-r-4 border-white rounded-tr-lg translate-x-0.5 -translate-y-0.5" />
+                        <span className="absolute bottom-0 left-0 w-6 h-6 border-b-4 border-l-4 border-white rounded-bl-lg -translate-x-0.5 translate-y-0.5" />
+                        <span className="absolute bottom-0 right-0 w-6 h-6 border-b-4 border-r-4 border-white rounded-br-lg translate-x-0.5 translate-y-0.5" />
+                      </div>
+                    </div>
+                  </div>
+                  <p className="text-sm text-zinc-500 text-center">Point the camera at a profile QR code</p>
+                  <button
+                    onClick={stopScan}
+                    className="px-6 py-2.5 rounded-full bg-zinc-100 dark:bg-zinc-900 text-black dark:text-white font-bold text-sm hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors"
+                  >
+                    Cancel Scan
+                  </button>
+                </div>
+              ) : (
+                /* ── QR & Actions View ── */
+                <div className="flex flex-col items-center gap-5">
+                  {/* QR Code */}
+                  <div className="p-4 bg-white rounded-2xl shadow-sm border border-black/5">
+                    {qrDataUrl ? (
+                      <img
+                        src={qrDataUrl}
+                        alt="Profile QR Code"
+                        className="w-52 h-52 object-contain"
+                        style={{ imageRendering: 'pixelated' }}
+                      />
+                    ) : (
+                      <div className="w-52 h-52 flex items-center justify-center">
+                        <Loader centered={false} />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Username */}
+                  <p className="text-base font-bold text-black dark:text-white">@{profile?.username}</p>
+
+                  {/* Top action buttons */}
+                  <div className="flex gap-3 w-full">
+                    <button
+                      onClick={handleDownloadQR}
+                      className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl bg-zinc-100 dark:bg-zinc-900 text-black dark:text-white font-bold text-sm hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors border border-black/5 dark:border-white/5"
+                    >
+                      <Download size={16} strokeWidth={2} />
+                      Download QR
+                    </button>
+                    <button
+                      onClick={handleScanQR}
+                      className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl bg-zinc-100 dark:bg-zinc-900 text-black dark:text-white font-bold text-sm hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors border border-black/5 dark:border-white/5"
+                    >
+                      <ScanLine size={16} strokeWidth={2} />
+                      Scan QR
+                    </button>
+                  </div>
+
+                  {/* Bottom action buttons */}
+                  <div className="flex gap-3 w-full">
+                    <button
+                      onClick={handleShareTo}
+                      className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl bg-black dark:bg-white text-white dark:text-black font-bold text-sm hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors"
+                    >
+                      <Share2 size={16} strokeWidth={2} />
+                      Share to
+                    </button>
+                    <button
+                      onClick={handleCopyLink}
+                      className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl bg-black dark:bg-white text-white dark:text-black font-bold text-sm hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors"
+                    >
+                      <Copy size={16} strokeWidth={2} />
+                      Copy link
+                    </button>
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* ── Password Modal ── */}
       <AnimatePresence>
         {showPasswordModal && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
