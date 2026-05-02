@@ -404,82 +404,79 @@ export default function ProfilePage() {
           </button>
         </div>
 
-        <div className="mt-12 px-4 pb-2">
-          {/* Name + username */}
-          <div className="flex flex-col gap-0.5">
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <h1 className="text-xl font-bold leading-tight">{profile?.full_name || profile?.username}</h1>
-              <VerifiedBadge username={profile?.username} />
-            </div>
+        <div className="mt-12 px-4">
+          <div className="flex items-center gap-x-2 gap-y-1 flex-wrap">
+            <h1 className="text-2xl font-bold">{profile?.full_name || profile?.username}</h1>
+            <VerifiedBadge username={profile?.username} />
             <p className="text-sm text-zinc-500 dark:text-zinc-400">@{profile?.username}</p>
           </div>
-
-          {/* Stats */}
-          <div className="flex items-center gap-5 mt-3">
-            <div className="flex items-center gap-1">
-              <span className="font-bold text-sm">{posts.length}</span>
-              <span className="text-zinc-500 text-sm">Posts</span>
+          <div className="flex items-center gap-4 mt-4">
+            <div className="text-center">
+              <span className="font-bold">{posts.length}</span>
+              <span className="text-zinc-500 text-sm ml-1">Posts</span>
             </div>
-            <div className="flex items-center gap-1">
-              <span className="font-bold text-sm">{followersCount}</span>
-              <span className="text-zinc-500 text-sm">Followers</span>
+            <div className="text-center">
+              <span className="font-bold">{followersCount}</span>
+              <span className="text-zinc-500 text-sm ml-1">Followers</span>
             </div>
-            <div className="flex items-center gap-1">
-              <span className="font-bold text-sm">{followingCount}</span>
-              <span className="text-zinc-500 text-sm">Following</span>
+            <div className="text-center">
+              <span className="font-bold">{followingCount}</span>
+              <span className="text-zinc-500 text-sm ml-1">Following</span>
             </div>
           </div>
 
-          {/* Bio */}
           {(() => {
             const blurb = profile?.account_type === 'brand' ? profile?.description : profile?.bio;
             return blurb ? (
-              <p className="mt-3 text-zinc-700 dark:text-zinc-300 text-[14px] leading-relaxed">
+              <p className="mt-4 text-zinc-700 dark:text-zinc-300 text-[15px] leading-relaxed">
                 <MentionText text={blurb} />
               </p>
             ) : null;
           })()}
 
-          {/* Action buttons */}
-          <div className="flex gap-2 mt-4">
+          <div className="flex gap-3 mt-6 mb-6">
             <Link
               href="/profile/edit"
-              className="flex-1 flex items-center justify-center px-4 py-2.5 bg-zinc-100 dark:bg-zinc-900 text-black dark:text-white font-semibold text-sm rounded-xl border border-black/10 dark:border-white/10 hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors"
+              className="flex-1 flex items-center justify-center px-4 py-2.5 bg-zinc-100 dark:bg-zinc-900 text-black dark:text-white font-bold text-sm rounded-full border border-black/10 dark:border-white/10 hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors"
             >
               Edit Profile
             </Link>
             <button
               onClick={() => setShareSheetOpen(true)}
-              className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 bg-black dark:bg-white text-white dark:text-black font-semibold text-sm rounded-xl hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors"
+              className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-black dark:bg-white text-white dark:text-black font-bold text-sm rounded-full hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors"
             >
-              <QrCode size={15} strokeWidth={2} />
+              <QrCode size={16} strokeWidth={2} />
               Share Profile
             </button>
           </div>
-        </div>
 
-        {/* Tabs */}
-        <div className="flex mt-4 border-b border-zinc-100 dark:border-zinc-900">
+          <div className="flex mt-6">
             <button
               onClick={() => setActiveTab('posts')}
-              className={`flex-1 py-3 text-sm font-semibold transition-colors relative ${
-                activeTab === 'posts' ? 'text-black dark:text-white' : 'text-zinc-400 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
+              className={`flex-1 py-3 text-sm font-bold transition-colors relative ${
+                activeTab === 'posts' ? 'text-black dark:text-white' : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
               }`}
             >
               Posts
               {activeTab === 'posts' && (
-                <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-black dark:bg-white" />
+                <motion.div
+                  layoutId="activeTab"
+                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-black dark:bg-white"
+                />
               )}
             </button>
             <button
               onClick={() => setActiveTab('stories')}
-              className={`flex-1 py-3 text-sm font-semibold transition-colors relative ${
-                activeTab === 'stories' ? 'text-black dark:text-white' : 'text-zinc-400 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
+              className={`flex-1 py-3 text-sm font-bold transition-colors relative ${
+                activeTab === 'stories' ? 'text-black dark:text-white' : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
               }`}
             >
               Stories
               {activeTab === 'stories' && (
-                <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-black dark:bg-white" />
+                <motion.div
+                  layoutId="activeTab"
+                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-black dark:bg-white"
+                />
               )}
             </button>
             <button
@@ -489,34 +486,41 @@ export default function ProfilePage() {
               onMouseLeave={handleLongPressEnd}
               onTouchStart={handleLongPressStart}
               onTouchEnd={handleLongPressEnd}
-              className={`flex-1 py-3 text-sm font-semibold transition-colors relative flex items-center justify-center gap-1 ${
-                activeTab === 'saved' ? 'text-black dark:text-white' : 'text-zinc-400 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
+              className={`flex-1 py-3 text-sm font-bold transition-colors relative flex items-center justify-center gap-1.5 ${
+                activeTab === 'saved' ? 'text-black dark:text-white' : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
               }`}
             >
               Saved
               {profile?.saved_visibility === 'public' ? (
-                <Globe size={13} strokeWidth={1.5} className="opacity-60" />
+                <Globe size={14} strokeWidth={1.5} className="opacity-70" />
               ) : (
-                <Lock size={13} strokeWidth={1.5} className="opacity-60" />
+                <Lock size={14} strokeWidth={1.5} className="opacity-70" />
               )}
               {activeTab === 'saved' && (
-                <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-black dark:bg-white" />
+                <motion.div
+                  layoutId="activeTab"
+                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-black dark:bg-white"
+                />
               )}
             </button>
             <button
               onClick={() => setActiveTab('about')}
-              className={`flex-1 py-3 text-sm font-semibold transition-colors relative ${
-                activeTab === 'about' ? 'text-black dark:text-white' : 'text-zinc-400 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
+              className={`flex-1 py-3 text-sm font-bold transition-colors relative ${
+                activeTab === 'about' ? 'text-black dark:text-white' : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
               }`}
             >
               About
               {activeTab === 'about' && (
-                <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-black dark:bg-white" />
+                <motion.div
+                  layoutId="activeTab"
+                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-black dark:bg-white"
+                />
               )}
             </button>
           </div>
+        </div>
 
-        <div className="mt-2">
+        <div className="mt-4">
           {activeTab === 'posts' ? (
             posts.length > 0 ? (
               <div className="flex flex-col">
@@ -542,7 +546,7 @@ export default function ProfilePage() {
             )
           ) : activeTab === 'stories' ? (
             stories.length > 0 ? (
-              <div className="grid grid-cols-2 gap-2 px-4 pt-3">
+              <div className="grid grid-cols-2 gap-3 px-4">
                 {stories.map((story) => (
                   <Link
                     key={story.id}
@@ -617,10 +621,10 @@ export default function ProfilePage() {
               </div>
             )
           ) : (
-            <div className="px-4 pt-4 pb-4 space-y-3">
+            <div className="px-4 py-4 space-y-4">
               {/* Bio / Description Box */}
               <div className="bg-zinc-100 dark:bg-zinc-900/50 rounded-2xl p-4 border border-black/5 dark:border-white/5">
-                <div className="flex items-center gap-3 text-zinc-500 dark:text-zinc-400 mb-2">
+                <div className="flex items-center gap-3 text-zinc-500 dark:text-zinc-400 mb-3">
                   <span className="text-xs font-bold uppercase tracking-widest">
                     {profile?.account_type === 'brand' ? 'Description' : 'Bio'}
                   </span>
@@ -634,7 +638,7 @@ export default function ProfilePage() {
               </div>
 
               {/* Details Box */}
-              <div className="bg-zinc-100 dark:bg-zinc-900/50 rounded-2xl p-4 border border-black/5 dark:border-white/5 space-y-4">
+              <div className="bg-zinc-100 dark:bg-zinc-900/50 rounded-2xl p-4 border border-black/5 dark:border-white/5 space-y-6">
                 {/* Account Type — always shown */}
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 rounded-xl bg-black/5 dark:bg-white/5 flex items-center justify-center text-zinc-500 dark:text-zinc-400">
