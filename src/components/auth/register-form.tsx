@@ -79,7 +79,7 @@ export function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFormProps) 
 
   const handleNext = () => {
     if (step === 1 && usernameStatus === 'taken') {
-      toast.error('Username is already taken');
+      toast.error('Sharable ID is already taken');
       return;
     }
     setStep(s => s + 1);
@@ -387,7 +387,7 @@ export function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFormProps) 
             </motion.div>
           )}
 
-          {/* ── STEP 2: Avatar ── */}
+          {/* ── STEP 2: Profile Photo ── */}
           {step === 2 && (
             <motion.div
               key="step2"

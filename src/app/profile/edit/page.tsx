@@ -456,9 +456,9 @@ export default function EditProfilePage() {
               </div>
             )}
 
-            {/* Your Identity */}
+            {/* Your Role */}
             <div>
-              <label className="block text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-2">Your Identity</label>
+              <label className="block text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-2">Your Role</label>
               <div className="bg-zinc-50 dark:bg-zinc-900/50 p-4 rounded-xl border border-black/5 dark:border-white/5">
                 <IdentityTagSelector value={identityTag} onChange={setIdentityTag} />
               </div>

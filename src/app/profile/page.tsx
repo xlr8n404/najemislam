@@ -169,7 +169,7 @@ export default function ProfilePage() {
       try {
         await navigator.share({
           title: profile.full_name || profile.username,
-          text: `Check out @${profile.username} on Najem Islam`,
+          text: `Check out @${profile.username} on Sharable`,
           url: profileUrl,
         });
       } catch {}

@@ -33,7 +33,7 @@ export function IdentityTagSelector({ value, onChange }: IdentityTagSelectorProp
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-zinc-400" />
         <input
           type="text"
-          placeholder="Search your Identity..."
+          placeholder="Search your Role..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="w-full bg-zinc-100 dark:bg-zinc-900 text-black dark:text-white pl-10 pr-4 py-2.5 rounded-lg border border-black/10 dark:border-white/10 outline-none focus:border-black/30 dark:focus:border-white/30 transition-colors text-sm"
@@ -67,7 +67,7 @@ export function IdentityTagSelector({ value, onChange }: IdentityTagSelectorProp
       </div>
 
       <p className="text-xs text-zinc-400 dark:text-zinc-600">
-        Your selected identity will be visible to followers on your posts
+        Your Role will be visible to your followers on your posts
       </p>
     </div>
   );
