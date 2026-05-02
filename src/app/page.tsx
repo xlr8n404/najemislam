@@ -102,13 +102,13 @@ export default function Home() {
 
           <div className="flex flex-col gap-4 w-full">
             <button
-              onClick={() => router.push('/login')}
+              onClick={() => { window.location.href = '/login'; }}
               className="flex items-center justify-center w-full h-[56px] bg-foreground text-background font-bold text-lg rounded-full transition-all hover:bg-neutral-200 dark:hover:bg-neutral-800"
             >
               Log in
             </button>
             <button
-              onClick={() => router.push('/register')}
+              onClick={() => { window.location.href = '/register'; }}
               className="flex items-center justify-center w-full h-[56px] bg-neutral-100 dark:bg-neutral-900 text-foreground font-bold text-lg rounded-full border border-neutral-200 dark:border-neutral-800 transition-all hover:bg-neutral-200 dark:hover:bg-neutral-800"
             >
               Create Account
