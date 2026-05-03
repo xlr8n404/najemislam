@@ -212,25 +212,24 @@ export default function AlertsPage() {
 
       <main className="max-w-xl mx-auto pt-16 pb-20">
         {loading ? (
-          <div className="divide-y divide-black/5 dark:divide-white/5">
+          <div>
             {[...Array(10)].map((_, i) => (
-              <div key={i} className="flex items-center gap-3 px-4 h-16 animate-pulse">
+              <div key={i} className="flex items-center gap-3 px-4 py-3 animate-pulse">
                 <Skeleton className="w-12 h-12 rounded-full bg-zinc-200 dark:bg-zinc-800 shrink-0" />
-                <div className="flex-1 space-y-1.5">
-                  <Skeleton className="h-3.5 w-1/3 bg-zinc-100 dark:bg-zinc-900" />
-                  <Skeleton className="h-3 w-2/3 bg-zinc-100 dark:bg-zinc-900" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-3.5 w-2/3 bg-zinc-100 dark:bg-zinc-900" />
                   <Skeleton className="h-2.5 w-1/4 bg-zinc-50 dark:bg-zinc-950" />
                 </div>
               </div>
             ))}
           </div>
         ) : alerts.length > 0 ? (
-          <div className="divide-y divide-black/5 dark:divide-white/5">
+          <div>
             {alerts.map((alert) => (
               <div
                 key={alert.id}
                 onClick={() => handleRowClick(alert)}
-                className={`flex items-center gap-3 px-4 h-16 cursor-pointer transition-colors hover:bg-black/[0.03] dark:hover:bg-white/[0.03] active:bg-black/[0.06] dark:active:bg-white/[0.06] ${
+                className={`flex items-center gap-3 px-4 min-h-[72px] py-3 cursor-pointer transition-colors hover:bg-black/[0.03] dark:hover:bg-white/[0.03] active:bg-black/[0.06] dark:active:bg-white/[0.06] ${
                   !alert.read ? 'bg-black/[0.025] dark:bg-white/[0.025]' : ''
                 }`}
               >
@@ -239,7 +238,7 @@ export default function AlertsPage() {
                   className="relative shrink-0 cursor-pointer"
                   onClick={(e) => handleProfileClick(e, alert.from_user.username)}
                 >
-                  <div className="w-12 h-12 rounded-full overflow-hidden border border-black/10 dark:border-white/10 bg-zinc-100 dark:bg-zinc-900">
+                  <div className="w-12 h-12 rounded-full overflow-hidden bg-zinc-100 dark:bg-zinc-900">
                     <img
                       src={getAvatarSrc(alert)}
                       alt={alert.from_user.full_name}
@@ -255,21 +254,22 @@ export default function AlertsPage() {
                   </div>
                 </div>
 
-                {/* Text — 3 lines */}
+                {/* Text */}
                 <div className="flex-1 min-w-0">
-                  {/* Line 1: Full name — clickable → profile */}
-                  <p
-                    className="text-[13px] font-bold leading-tight truncate cursor-pointer hover:underline"
-                    onClick={(e) => handleProfileClick(e, alert.from_user.username)}
-                  >
-                    {alert.from_user.full_name}
+                  {/* Line 1: Full name (16px bold) + content (14px) inline */}
+                  <p className="text-[14px] leading-snug">
+                    <span
+                      className="font-bold text-[16px] cursor-pointer hover:underline mr-1"
+                      onClick={(e) => handleProfileClick(e, alert.from_user.username)}
+                    >
+                      {alert.from_user.full_name}
+                    </span>
+                    <span className="text-zinc-500 dark:text-zinc-400">
+                      {getMessage(alert)}
+                    </span>
                   </p>
-                  {/* Line 2: Alert content */}
-                  <p className="text-[12px] text-zinc-500 dark:text-zinc-400 leading-tight truncate mt-0.5">
-                    {getMessage(alert)}
-                  </p>
-                  {/* Line 3: Timing */}
-                  <p className="text-[11px] text-zinc-400 dark:text-zinc-600 leading-tight mt-0.5">
+                  {/* Line 2: Timing */}
+                  <p className="text-[12px] text-zinc-400 dark:text-zinc-600 mt-0.5">
                     {formatTime(alert.created_at)}
                   </p>
                 </div>
