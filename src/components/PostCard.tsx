@@ -1691,18 +1691,7 @@ export function PostCard({
                               <span className="text-lg font-bold">Copy text</span>
                             </button>
   
-                            {/* Download */}
-                            {hasMedia && (
-                              <button
-                                onClick={handleDownloadMedia}
-                                className="w-full flex items-center gap-4 px-4 py-4 hover:bg-black/5 dark:hover:bg-white/5 rounded-2xl transition-colors text-left"
-                              >
-                                <div className="w-10 h-10 rounded-full bg-zinc-200 dark:bg-zinc-800 flex items-center justify-center">
-                                  <Download className="w-5 h-5" strokeWidth={1.5} />
-                                </div>
-                                <span className="text-lg font-bold">Download {finalMediaTypes[0] === 'video' ? 'video' : 'photo'}</span>
-                              </button>
-                            )}
+
   
                             {/* Share */}
                             <button
@@ -1757,77 +1746,52 @@ export function PostCard({
             {hasMedia && (
               <div className="pb-2">
                 {finalMediaUrls.length > 1 ? (
-                  /* ── Facebook-style multi-media grid ── */
-                  (() => {
-                    const count = finalMediaUrls.length;
-                    const displayUrls = finalMediaUrls.slice(0, 5);
-                    const displayTypes = finalMediaTypes.slice(0, 5);
-                    const extra = count - 5;
-                    const openMedia = (u: string, t: string) => setFullscreenMedia({ url: u, type: t });
-                    const gap = 'gap-0.5';
-
-                    // ── 2 images: side by side ──
-                    if (count === 2) {
-                      return (
-                        <div className={`flex ${gap} mx-4 rounded-2xl overflow-hidden`} style={{ height: 300 }}>
-                          <div className="flex-1 min-w-0 h-full"><MediaGridCell url={displayUrls[0]} type={displayTypes[0]} index={0} isVisible={isVisible} onOpen={openMedia} /></div>
-                          <div className="flex-1 min-w-0 h-full"><MediaGridCell url={displayUrls[1]} type={displayTypes[1]} index={1} isVisible={isVisible} onOpen={openMedia} /></div>
-                        </div>
-                      );
-                    }
-
-                    // ── 3 images: big left + two stacked right ──
-                    if (count === 3) {
-                      return (
-                        <div className={`flex ${gap} mx-4 rounded-2xl overflow-hidden`} style={{ height: 340 }}>
-                          <div className="flex-1 min-w-0 h-full"><MediaGridCell url={displayUrls[0]} type={displayTypes[0]} index={0} isVisible={isVisible} onOpen={openMedia} /></div>
-                          <div className={`flex-1 min-w-0 flex flex-col ${gap}`}>
-                            <div className="flex-1 min-h-0 h-full"><MediaGridCell url={displayUrls[1]} type={displayTypes[1]} index={1} isVisible={isVisible} onOpen={openMedia} /></div>
-                            <div className="flex-1 min-h-0 h-full"><MediaGridCell url={displayUrls[2]} type={displayTypes[2]} index={2} isVisible={isVisible} onOpen={openMedia} /></div>
-                          </div>
-                        </div>
-                      );
-                    }
-
-                    // ── 4 images: 2×2 grid — all equal ──
-                    if (count === 4) {
-                      return (
-                        <div className={`flex flex-col ${gap} mx-4 rounded-2xl overflow-hidden`} style={{ height: 340 }}>
-                          <div className={`flex ${gap} flex-1 min-h-0`}>
-                            <div className="flex-1 min-w-0 h-full"><MediaGridCell url={displayUrls[0]} type={displayTypes[0]} index={0} isVisible={isVisible} onOpen={openMedia} /></div>
-                            <div className="flex-1 min-w-0 h-full"><MediaGridCell url={displayUrls[1]} type={displayTypes[1]} index={1} isVisible={isVisible} onOpen={openMedia} /></div>
-                          </div>
-                          <div className={`flex ${gap} flex-1 min-h-0`}>
-                            <div className="flex-1 min-w-0 h-full"><MediaGridCell url={displayUrls[2]} type={displayTypes[2]} index={2} isVisible={isVisible} onOpen={openMedia} /></div>
-                            <div className="flex-1 min-w-0 h-full"><MediaGridCell url={displayUrls[3]} type={displayTypes[3]} index={3} isVisible={isVisible} onOpen={openMedia} /></div>
-                          </div>
-                        </div>
-                      );
-                    }
-
-                    // ── 5+ images: big top + 4-cell bottom row ──
-                    return (
-                      <div className={`flex flex-col ${gap} mx-4 rounded-2xl overflow-hidden`} style={{ height: 380 }}>
-                        <div className="flex-[1.4]">
-                          <MediaGridCell url={displayUrls[0]} type={displayTypes[0]} index={0} isVisible={isVisible} onOpen={openMedia} />
-                        </div>
-                        <div className={`flex ${gap} flex-1 min-h-0`}>
-                          {displayUrls.slice(1, 5).map((u, i) => (
-                            <div key={i} className="flex-1 min-w-0 h-full">
-                              <MediaGridCell
-                                url={u}
-                                type={displayTypes[i + 1]}
-                                index={i + 1}
-                                overlay={i === 3 && extra > 0 ? extra : undefined}
-                                isVisible={isVisible}
-                                onOpen={openMedia}
-                              />
+                  /* ── Horizontal media slider ── */
+                  <div className="mx-4 rounded-2xl overflow-hidden bg-zinc-100 dark:bg-zinc-900">
+                    <Carousel className="w-full">
+                      <CarouselContent className="-ml-0">
+                        {finalMediaUrls.map((url, index) => (
+                          <CarouselItem key={index} className="pl-0 basis-full">
+                            <div 
+                              className="relative cursor-pointer"
+                              onClick={() => {
+                                if (finalMediaTypes[index] !== 'video' && finalMediaTypes[index] !== 'audio') {
+                                  setFullscreenMedia({ url, type: finalMediaTypes[index] });
+                                }
+                              }}
+                            >
+                              {finalMediaTypes[index] === 'video' ? (
+                                <LazyVideo
+                                  src={isVisible ? url : ''}
+                                  controls
+                                  className="w-full h-auto block"
+                                  onClick={(e: React.MouseEvent) => e.stopPropagation()}
+                                />
+                              ) : finalMediaTypes[index] === 'audio' ? (
+                                <div className="flex flex-col items-center justify-center gap-3 py-6 px-4">
+                                  <div className="w-14 h-14 rounded-full bg-zinc-200 dark:bg-zinc-800 flex items-center justify-center">
+                                    <Music className="w-7 h-7 text-zinc-500" />
+                                  </div>
+                                  <audio src={url} controls className="w-full" onClick={(e) => e.stopPropagation()} />
+                                </div>
+                              ) : (
+                                <img
+                                  src={url}
+                                  alt={`Post media ${index + 1}`}
+                                  className="w-full h-auto block"
+                                  loading="lazy"
+                                />
+                              )}
+                              {/* Page indicator */}
+                              <div className="absolute top-3 right-3 px-2 py-1 bg-black/50 backdrop-blur-sm rounded-full text-[10px] font-bold text-white">
+                                {index + 1} / {finalMediaUrls.length}
+                              </div>
                             </div>
-                          ))}
-                        </div>
-                      </div>
-                    );
-                  })()
+                          </CarouselItem>
+                        ))}
+                      </CarouselContent>
+                    </Carousel>
+                  </div>
                 ) : (
                   /* Single media — 16px side margin, rounded */
                   <div

@@ -56,6 +56,8 @@ export default function CommunityPostCard({
       content={post.content || ''}
       media_url={mediaUrl}
       media_type={post.media_type || null}
+      media_urls={post.media_urls || []}
+      media_types={post.media_types || []}
       likes_count={Number(likeCount)}
       comments_count={Number(commentCount)}
       reposts_count={0}
