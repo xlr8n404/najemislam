@@ -139,6 +139,52 @@ function LazyVideo({ src, className, controls, onClick, onDoubleClick }: {
   );
 }
 
+// Standalone grid cell — must be outside PostCard to avoid React remount-on-render bug
+function MediaGridCell({
+  url,
+  type,
+  index,
+  overlay,
+  isVisible,
+  onOpen,
+}: {
+  url: string;
+  type: string;
+  index: number;
+  overlay?: number;
+  isVisible: boolean;
+  onOpen: (url: string, type: string) => void;
+}) {
+  return (
+    <div
+      className="relative overflow-hidden bg-zinc-100 dark:bg-zinc-900 cursor-pointer group w-full h-full"
+      onClick={() => onOpen(url, type)}
+    >
+      {type === 'video' ? (
+        <LazyVideo src={isVisible ? url : ''} className="w-full h-full object-cover" />
+      ) : (
+        <img
+          src={url}
+          alt={`Post media ${index + 1}`}
+          className="w-full h-full object-cover"
+          loading="lazy"
+          onError={(e) => {
+            const img = e.target as HTMLImageElement;
+            if (!img.dataset.retried) { img.dataset.retried = '1'; const s = img.src; img.src = ''; img.src = s; }
+          }}
+        />
+      )}
+      {overlay && overlay > 0 ? (
+        <div className="absolute inset-0 bg-black/55 flex items-center justify-center pointer-events-none">
+          <span className="text-white font-bold text-2xl">+{overlay}</span>
+        </div>
+      ) : (
+        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/15 transition-colors pointer-events-none" />
+      )}
+    </div>
+  );
+}
+
 export function PostCard({
   id,
   user_id,
@@ -1714,49 +1760,18 @@ export function PostCard({
                   /* ── Facebook-style multi-media grid ── */
                   (() => {
                     const count = finalMediaUrls.length;
-                    // Cap display at 5; anything beyond shows a "+N" overlay on cell 4
                     const displayUrls = finalMediaUrls.slice(0, 5);
                     const displayTypes = finalMediaTypes.slice(0, 5);
-                    const extra = count - 5; // hidden extras (can be negative, that's fine)
-
-                    // Render a single grid cell
-                    const GridCell = ({ url, type, index, overlay }: { url: string; type: string; index: number; overlay?: number }) => (
-                      <div
-                        className="relative overflow-hidden bg-zinc-100 dark:bg-zinc-900 cursor-pointer group w-full h-full"
-                        onClick={() => setFullscreenMedia({ url, type })}
-                      >
-                        {type === 'video' ? (
-                          <LazyVideo src={isVisible ? url : ''} className="w-full h-full object-cover" />
-                        ) : (
-                          <img
-                            src={url}
-                            alt={`Post media ${index + 1}`}
-                            className="w-full h-full object-cover"
-                            loading="lazy"
-                            onError={(e) => {
-                              const img = e.target as HTMLImageElement;
-                              if (!img.dataset.retried) { img.dataset.retried = '1'; const s = img.src; img.src = ''; img.src = s; }
-                            }}
-                          />
-                        )}
-                        {/* "+N more" overlay on the last visible cell */}
-                        {overlay && overlay > 0 && (
-                          <div className="absolute inset-0 bg-black/55 flex items-center justify-center">
-                            <span className="text-white font-bold text-2xl">+{overlay}</span>
-                          </div>
-                        )}
-                        {!overlay && (
-                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/15 transition-colors" />
-                        )}
-                      </div>
-                    );
+                    const extra = count - 5;
+                    const openMedia = (u: string, t: string) => setFullscreenMedia({ url: u, type: t });
+                    const gap = 'gap-0.5';
 
                     // ── 2 images: side by side ──
                     if (count === 2) {
                       return (
-                        <div className="flex gap-0.5 w-full" style={{ height: 300 }}>
-                          <div className="flex-1"><GridCell url={displayUrls[0]} type={displayTypes[0]} index={0} /></div>
-                          <div className="flex-1"><GridCell url={displayUrls[1]} type={displayTypes[1]} index={1} /></div>
+                        <div className={`flex ${gap} mx-4 rounded-2xl overflow-hidden`} style={{ height: 300 }}>
+                          <div className="flex-1"><MediaGridCell url={displayUrls[0]} type={displayTypes[0]} index={0} isVisible={isVisible} onOpen={openMedia} /></div>
+                          <div className="flex-1"><MediaGridCell url={displayUrls[1]} type={displayTypes[1]} index={1} isVisible={isVisible} onOpen={openMedia} /></div>
                         </div>
                       );
                     }
@@ -1764,11 +1779,11 @@ export function PostCard({
                     // ── 3 images: big left + two stacked right ──
                     if (count === 3) {
                       return (
-                        <div className="flex gap-0.5 w-full" style={{ height: 340 }}>
-                          <div className="flex-[1.2]"><GridCell url={displayUrls[0]} type={displayTypes[0]} index={0} /></div>
-                          <div className="flex-1 flex flex-col gap-0.5">
-                            <div className="flex-1"><GridCell url={displayUrls[1]} type={displayTypes[1]} index={1} /></div>
-                            <div className="flex-1"><GridCell url={displayUrls[2]} type={displayTypes[2]} index={2} /></div>
+                        <div className={`flex ${gap} mx-4 rounded-2xl overflow-hidden`} style={{ height: 340 }}>
+                          <div className="flex-[1.2]"><MediaGridCell url={displayUrls[0]} type={displayTypes[0]} index={0} isVisible={isVisible} onOpen={openMedia} /></div>
+                          <div className={`flex-1 flex flex-col ${gap}`}>
+                            <div className="flex-1"><MediaGridCell url={displayUrls[1]} type={displayTypes[1]} index={1} isVisible={isVisible} onOpen={openMedia} /></div>
+                            <div className="flex-1"><MediaGridCell url={displayUrls[2]} type={displayTypes[2]} index={2} isVisible={isVisible} onOpen={openMedia} /></div>
                           </div>
                         </div>
                       );
@@ -1777,33 +1792,35 @@ export function PostCard({
                     // ── 4 images: 2×2 grid ──
                     if (count === 4) {
                       return (
-                        <div className="flex flex-col gap-0.5 w-full" style={{ height: 340 }}>
-                          <div className="flex gap-0.5 flex-1">
-                            <div className="flex-1"><GridCell url={displayUrls[0]} type={displayTypes[0]} index={0} /></div>
-                            <div className="flex-1"><GridCell url={displayUrls[1]} type={displayTypes[1]} index={1} /></div>
+                        <div className={`flex flex-col ${gap} mx-4 rounded-2xl overflow-hidden`} style={{ height: 340 }}>
+                          <div className={`flex ${gap} flex-1`}>
+                            <div className="flex-1"><MediaGridCell url={displayUrls[0]} type={displayTypes[0]} index={0} isVisible={isVisible} onOpen={openMedia} /></div>
+                            <div className="flex-1"><MediaGridCell url={displayUrls[1]} type={displayTypes[1]} index={1} isVisible={isVisible} onOpen={openMedia} /></div>
                           </div>
-                          <div className="flex gap-0.5 flex-1">
-                            <div className="flex-1"><GridCell url={displayUrls[2]} type={displayTypes[2]} index={2} /></div>
-                            <div className="flex-1"><GridCell url={displayUrls[3]} type={displayTypes[3]} index={3} /></div>
+                          <div className={`flex ${gap} flex-1`}>
+                            <div className="flex-1"><MediaGridCell url={displayUrls[2]} type={displayTypes[2]} index={2} isVisible={isVisible} onOpen={openMedia} /></div>
+                            <div className="flex-1"><MediaGridCell url={displayUrls[3]} type={displayTypes[3]} index={3} isVisible={isVisible} onOpen={openMedia} /></div>
                           </div>
                         </div>
                       );
                     }
 
-                    // ── 5+ images: big top + 4-cell bottom row, last cell shows "+N" ──
+                    // ── 5+ images: big top + 4-cell bottom row ──
                     return (
-                      <div className="flex flex-col gap-0.5 w-full" style={{ height: 380 }}>
+                      <div className={`flex flex-col ${gap} mx-4 rounded-2xl overflow-hidden`} style={{ height: 380 }}>
                         <div className="flex-[1.4]">
-                          <GridCell url={displayUrls[0]} type={displayTypes[0]} index={0} />
+                          <MediaGridCell url={displayUrls[0]} type={displayTypes[0]} index={0} isVisible={isVisible} onOpen={openMedia} />
                         </div>
-                        <div className="flex gap-0.5 flex-1">
-                          {displayUrls.slice(1, 5).map((url, i) => (
+                        <div className={`flex ${gap} flex-1`}>
+                          {displayUrls.slice(1, 5).map((u, i) => (
                             <div key={i} className="flex-1">
-                              <GridCell
-                                url={url}
+                              <MediaGridCell
+                                url={u}
                                 type={displayTypes[i + 1]}
                                 index={i + 1}
                                 overlay={i === 3 && extra > 0 ? extra : undefined}
+                                isVisible={isVisible}
+                                onOpen={openMedia}
                               />
                             </div>
                           ))}
