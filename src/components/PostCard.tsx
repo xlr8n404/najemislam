@@ -1719,67 +1719,120 @@ export function PostCard({
             {hasMedia && (
               <div className="pb-2">
                 {finalMediaUrls.length > 1 ? (
-                  /* Multiple media — carousel with slight side peek */
-                  <Carousel className="w-full" opts={{ align: "start", dragFree: true }}>
-                    <CarouselContent className="ml-0">
-                      {finalMediaUrls.map((url, index) => (
-                        <CarouselItem key={index} className="pl-0 pr-1 basis-[92%] sm:basis-[60%] first:pl-0">
-                          <div
-                            className="relative overflow-hidden bg-zinc-100 dark:bg-zinc-900 cursor-pointer group"
-                            onClick={() => setFullscreenMedia({ url, type: finalMediaTypes[index] })}
-                            onDoubleClick={handleMediaDoubleClick}
-                          >
-                            <AspectRatio ratio={1 / 1}>
-                              {finalMediaTypes[index] === 'audio' ? (
-                                <div className="w-full h-full flex flex-col items-center justify-center gap-2 bg-zinc-100 dark:bg-zinc-900 p-3">
-                                  <Music className="w-8 h-8 text-zinc-400" />
-                                  <audio src={url} controls className="w-full" onClick={(e) => e.stopPropagation()} />
-                                </div>
-                              ) : finalMediaTypes[index] === 'video' ? (
-                                <LazyVideo
-                                  src={isVisible ? url : ''}
-                                  className="w-full h-full object-cover"
-                                />
-                              ) : (
-                                <img
-                                  key={url}
-                                  src={url}
-                                  alt={`Post content ${index + 1}`}
-                                  className="w-full h-full object-cover"
-                                  loading="lazy"
-                                  onError={(e) => {
-                                    const img = e.target as HTMLImageElement;
-                                    if (!img.dataset.retried) {
-                                      img.dataset.retried = '1';
-                                      const src = img.src;
-                                      img.src = '';
-                                      img.src = src;
-                                    }
-                                  }}
-                                />
-                              )}
-                            </AspectRatio>
-                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
-                              <Maximize2 className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity" strokeWidth={1.5} />
-                            </div>
-                            <AnimatePresence>
-                              {showHeartAnim && (
-                                <motion.div
-                                  initial={{ scale: 0, opacity: 0 }}
-                                  animate={{ scale: [0, 1.2, 1], opacity: 1 }}
-                                  exit={{ scale: 0, opacity: 0 }}
-                                  transition={{ duration: 0.5 }}
-                                  className="absolute inset-0 flex items-center justify-center pointer-events-none z-10"
-                                >
-                                  <Heart className="w-20 h-20 text-red-500 fill-current drop-shadow-2xl" />
-                                </motion.div>
-                              )}
-                            </AnimatePresence>
+                  /* ── Facebook-style multi-media grid ── */
+                  (() => {
+                    const count = finalMediaUrls.length;
+                    // Cap display at 5; anything beyond shows a "+N" overlay on cell 4
+                    const displayUrls = finalMediaUrls.slice(0, 5);
+                    const displayTypes = finalMediaTypes.slice(0, 5);
+                    const extra = count - 5; // hidden extras (can be negative, that's fine)
+
+                    // Render a single grid cell
+                    const GridCell = ({ url, type, index, overlay }: { url: string; type: string; index: number; overlay?: number }) => (
+                      <div
+                        className="relative overflow-hidden bg-zinc-100 dark:bg-zinc-900 cursor-pointer group w-full h-full"
+                        onClick={() => setFullscreenMedia({ url, type })}
+                        onDoubleClick={handleMediaDoubleClick}
+                      >
+                        {type === 'video' ? (
+                          <LazyVideo src={isVisible ? url : ''} className="w-full h-full object-cover" />
+                        ) : (
+                          <img
+                            src={url}
+                            alt={`Post media ${index + 1}`}
+                            className="w-full h-full object-cover"
+                            loading="lazy"
+                            onError={(e) => {
+                              const img = e.target as HTMLImageElement;
+                              if (!img.dataset.retried) { img.dataset.retried = '1'; const s = img.src; img.src = ''; img.src = s; }
+                            }}
+                          />
+                        )}
+                        {/* "+N more" overlay on the last visible cell */}
+                        {overlay && overlay > 0 && (
+                          <div className="absolute inset-0 bg-black/55 flex items-center justify-center">
+                            <span className="text-white font-bold text-2xl">+{overlay}</span>
                           </div>
-                        </CarouselItem>
-                      ))}
-                    </CarouselContent>
-                  </Carousel>
+                        )}
+                        {!overlay && (
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/15 transition-colors" />
+                        )}
+                        <AnimatePresence>
+                          {showHeartAnim && (
+                            <motion.div
+                              initial={{ scale: 0, opacity: 0 }}
+                              animate={{ scale: [0, 1.2, 1], opacity: 1 }}
+                              exit={{ scale: 0, opacity: 0 }}
+                              transition={{ duration: 0.5 }}
+                              className="absolute inset-0 flex items-center justify-center pointer-events-none z-10"
+                            >
+                              <Heart className="w-16 h-16 text-red-500 fill-current drop-shadow-2xl" />
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    );
+
+                    // ── 2 images: side by side ──
+                    if (count === 2) {
+                      return (
+                        <div className="flex gap-0.5 w-full" style={{ height: 300 }}>
+                          <div className="flex-1"><GridCell url={displayUrls[0]} type={displayTypes[0]} index={0} /></div>
+                          <div className="flex-1"><GridCell url={displayUrls[1]} type={displayTypes[1]} index={1} /></div>
+                        </div>
+                      );
+                    }
+
+                    // ── 3 images: big left + two stacked right ──
+                    if (count === 3) {
+                      return (
+                        <div className="flex gap-0.5 w-full" style={{ height: 340 }}>
+                          <div className="flex-[1.2]"><GridCell url={displayUrls[0]} type={displayTypes[0]} index={0} /></div>
+                          <div className="flex-1 flex flex-col gap-0.5">
+                            <div className="flex-1"><GridCell url={displayUrls[1]} type={displayTypes[1]} index={1} /></div>
+                            <div className="flex-1"><GridCell url={displayUrls[2]} type={displayTypes[2]} index={2} /></div>
+                          </div>
+                        </div>
+                      );
+                    }
+
+                    // ── 4 images: 2×2 grid ──
+                    if (count === 4) {
+                      return (
+                        <div className="flex flex-col gap-0.5 w-full" style={{ height: 340 }}>
+                          <div className="flex gap-0.5 flex-1">
+                            <div className="flex-1"><GridCell url={displayUrls[0]} type={displayTypes[0]} index={0} /></div>
+                            <div className="flex-1"><GridCell url={displayUrls[1]} type={displayTypes[1]} index={1} /></div>
+                          </div>
+                          <div className="flex gap-0.5 flex-1">
+                            <div className="flex-1"><GridCell url={displayUrls[2]} type={displayTypes[2]} index={2} /></div>
+                            <div className="flex-1"><GridCell url={displayUrls[3]} type={displayTypes[3]} index={3} /></div>
+                          </div>
+                        </div>
+                      );
+                    }
+
+                    // ── 5+ images: big top + 4-cell bottom row, last cell shows "+N" ──
+                    return (
+                      <div className="flex flex-col gap-0.5 w-full" style={{ height: 380 }}>
+                        <div className="flex-[1.4]">
+                          <GridCell url={displayUrls[0]} type={displayTypes[0]} index={0} />
+                        </div>
+                        <div className="flex gap-0.5 flex-1">
+                          {displayUrls.slice(1, 5).map((url, i) => (
+                            <div key={i} className="flex-1">
+                              <GridCell
+                                url={url}
+                                type={displayTypes[i + 1]}
+                                index={i + 1}
+                                overlay={i === 3 && extra > 0 ? extra : undefined}
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })()
                 ) : (
                   /* Single media — fully edge-to-edge */
                   <div
