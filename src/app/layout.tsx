@@ -9,6 +9,7 @@ import { ThemedToaster } from "@/components/ThemedToaster";
 import RealtimeNotifications from "@/components/RealtimeNotifications";
 import MediaContextMenuBlocker from "@/components/MediaContextMenuBlocker";
 import { NavigationHistoryProvider } from "@/components/NavigationHistoryProvider";
+import { ThemeColorMeta } from "@/components/ThemeColorMeta";
 
 const APP_URL = 'https://sharableofc.vercel.app';
 
@@ -167,6 +168,7 @@ export default function RootLayout({
                   })
                 }}
               />
+              <ThemeColorMeta />
               {children}
                 <ThemedToaster />
                 <RealtimeNotifications />
