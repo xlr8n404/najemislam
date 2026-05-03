@@ -1770,8 +1770,8 @@ export function PostCard({
                     if (count === 2) {
                       return (
                         <div className={`flex ${gap} mx-4 rounded-2xl overflow-hidden`} style={{ height: 300 }}>
-                          <div className="flex-1"><MediaGridCell url={displayUrls[0]} type={displayTypes[0]} index={0} isVisible={isVisible} onOpen={openMedia} /></div>
-                          <div className="flex-1"><MediaGridCell url={displayUrls[1]} type={displayTypes[1]} index={1} isVisible={isVisible} onOpen={openMedia} /></div>
+                          <div className="flex-1 min-w-0 h-full"><MediaGridCell url={displayUrls[0]} type={displayTypes[0]} index={0} isVisible={isVisible} onOpen={openMedia} /></div>
+                          <div className="flex-1 min-w-0 h-full"><MediaGridCell url={displayUrls[1]} type={displayTypes[1]} index={1} isVisible={isVisible} onOpen={openMedia} /></div>
                         </div>
                       );
                     }
@@ -1780,26 +1780,26 @@ export function PostCard({
                     if (count === 3) {
                       return (
                         <div className={`flex ${gap} mx-4 rounded-2xl overflow-hidden`} style={{ height: 340 }}>
-                          <div className="flex-[1.2]"><MediaGridCell url={displayUrls[0]} type={displayTypes[0]} index={0} isVisible={isVisible} onOpen={openMedia} /></div>
-                          <div className={`flex-1 flex flex-col ${gap}`}>
-                            <div className="flex-1"><MediaGridCell url={displayUrls[1]} type={displayTypes[1]} index={1} isVisible={isVisible} onOpen={openMedia} /></div>
-                            <div className="flex-1"><MediaGridCell url={displayUrls[2]} type={displayTypes[2]} index={2} isVisible={isVisible} onOpen={openMedia} /></div>
+                          <div className="flex-1 min-w-0 h-full"><MediaGridCell url={displayUrls[0]} type={displayTypes[0]} index={0} isVisible={isVisible} onOpen={openMedia} /></div>
+                          <div className={`flex-1 min-w-0 flex flex-col ${gap}`}>
+                            <div className="flex-1 min-h-0 h-full"><MediaGridCell url={displayUrls[1]} type={displayTypes[1]} index={1} isVisible={isVisible} onOpen={openMedia} /></div>
+                            <div className="flex-1 min-h-0 h-full"><MediaGridCell url={displayUrls[2]} type={displayTypes[2]} index={2} isVisible={isVisible} onOpen={openMedia} /></div>
                           </div>
                         </div>
                       );
                     }
 
-                    // ── 4 images: 2×2 grid ──
+                    // ── 4 images: 2×2 grid — all equal ──
                     if (count === 4) {
                       return (
                         <div className={`flex flex-col ${gap} mx-4 rounded-2xl overflow-hidden`} style={{ height: 340 }}>
-                          <div className={`flex ${gap} flex-1`}>
-                            <div className="flex-1"><MediaGridCell url={displayUrls[0]} type={displayTypes[0]} index={0} isVisible={isVisible} onOpen={openMedia} /></div>
-                            <div className="flex-1"><MediaGridCell url={displayUrls[1]} type={displayTypes[1]} index={1} isVisible={isVisible} onOpen={openMedia} /></div>
+                          <div className={`flex ${gap} flex-1 min-h-0`}>
+                            <div className="flex-1 min-w-0 h-full"><MediaGridCell url={displayUrls[0]} type={displayTypes[0]} index={0} isVisible={isVisible} onOpen={openMedia} /></div>
+                            <div className="flex-1 min-w-0 h-full"><MediaGridCell url={displayUrls[1]} type={displayTypes[1]} index={1} isVisible={isVisible} onOpen={openMedia} /></div>
                           </div>
-                          <div className={`flex ${gap} flex-1`}>
-                            <div className="flex-1"><MediaGridCell url={displayUrls[2]} type={displayTypes[2]} index={2} isVisible={isVisible} onOpen={openMedia} /></div>
-                            <div className="flex-1"><MediaGridCell url={displayUrls[3]} type={displayTypes[3]} index={3} isVisible={isVisible} onOpen={openMedia} /></div>
+                          <div className={`flex ${gap} flex-1 min-h-0`}>
+                            <div className="flex-1 min-w-0 h-full"><MediaGridCell url={displayUrls[2]} type={displayTypes[2]} index={2} isVisible={isVisible} onOpen={openMedia} /></div>
+                            <div className="flex-1 min-w-0 h-full"><MediaGridCell url={displayUrls[3]} type={displayTypes[3]} index={3} isVisible={isVisible} onOpen={openMedia} /></div>
                           </div>
                         </div>
                       );
@@ -1811,9 +1811,9 @@ export function PostCard({
                         <div className="flex-[1.4]">
                           <MediaGridCell url={displayUrls[0]} type={displayTypes[0]} index={0} isVisible={isVisible} onOpen={openMedia} />
                         </div>
-                        <div className={`flex ${gap} flex-1`}>
+                        <div className={`flex ${gap} flex-1 min-h-0`}>
                           {displayUrls.slice(1, 5).map((u, i) => (
-                            <div key={i} className="flex-1">
+                            <div key={i} className="flex-1 min-w-0 h-full">
                               <MediaGridCell
                                 url={u}
                                 type={displayTypes[i + 1]}
@@ -1829,9 +1829,9 @@ export function PostCard({
                     );
                   })()
                 ) : (
-                  /* Single media — fully edge-to-edge */
+                  /* Single media — 16px side margin, rounded */
                   <div
-                    className="relative w-full overflow-hidden bg-zinc-100 dark:bg-zinc-900 group"
+                    className="relative mx-4 rounded-2xl overflow-hidden bg-zinc-100 dark:bg-zinc-900 group"
                     onClick={() => { if (finalMediaTypes[0] !== 'video' && finalMediaTypes[0] !== 'audio') setFullscreenMedia({ url: finalMediaUrls[0], type: finalMediaTypes[0] }); }}
                     style={{ cursor: finalMediaTypes[0] === 'video' || finalMediaTypes[0] === 'audio' ? 'default' : 'pointer' }}
                   >
