@@ -1717,14 +1717,15 @@ export function PostCard({
                 </div>
 
             {hasMedia && (
-              <div className="px-4 pb-2">
+              <div className="pb-2">
                 {finalMediaUrls.length > 1 ? (
+                  /* Multiple media — carousel with slight side peek */
                   <Carousel className="w-full" opts={{ align: "start", dragFree: true }}>
-                    <CarouselContent className="-ml-2">
+                    <CarouselContent className="ml-0">
                       {finalMediaUrls.map((url, index) => (
-                        <CarouselItem key={index} className="pl-2 basis-[85%] sm:basis-[45%]">
-                          <div 
-                            className="relative rounded-2xl overflow-hidden bg-zinc-100 dark:bg-zinc-900 border border-black/[0.05] dark:border-white/[0.05] cursor-pointer group"
+                        <CarouselItem key={index} className="pl-0 pr-1 basis-[92%] sm:basis-[60%] first:pl-0">
+                          <div
+                            className="relative overflow-hidden bg-zinc-100 dark:bg-zinc-900 cursor-pointer group"
                             onClick={() => setFullscreenMedia({ url, type: finalMediaTypes[index] })}
                             onDoubleClick={handleMediaDoubleClick}
                           >
@@ -1780,8 +1781,9 @@ export function PostCard({
                     </CarouselContent>
                   </Carousel>
                 ) : (
+                  /* Single media — fully edge-to-edge */
                   <div
-                    className="relative w-full rounded-2xl overflow-hidden bg-zinc-100 dark:bg-zinc-900 border border-black/[0.05] dark:border-white/[0.05] group"
+                    className="relative w-full overflow-hidden bg-zinc-100 dark:bg-zinc-900 group"
                     onClick={() => { if (finalMediaTypes[0] !== 'video' && finalMediaTypes[0] !== 'audio') setFullscreenMedia({ url: finalMediaUrls[0], type: finalMediaTypes[0] }); }}
                     onDoubleClick={finalMediaTypes[0] !== 'audio' ? handleMediaDoubleClick : undefined}
                     style={{ cursor: finalMediaTypes[0] === 'video' || finalMediaTypes[0] === 'audio' ? 'default' : 'pointer' }}
