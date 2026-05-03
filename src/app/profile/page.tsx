@@ -382,7 +382,7 @@ export default function ProfilePage() {
             )}
           </div>
 
-          <div className="absolute -bottom-10 left-4 w-[80px] h-[80px]">
+          <div className="absolute -bottom-10 left-4 w-20 h-20">
             <div className="w-full h-full rounded-full border-4 border-white dark:border-black overflow-hidden bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center">
               {avatarSrc ? (
                 <img
@@ -391,7 +391,7 @@ export default function ProfilePage() {
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <UserCircle size={80} strokeWidth={1} className="text-zinc-400 dark:text-zinc-600" />
+                <UserCircle size={52} strokeWidth={1} className="text-zinc-400 dark:text-zinc-600" />
               )}
             </div>
           </div>

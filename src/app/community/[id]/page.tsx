@@ -230,7 +230,7 @@ export default function CommunityDetailPage() {
           <Skeleton className="w-full bg-zinc-100 dark:bg-zinc-900" style={{ height: '120px' }} />
           <div className="px-4">
             <div className="relative" style={{ height: '56px' }}>
-              <Skeleton className="absolute -top-10 left-0 w-[80px] h-[80px] rounded-full bg-zinc-200 dark:bg-zinc-800 border-4 border-white dark:border-black" />
+              <Skeleton className="absolute -top-10 left-0 w-20 h-20 rounded-full bg-zinc-200 dark:bg-zinc-800 border-4 border-white dark:border-black" />
             </div>
             <Skeleton className="h-6 w-40 bg-zinc-200 dark:bg-zinc-800 mb-2 mt-1" />
             <Skeleton className="h-4 w-24 bg-zinc-100 dark:bg-zinc-900 mb-4" />
@@ -284,12 +284,12 @@ export default function CommunityDetailPage() {
           </div>
 
           {/* Avatar — halfway down the cover */}
-          <div className="absolute -bottom-10 left-4 w-[80px] h-[80px]">
+          <div className="absolute -bottom-10 left-4 w-20 h-20">
             <div className="w-full h-full rounded-full border-4 border-white dark:border-black overflow-hidden bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center">
               {community.avatar_url ? (
                 <img src={community.avatar_url} alt={community.name} className="w-full h-full object-cover" />
               ) : (
-                <Users size={80} strokeWidth={1} className="text-zinc-400 dark:text-zinc-600" />
+                <Users size={40} strokeWidth={1} className="text-zinc-400 dark:text-zinc-600" />
               )}
             </div>
           </div>
