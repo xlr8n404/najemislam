@@ -513,7 +513,7 @@ export default function HomePage() {
 
         {!hasMore && posts.length > 0 && (
           <div className="py-12 text-center text-zinc-500 text-sm font-medium">
-            🌸
+            You're all caught up!
           </div>
         )}
       </main>
