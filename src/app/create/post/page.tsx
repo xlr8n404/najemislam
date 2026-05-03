@@ -219,8 +219,10 @@ export default function CreatePostPage() {
         .insert({
           user_id: profile.id,
           content: content.trim(),
-          media_url: mediaUrls[0] || null, // Store first media as primary
+          media_url: mediaUrls[0] || null,
           media_type: mediaTypes[0] || null,
+          media_urls: mediaUrls.length > 0 ? mediaUrls : null,
+          media_types: mediaTypes.length > 0 ? mediaTypes : null,
         })
         .select('post_number')
         .single();

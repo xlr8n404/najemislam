@@ -293,16 +293,8 @@ export function PostCard({
         }
       }, [fullscreenMedia]);
 
-      const handleMediaDoubleClick = async (e: React.MouseEvent) => {
-        e.stopPropagation();
-        setShowHeartAnim(true);
-        setTimeout(() => setShowHeartAnim(false), 1000);
-        
-        if (!liked && currentUserId) {
-          await handleLike();
-        } else if (!currentUserId) {
-          toast.error('Please login to like posts');
-        }
+      const handleMediaDoubleClick = async (_e: React.MouseEvent) => {
+        // double-tap like removed
       };
 
       const handleTouchStart = (e: React.TouchEvent) => {
@@ -1732,7 +1724,6 @@ export function PostCard({
                       <div
                         className="relative overflow-hidden bg-zinc-100 dark:bg-zinc-900 cursor-pointer group w-full h-full"
                         onClick={() => setFullscreenMedia({ url, type })}
-                        onDoubleClick={handleMediaDoubleClick}
                       >
                         {type === 'video' ? (
                           <LazyVideo src={isVisible ? url : ''} className="w-full h-full object-cover" />
@@ -1757,19 +1748,6 @@ export function PostCard({
                         {!overlay && (
                           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/15 transition-colors" />
                         )}
-                        <AnimatePresence>
-                          {showHeartAnim && (
-                            <motion.div
-                              initial={{ scale: 0, opacity: 0 }}
-                              animate={{ scale: [0, 1.2, 1], opacity: 1 }}
-                              exit={{ scale: 0, opacity: 0 }}
-                              transition={{ duration: 0.5 }}
-                              className="absolute inset-0 flex items-center justify-center pointer-events-none z-10"
-                            >
-                              <Heart className="w-16 h-16 text-red-500 fill-current drop-shadow-2xl" />
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
                       </div>
                     );
 
@@ -1838,7 +1816,6 @@ export function PostCard({
                   <div
                     className="relative w-full overflow-hidden bg-zinc-100 dark:bg-zinc-900 group"
                     onClick={() => { if (finalMediaTypes[0] !== 'video' && finalMediaTypes[0] !== 'audio') setFullscreenMedia({ url: finalMediaUrls[0], type: finalMediaTypes[0] }); }}
-                    onDoubleClick={finalMediaTypes[0] !== 'audio' ? handleMediaDoubleClick : undefined}
                     style={{ cursor: finalMediaTypes[0] === 'video' || finalMediaTypes[0] === 'audio' ? 'default' : 'pointer' }}
                   >
                     {finalMediaTypes[0] === 'audio' || (finalMediaUrls[0] && /\.(mp3|wav|ogg|aac|flac|m4a)$/i.test(finalMediaUrls[0])) ? (
@@ -1854,7 +1831,6 @@ export function PostCard({
                         controls
                         className="w-full h-auto block"
                         onClick={(e: React.MouseEvent) => e.stopPropagation()}
-                        onDoubleClick={handleMediaDoubleClick}
                       />
                     ) : (
                       <img
@@ -1879,19 +1855,6 @@ export function PostCard({
                         <Maximize2 className="w-10 h-10 text-white opacity-0 group-hover:opacity-100 transition-opacity" strokeWidth={1.5} />
                       </div>
                     )}
-                    <AnimatePresence>
-                      {showHeartAnim && (
-                        <motion.div
-                          initial={{ scale: 0, opacity: 0 }}
-                          animate={{ scale: [0, 1.2, 1], opacity: 1 }}
-                          exit={{ scale: 0, opacity: 0 }}
-                          transition={{ duration: 0.5 }}
-                          className="absolute inset-0 flex items-center justify-center pointer-events-none z-10"
-                        >
-                          <Heart className="w-24 h-24 text-red-500 fill-current drop-shadow-2xl" />
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
                   </div>
                 )}
               </div>
