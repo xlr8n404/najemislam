@@ -119,7 +119,7 @@ export function MainMenu({ open, onClose, avatarSrc, feedMode, onFeedModeChange 
                   onClick={onClose}
                   className="flex-1 flex items-center justify-between h-11 bg-zinc-100 dark:bg-zinc-900 rounded-full px-4 hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-all"
                 >
-                  <span className="text-sm font-medium text-zinc-500 dark:text-zinc-400 truncate">Anything Sharable Today?</span>
+                  <span className="text-sm font-medium text-zinc-500 dark:text-zinc-400 truncate">Anything sharable today?</span>
                   <Plus size={18} className="text-zinc-500 dark:text-zinc-400 shrink-0 ml-2" />
                 </Link>
               </div>
