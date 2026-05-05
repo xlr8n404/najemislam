@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { LanguageProvider } from "@/components/LanguageProvider";
 import { ThemedToaster } from "@/components/ThemedToaster";
 import RealtimeNotifications from "@/components/RealtimeNotifications";
+import PresenceProvider from "@/components/PresenceProvider";
 import MediaContextMenuBlocker from "@/components/MediaContextMenuBlocker";
 import { NavigationHistoryProvider } from "@/components/NavigationHistoryProvider";
 import { ThemeColorMeta } from "@/components/ThemeColorMeta";
@@ -114,6 +115,7 @@ export default function RootLayout({
         <ThemeProvider>
           <NavigationHistoryProvider>
           <LanguageProvider>
+            <PresenceProvider>
               <Script
                 id="orchids-browser-logs"
                 src="https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/object/public/scripts/orchids-browser-logs.js"
@@ -174,6 +176,7 @@ export default function RootLayout({
                 <RealtimeNotifications />
                 <VisualEditsMessenger />
                 <MediaContextMenuBlocker />
+            </PresenceProvider>
             </LanguageProvider>
           </NavigationHistoryProvider>
           </ThemeProvider>

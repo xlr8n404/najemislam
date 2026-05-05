@@ -35,8 +35,8 @@ export async function GET(req: NextRequest) {
       .from('conversations')
       .select(`
         *,
-        user1:profiles!conversations_user1_id_fkey(id, full_name, username, avatar_url),
-        user2:profiles!conversations_user2_id_fkey(id, full_name, username, avatar_url)
+        user1:profiles!conversations_user1_id_fkey(id, full_name, username, avatar_url, last_seen, status),
+        user2:profiles!conversations_user2_id_fkey(id, full_name, username, avatar_url, last_seen, status)
       `)
       .or(`user1_id.eq.${user_id},user2_id.eq.${user_id}`)
       .order('updated_at', { ascending: false });

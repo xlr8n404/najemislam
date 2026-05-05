@@ -5,7 +5,8 @@ import { Loader } from '@/components/ui/loader';
 import { ConversationSkeleton, MessageSkeleton } from '@/components/MessageSkeleton';
 import { BottomNav } from '@/components/BottomNav';
 import Link from 'next/link';
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef, useCallback, Suspense } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -21,12 +22,16 @@ interface Conversation {
     full_name: string;
     username: string;
     avatar_url: string;
+    last_seen?: string;
+    status?: string;
   };
   user2: {
     id: string;
     full_name: string;
     username: string;
     avatar_url: string;
+    last_seen?: string;
+    status?: string;
   };
   last_message?: {
     content: string;
@@ -50,7 +55,7 @@ interface Message {
   };
 }
 
-export default function MessagesPage() {
+function MessagesContent() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -72,6 +77,10 @@ export default function MessagesPage() {
   const [swipeStartX, setSwipeStartX] = useState(0);
   const [onlineUsers, setOnlineUsers] = useState<Record<string, { status: string; last_seen: string; current_conversation_id?: string }>>({});
   
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const chatId = searchParams.get('chat');
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
 
@@ -138,18 +147,30 @@ export default function MessagesPage() {
       const response = await fetch(`/api/conversations?user_id=${userId}`);
       if (!response.ok) throw new Error('Failed to fetch conversations');
       const data = await response.json();
-      setConversations(data.data || []);
+      const convs = data.data || [];
+      setConversations(convs);
+      
+      // Handle URL parameter chat persistence
+      if (chatId && !selectedConversation) {
+        const targetConv = convs.find((c: Conversation) => c.id === chatId);
+        if (targetConv) {
+          setSelectedConversation(targetConv);
+        }
+      }
     } catch (error) {
       console.error('Error fetching conversations:', error);
       toast.error('Failed to load conversations');
     } finally {
       if (showLoading) setLoading(false);
     }
-  }, [userId]);
+  }, [userId, chatId, selectedConversation]);
 
     useEffect(() => {
       if (!userId) return;
-      fetchConversations(true);
+      const init = async () => {
+        await fetchConversations(true);
+      };
+      init();
 
       const channel = supabase
         .channel('conversations_changes')
@@ -222,11 +243,6 @@ export default function MessagesPage() {
       };
     }, [userId, currentUserProfile, selectedConversation?.id]);
 
-      return () => {
-        supabase.removeChannel(presenceChannel);
-      };
-    }, [userId, currentUserProfile]);
-
     // Fetch suggestions when tab is selected
     useEffect(() => {
       if (activeTab !== 'suggestions' || !userId) return;
@@ -268,6 +284,7 @@ export default function MessagesPage() {
         );
         if (existing) {
           setSelectedConversation(existing);
+          router.push(`/messages?chat=${existing.id}`, { scroll: false });
           return;
         }
         const res = await fetch('/api/conversations', {
@@ -279,6 +296,7 @@ export default function MessagesPage() {
         const data = await res.json();
         await fetchConversations(false);
         setSelectedConversation(data.data);
+        router.push(`/messages?chat=${data.data.id}`, { scroll: false });
         setMessagedUsers(prev => new Set([...prev, targetId]));
       } catch (e) {
         toast.error('Failed to start conversation');
@@ -379,6 +397,7 @@ export default function MessagesPage() {
       if (!response.ok) throw new Error('Failed to delete conversation');
       toast.success('Conversation deleted');
       setSelectedConversation(null);
+      router.push('/messages', { scroll: false });
       fetchConversations();
     } catch (error) {
       console.error('Error deleting conversation:', error);
@@ -393,11 +412,31 @@ export default function MessagesPage() {
 
   const getUserStatus = (targetId: string) => {
     const presence = onlineUsers[targetId];
-    if (!presence) return 'Offline';
-    if (selectedConversation && presence.current_conversation_id === selectedConversation.id) {
-      return 'Active';
+    if (presence) {
+      if (selectedConversation && presence.current_conversation_id === selectedConversation.id) {
+        return 'Active';
+      }
+      return 'Online';
     }
-    return 'Online';
+
+    // Fallback to database last_seen
+    const conversation = conversations.find(c => c.user1_id === targetId || c.user2_id === targetId);
+    const otherUser = conversation ? (conversation.user1_id === targetId ? conversation.user1 : conversation.user2) : null;
+    
+    if (otherUser?.last_seen) {
+      const lastSeen = new Date(otherUser.last_seen);
+      const now = new Date();
+      const diffMinutes = (now.getTime() - lastSeen.getTime()) / 60000;
+      
+      // If last seen within 5 minutes, consider them online (persistent status)
+      if (diffMinutes < 5) {
+        return 'Online';
+      }
+      
+      return `Last seen ${formatTime(otherUser.last_seen)}`;
+    }
+
+    return 'Offline';
   };
 
   const formatTime = (dateString: string) => {
@@ -560,7 +599,10 @@ export default function MessagesPage() {
                     return (
                       <button
                         key={conv.id}
-                        onClick={() => setSelectedConversation(conv)}
+                        onClick={() => {
+                          setSelectedConversation(conv);
+                          router.push(`/messages?chat=${conv.id}`, { scroll: false });
+                        }}
                         className="w-full flex items-center gap-4 p-3 hover:bg-muted transition-colors text-left rounded-2xl"
                       >
                         <div className="relative flex-shrink-0">
@@ -607,10 +649,13 @@ export default function MessagesPage() {
             {/* Top Bar 64dp */}
             <header className="h-16 flex items-center justify-between px-4">
               <div className="flex items-center gap-3">
-                <button
-                  onClick={() => setSelectedConversation(null)}
-                  className="p-2 -ml-2 text-foreground hover:bg-accent rounded-full transition-colors"
-                >
+                  <button
+                    onClick={() => {
+                      setSelectedConversation(null);
+                      router.push('/messages', { scroll: false });
+                    }}
+                    className="p-2 -ml-2 text-foreground hover:bg-accent rounded-full transition-colors"
+                  >
                   <ArrowLeft size={24} strokeWidth={1.5} />
                 </button>
                 <div className="relative">
@@ -720,11 +765,11 @@ export default function MessagesPage() {
                         {/* Timestamp shown only when clicked */}
                         <AnimatePresence>
                           {visibleTimestamp === msg.id && (
-                            <motion.span 
+                            <motion.span
                               initial={{ opacity: 0, height: 0 }}
                               animate={{ opacity: 1, height: 'auto' }}
                               exit={{ opacity: 0, height: 0 }}
-                              className="text-[10px] text-muted-foreground mt-0.5 px-1"
+                              className="text-[10px] text-muted-foreground mt-1 px-1"
                             >
                               {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                             </motion.span>
@@ -734,46 +779,51 @@ export default function MessagesPage() {
                     </div>
                   );
                 })}
+                <div ref={messagesEndRef} />
               </div>
             )}
-            <div ref={messagesEndRef} className="h-4" />
           </div>
 
-            {/* Bottom Bar 64dp */}
-            <footer className="h-20 flex items-center gap-3 px-4 pb-safe bg-background">
-              <div className="w-10 h-10 rounded-full overflow-hidden bg-muted flex-shrink-0">
-              <img 
-                src={getAvatarUrl(currentUserProfile?.avatar_url, currentUserProfile?.full_name || 'User')} 
-                alt="Me" 
-                className="w-full h-full object-cover"
-              />
-            </div>
-            
-            <form onSubmit={handleSendMessage} className="flex-1 flex items-center gap-2">
-              <div className="flex-1 bg-muted rounded-full flex items-center px-4 py-1.5">
-                <input
-                  type="text"
-                  value={messageText}
-                  onChange={(e) => setMessageText(e.target.value)}
-                  placeholder="Type a message..."
-                  className="w-full bg-transparent border-none outline-none text-sm text-foreground placeholder-muted-foreground h-7"
-                />
+          {/* Message Input */}
+          <div className="p-4 bg-background border-t border-border">
+            {replyingToMessage && (
+              <div className="mb-2 p-2 bg-muted rounded-lg flex items-center justify-between">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <RotateCcw size={12} />
+                  <span className="truncate">Replying to: {replyingToMessage.content}</span>
+                </div>
+                <button onClick={() => setReplyingToMessage(null)} className="text-muted-foreground hover:text-foreground">
+                  <ArrowLeft size={14} className="rotate-45" />
+                </button>
               </div>
+            )}
+            <form onSubmit={handleSendMessage} className="flex items-center gap-2">
+              <input
+                type="text"
+                value={messageText}
+                onChange={(e) => setMessageText(e.target.value)}
+                placeholder="Type a message..."
+                className="flex-1 bg-muted border-none rounded-full px-4 py-2.5 text-sm focus:ring-1 focus:ring-primary outline-none"
+              />
               <button
                 type="submit"
-                disabled={sending || !messageText.trim()}
-                className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
-                  sending || !messageText.trim()
-                    ? 'bg-muted text-muted-foreground'
-                    : 'bg-primary text-primary-foreground hover:scale-105 active:scale-95'
-                }`}
+                disabled={!messageText.trim() || sending}
+                className="p-2.5 bg-primary text-primary-foreground rounded-full disabled:opacity-50 transition-all hover:scale-105 active:scale-95"
               >
-                {sending ? <Loader centered={false} className="text-current" /> : <Send size={18} strokeWidth={2} />}
+                {sending ? <Loader className="w-5 h-5 animate-spin" /> : <Send size={20} strokeWidth={2} />}
               </button>
             </form>
-          </footer>
+          </div>
         </div>
       )}
     </div>
+  );
+}
+
+export default function MessagesPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><Loader /></div>}>
+      <MessagesContent />
+    </Suspense>
   );
 }
