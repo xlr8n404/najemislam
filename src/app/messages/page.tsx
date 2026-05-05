@@ -70,7 +70,7 @@ export default function MessagesPage() {
   const [visibleTimestamp, setVisibleTimestamp] = useState<string | null>(null);
   const [replyingToMessage, setReplyingToMessage] = useState<Message | null>(null);
   const [swipeStartX, setSwipeStartX] = useState(0);
-  const [onlineUsers, setOnlineUsers] = useState<Record<string, { status: string; last_seen: string }>>({});
+  const [onlineUsers, setOnlineUsers] = useState<Record<string, { status: string; last_seen: string; current_conversation_id?: string }>>({});
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -184,6 +184,7 @@ export default function MessagesPage() {
             online[key] = {
               status: presence.status || 'online',
               last_seen: presence.last_seen || new Date().toISOString(),
+              current_conversation_id: presence.current_conversation_id,
             };
           });
           setOnlineUsers(online);
@@ -194,6 +195,7 @@ export default function MessagesPage() {
             [key]: {
               status: newPresences[0].status || 'online',
               last_seen: newPresences[0].last_seen || new Date().toISOString(),
+              current_conversation_id: newPresences[0].current_conversation_id,
             },
           }));
         })
@@ -210,9 +212,15 @@ export default function MessagesPage() {
               user_id: userId,
               status: 'online',
               last_seen: new Date().toISOString(),
+              current_conversation_id: selectedConversation?.id,
             });
           }
         });
+
+      return () => {
+        supabase.removeChannel(presenceChannel);
+      };
+    }, [userId, currentUserProfile, selectedConversation?.id]);
 
       return () => {
         supabase.removeChannel(presenceChannel);
@@ -385,8 +393,11 @@ export default function MessagesPage() {
 
   const getUserStatus = (targetId: string) => {
     const presence = onlineUsers[targetId];
-    if (presence) return 'Online';
-    return 'Offline';
+    if (!presence) return 'Offline';
+    if (selectedConversation && presence.current_conversation_id === selectedConversation.id) {
+      return 'Active';
+    }
+    return 'Online';
   };
 
   const formatTime = (dateString: string) => {
@@ -611,7 +622,13 @@ export default function MessagesPage() {
                 </div>
                 <div className="flex flex-col">
                   <h3 className="font-bold text-base leading-tight">{getOtherUser(selectedConversation).full_name}</h3>
-                  <span className={`text-[10px] font-medium tracking-wider uppercase ${onlineUsers[getOtherUser(selectedConversation).id] ? 'text-green-500' : 'text-zinc-400 dark:text-zinc-600'}`}>
+                  <span className={`text-[10px] font-bold tracking-wider uppercase ${
+                    getUserStatus(getOtherUser(selectedConversation).id) === 'Active' 
+                      ? 'text-blue-500' 
+                      : getUserStatus(getOtherUser(selectedConversation).id) === 'Online' 
+                        ? 'text-green-500' 
+                        : 'text-zinc-400 dark:text-zinc-600'
+                  }`}>
                     {getUserStatus(getOtherUser(selectedConversation).id)}
                   </span>
                 </div>
