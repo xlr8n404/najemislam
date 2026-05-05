@@ -70,6 +70,7 @@ export default function MessagesPage() {
   const [visibleTimestamp, setVisibleTimestamp] = useState<string | null>(null);
   const [replyingToMessage, setReplyingToMessage] = useState<Message | null>(null);
   const [swipeStartX, setSwipeStartX] = useState(0);
+  const [onlineUsers, setOnlineUsers] = useState<Record<string, { status: string; last_seen: string }>>({});
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -160,6 +161,63 @@ export default function MessagesPage() {
         supabase.removeChannel(channel);
       };
     }, [userId, fetchConversations]);
+
+    // Presence Sync
+    useEffect(() => {
+      if (!userId || !currentUserProfile) return;
+
+      const presenceChannel = supabase.channel('online-users', {
+        config: {
+          presence: {
+            key: userId,
+          },
+        },
+      });
+
+      presenceChannel
+        .on('presence', { event: 'sync' }, () => {
+          const state = presenceChannel.presenceState();
+          const online: Record<string, any> = {};
+          
+          Object.keys(state).forEach((key) => {
+            const presence = state[key][0] as any;
+            online[key] = {
+              status: presence.status || 'online',
+              last_seen: presence.last_seen || new Date().toISOString(),
+            };
+          });
+          setOnlineUsers(online);
+        })
+        .on('presence', { event: 'join' }, ({ key, newPresences }) => {
+          setOnlineUsers((prev) => ({
+            ...prev,
+            [key]: {
+              status: newPresences[0].status || 'online',
+              last_seen: newPresences[0].last_seen || new Date().toISOString(),
+            },
+          }));
+        })
+        .on('presence', { event: 'leave' }, ({ key }) => {
+          setOnlineUsers((prev) => {
+            const next = { ...prev };
+            delete next[key];
+            return next;
+          });
+        })
+        .subscribe(async (status) => {
+          if (status === 'SUBSCRIBED') {
+            await presenceChannel.track({
+              user_id: userId,
+              status: 'online',
+              last_seen: new Date().toISOString(),
+            });
+          }
+        });
+
+      return () => {
+        supabase.removeChannel(presenceChannel);
+      };
+    }, [userId, currentUserProfile]);
 
     // Fetch suggestions when tab is selected
     useEffect(() => {
@@ -323,6 +381,12 @@ export default function MessagesPage() {
 
   const getOtherUser = (conv: Conversation) => {
     return conv.user1_id === userId ? conv.user2 : conv.user1;
+  };
+
+  const getUserStatus = (targetId: string) => {
+    const presence = onlineUsers[targetId];
+    if (presence) return 'Online';
+    return 'Offline';
   };
 
   const formatTime = (dateString: string) => {
@@ -502,7 +566,12 @@ export default function MessagesPage() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between gap-2">
-                            <h4 className="font-bold text-base truncate">{otherUser.full_name}</h4>
+                            <div className="flex items-center gap-1.5 min-w-0">
+                              <h4 className="font-bold text-base truncate">{otherUser.full_name}</h4>
+                              {onlineUsers[otherUser.id] && (
+                                <span className="w-2 h-2 rounded-full bg-green-500 shrink-0" />
+                              )}
+                            </div>
                             <span className="text-xs text-muted-foreground whitespace-nowrap">
                               {conv.last_message ? formatTime(conv.last_message.created_at) : ''}
                             </span>
@@ -542,7 +611,9 @@ export default function MessagesPage() {
                 </div>
                 <div className="flex flex-col">
                   <h3 className="font-bold text-base leading-tight">{getOtherUser(selectedConversation).full_name}</h3>
-                  <span className="text-[10px] text-green-500 font-medium tracking-wider">ONLINE</span>
+                  <span className={`text-[10px] font-medium tracking-wider uppercase ${onlineUsers[getOtherUser(selectedConversation).id] ? 'text-green-500' : 'text-zinc-400 dark:text-zinc-600'}`}>
+                    {getUserStatus(getOtherUser(selectedConversation).id)}
+                  </span>
                 </div>
               </div>
               
