@@ -245,7 +245,7 @@ export default function CreatePostPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
-        <header className="h-16 flex items-center justify-between px-4 bg-background border-b border-black/[0.05] dark:border-white/[0.05]">
+        <header className="h-16 flex items-center justify-between px-4 bg-background">
           <div className="flex items-center gap-3">
             <Skeleton className="w-10 h-10 rounded-full bg-zinc-200 dark:bg-zinc-800" />
             <Skeleton className="h-4 w-24 bg-zinc-100 dark:bg-zinc-900" />

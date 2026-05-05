@@ -58,7 +58,7 @@ export default function StoriesPage() {
   if (!STORIES_ENABLED) {
     return (
       <div className="min-h-screen bg-white dark:bg-black text-black dark:text-white flex flex-col">
-        <header className="fixed top-0 left-0 right-0 z-50 h-16 bg-white/90 dark:bg-black/90 backdrop-blur-xl border-b border-black/[0.06] dark:border-white/[0.06]">
+        <header className="fixed top-0 left-0 right-0 z-50 h-16 bg-white/90 dark:bg-black/90 backdrop-blur-xl">
           <div className="max-w-xl mx-auto flex items-center px-4 h-full">
             <h1 className="text-xl font-bold tracking-tight">Stories</h1>
           </div>
@@ -98,7 +98,7 @@ export default function StoriesPage() {
   return (
     <div className="min-h-screen bg-white dark:bg-black text-black dark:text-white">
       {/* Top Bar — 64px */}
-      <header className="fixed top-0 left-0 right-0 z-50 h-16 bg-white/90 dark:bg-black/90 backdrop-blur-xl border-b border-black/[0.06] dark:border-white/[0.06]">
+      <header className="fixed top-0 left-0 right-0 z-50 h-16 bg-white/90 dark:bg-black/90 backdrop-blur-xl">
         <div className="max-w-xl mx-auto flex items-center justify-between px-4 h-full">
           <h1 className="text-xl font-bold tracking-tight">Stories</h1>
           <Link
