@@ -201,7 +201,7 @@ export default function AlertsPage() {
       <header
         className={`fixed top-0 left-0 right-0 z-50 bg-white/80 dark:bg-black/80 backdrop-blur-xl transition-transform duration-300 ${
           isHeaderVisible ? 'translate-y-0' : '-translate-y-full'
-        } border-b border-black/[0.05] dark:border-white/[0.05]`}
+        }`}
       >
         <div className="max-w-xl mx-auto px-4 h-16 flex items-center">
           <span className="font-bold text-2xl tracking-tight font-[family-name:var(--font-syne)]">
@@ -255,20 +255,19 @@ export default function AlertsPage() {
                 </div>
 
                 {/* Text */}
-                <div className="flex-1 min-w-0">
-                  {/* Line 1: Full name (16px bold) + content (14px) inline */}
-                  <p className="text-[14px] leading-snug">
-                    <span
-                      className="font-bold text-[16px] cursor-pointer hover:underline mr-1"
-                      onClick={(e) => handleProfileClick(e, alert.from_user.username)}
-                    >
-                      {alert.from_user.full_name}
-                    </span>
-                    <span className="text-zinc-500 dark:text-zinc-400">
-                      {getMessage(alert)}
-                    </span>
+                <div className="flex-1 min-w-0 flex flex-col justify-center">
+                  {/* Line 1: Full name (16px) */}
+                  <p
+                    className="font-bold text-[16px] cursor-pointer hover:underline truncate"
+                    onClick={(e) => handleProfileClick(e, alert.from_user.username)}
+                  >
+                    {alert.from_user.full_name}
                   </p>
-                  {/* Line 2: Timing */}
+                  {/* Line 2: Content (14px) */}
+                  <p className="text-[14px] text-zinc-500 dark:text-zinc-400 leading-snug truncate">
+                    {getMessage(alert)}
+                  </p>
+                  {/* Line 3: Timing (12px) */}
                   <p className="text-[12px] text-zinc-400 dark:text-zinc-600 mt-0.5">
                     {formatTime(alert.created_at)}
                   </p>
