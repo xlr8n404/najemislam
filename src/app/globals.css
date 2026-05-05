@@ -123,6 +123,7 @@
     -moz-user-select: none;
     -ms-user-select: none;
     overflow-x: hidden;
+    padding-top: env(safe-area-inset-top);
   }
 
   /* Disable long-press context menu on media elements and icons */

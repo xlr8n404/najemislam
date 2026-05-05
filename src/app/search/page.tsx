@@ -210,7 +210,7 @@ function SearchContent() {
       }}
     >
       {/* Top Bar */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 dark:bg-black/80 backdrop-blur-xl">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-white dark:bg-black">
         <div className="h-16 px-4 flex items-center gap-3">
           <div className="flex-1 relative flex items-center bg-zinc-100 dark:bg-zinc-900 rounded-full px-3 h-12">
             <SearchIcon size={24} strokeWidth={1.5} className="text-zinc-400 shrink-0" />

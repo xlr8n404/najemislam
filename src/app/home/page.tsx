@@ -406,7 +406,7 @@ export default function HomePage() {
         onFeedModeChange={(mode) => setFeedMode(mode)}
       />
 
-      <header className={`fixed top-0 left-0 right-0 h-16 z-50 px-4 bg-white/80 dark:bg-black/80 backdrop-blur-xl border-b-0 transition-transform duration-300 ${
+      <header className={`fixed top-0 left-0 right-0 h-16 z-50 px-4 bg-white dark:bg-black border-b-0 transition-transform duration-300 ${
         useScrollDirection() ? 'translate-y-0' : '-translate-y-full'
       }`}>
         <div className="h-full flex items-center justify-between">

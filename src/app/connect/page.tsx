@@ -201,7 +201,7 @@ export default function ConnectPage() {
   return (
     <div className="min-h-screen bg-white dark:bg-black text-black dark:text-white">
       {/* Top bar: "Connect" title + search bar */}
-      <header className="sticky top-0 z-50 bg-white/80 dark:bg-black/80 backdrop-blur-xl">
+      <header className="sticky top-0 z-50 bg-white dark:bg-black">
         <div className="max-w-xl mx-auto px-4 h-16 flex items-center gap-3">
           <span className="font-bold text-2xl tracking-tight font-[family-name:var(--font-syne)] flex-shrink-0">
             Connect

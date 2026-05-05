@@ -69,7 +69,7 @@ export const metadata: Metadata = {
   // Apple PWA
   appleWebApp: {
     capable: true,
-    statusBarStyle: "default",
+    statusBarStyle: "black-translucent",
     title: "Sharable",
     startupImage: ["/sharable.logo.png"],
   },
