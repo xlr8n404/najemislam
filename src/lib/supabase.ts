@@ -15,6 +15,7 @@ const baseSupabase = createClient(supabaseUrl, supabaseAnonKey, {
 // TTL: 60s. Cleared on sign-out.
 let _sessionCache: { user: any; expiresAt: number } | null = null;
 let _sessionInflight: Promise<any> | null = null;
+let _listeners: ((event: string, session: any) => void)[] = [];
 
 async function fetchSession() {
   if (_sessionCache && Date.now() < _sessionCache.expiresAt) {
@@ -35,6 +36,17 @@ async function fetchSession() {
     .catch(() => null)
     .finally(() => { _sessionInflight = null; });
   return _sessionInflight;
+}
+
+function notifyListeners(event: string, user: any) {
+  const session = user ? {
+    user,
+    access_token: 'mock-token',
+    refresh_token: 'mock-token',
+    expires_in: 3600,
+    expires_at: Math.floor(Date.now() / 1000) + 3600,
+  } : null;
+  _listeners.forEach(cb => cb(event, session));
 }
 
 // Custom auth proxy to use our own session API
@@ -71,10 +83,36 @@ const authProxy = {
       return { data: { session: null }, error };
     }
   },
+  onAuthStateChange: (callback: (event: string, session: any) => void) => {
+    _listeners.push(callback);
+    
+    // Immediately call with current state
+    fetchSession().then(user => {
+      const session = user ? {
+        user,
+        access_token: 'mock-token',
+        refresh_token: 'mock-token',
+        expires_in: 3600,
+        expires_at: Math.floor(Date.now() / 1000) + 3600,
+      } : null;
+      callback('INITIAL_SESSION', session);
+    });
+
+    return {
+      data: {
+        subscription: {
+          unsubscribe: () => {
+            _listeners = _listeners.filter(l => l !== callback);
+          }
+        }
+      }
+    };
+  },
   signOut: async () => {
     _sessionCache = null;
     _sessionInflight = null;
     await fetch('/api/auth/logout', { method: 'POST' });
+    notifyListeners('SIGNED_OUT', null);
     return { error: null };
   }
 };
