@@ -410,28 +410,24 @@ export default function HomePage() {
         useScrollDirection() ? 'translate-y-0' : '-translate-y-full'
       }`}>
         <div className="h-full flex items-center justify-between">
-          <button
-            onClick={() => setMainMenuOpen(true)}
-            className="p-2 text-black dark:text-white hover:bg-black/5 dark:hover:bg-white/5 rounded-full transition-colors"
-          >
-            <Settings2 size={24} strokeWidth={1.5} />
-          </button>
+          <span className="font-bold text-2xl tracking-tight font-[family-name:var(--font-syne)] text-black dark:text-white">
+            Sharable
+          </span>
 
-          <div className="flex-1 flex justify-center">
-            <Share2
-              size={24}
-              strokeWidth={1.5}
-              className="text-black dark:text-white cursor-pointer"
-              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            />
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => router.push('/messages')}
+              className="p-2 text-black dark:text-white hover:bg-black/5 dark:hover:bg-white/5 rounded-full transition-colors"
+            >
+              <MessageCircle size={24} strokeWidth={1.5} />
+            </button>
+            <button
+              onClick={() => setMainMenuOpen(true)}
+              className="p-2 text-black dark:text-white hover:bg-black/5 dark:hover:bg-white/5 rounded-full transition-colors"
+            >
+              <Settings2 size={24} strokeWidth={1.5} />
+            </button>
           </div>
-
-          <button
-            onClick={() => router.push('/messages')}
-            className="p-2 text-black dark:text-white hover:bg-black/5 dark:hover:bg-white/5 rounded-full transition-colors"
-          >
-            <MessageCircle size={24} strokeWidth={1.5} />
-          </button>
         </div>
       </header>
 
