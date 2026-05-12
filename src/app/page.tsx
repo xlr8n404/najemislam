@@ -117,16 +117,24 @@ export default function Home() {
           </div>
 
           {/* Auth Buttons */}
-          <div className="flex flex-col gap-4 w-full">
+          <div className="flex flex-col gap-4 w-full pointer-events-auto">
             <button
-              onClick={() => router.push('/login')}
-              className="flex items-center justify-center w-full h-[56px] bg-foreground text-background font-bold text-lg rounded-full transition-all hover:bg-neutral-800 dark:hover:bg-neutral-200 cursor-pointer"
+              type="button"
+              onClick={() => {
+                console.log("[v0] Login button clicked");
+                router.push('/login');
+              }}
+              className="w-full h-[56px] bg-foreground text-background font-bold text-lg rounded-full transition-all hover:bg-neutral-800 dark:hover:bg-neutral-200 cursor-pointer pointer-events-auto z-10"
             >
               Log in
             </button>
             <button
-              onClick={() => router.push('/register')}
-              className="flex items-center justify-center w-full h-[56px] bg-neutral-100 dark:bg-neutral-900 text-foreground font-bold text-lg rounded-full border border-neutral-200 dark:border-neutral-800 transition-all hover:bg-neutral-200 dark:hover:bg-neutral-800 cursor-pointer"
+              type="button"
+              onClick={() => {
+                console.log("[v0] Register button clicked");
+                router.push('/register');
+              }}
+              className="w-full h-[56px] bg-neutral-100 dark:bg-neutral-900 text-foreground font-bold text-lg rounded-full border border-neutral-200 dark:border-neutral-800 transition-all hover:bg-neutral-200 dark:hover:bg-neutral-800 cursor-pointer pointer-events-auto z-10"
             >
               Create Account
             </button>
