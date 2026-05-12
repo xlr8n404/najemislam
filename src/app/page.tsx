@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { Loader } from "@/components/ui/loader";
 import { motion } from "framer-motion";
 import { Sun, Moon } from "lucide-react";
@@ -118,18 +117,18 @@ export default function Home() {
 
           {/* Auth Buttons */}
           <div className="flex flex-col gap-4 w-full">
-            <Link
-              href="/login"
-              className="flex items-center justify-center w-full h-[56px] bg-foreground text-background font-bold text-lg rounded-full transition-all hover:bg-neutral-800 dark:hover:bg-neutral-200"
+            <button
+              onClick={() => router.push('/login')}
+              className="flex items-center justify-center w-full h-[56px] bg-foreground text-background font-bold text-lg rounded-full transition-all hover:bg-neutral-800 dark:hover:bg-neutral-200 cursor-pointer"
             >
               Log in
-            </Link>
-            <Link
-              href="/register"
-              className="flex items-center justify-center w-full h-[56px] bg-neutral-100 dark:bg-neutral-900 text-foreground font-bold text-lg rounded-full border border-neutral-200 dark:border-neutral-800 transition-all hover:bg-neutral-200 dark:hover:bg-neutral-800"
+            </button>
+            <button
+              onClick={() => router.push('/register')}
+              className="flex items-center justify-center w-full h-[56px] bg-neutral-100 dark:bg-neutral-900 text-foreground font-bold text-lg rounded-full border border-neutral-200 dark:border-neutral-800 transition-all hover:bg-neutral-200 dark:hover:bg-neutral-800 cursor-pointer"
             >
               Create Account
-            </Link>
+            </button>
           </div>
         </motion.div>
       </main>
