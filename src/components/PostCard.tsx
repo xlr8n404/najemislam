@@ -1744,100 +1744,45 @@ export function PostCard({
                 </div>
 
             {hasMedia && (
-              <div className="pb-2">
-                {finalMediaUrls.length > 1 ? (
-                  /* ── Horizontal media slider ── */
-                  <div className="mx-4 rounded-2xl overflow-hidden bg-zinc-100 dark:bg-zinc-900">
-                    <Carousel className="w-full">
-                      <CarouselContent className="-ml-0">
-                        {finalMediaUrls.map((url, index) => (
-                          <CarouselItem key={index} className="pl-0 basis-full">
-                            <div 
-                              className="relative cursor-pointer"
-                              onClick={() => {
-                                if (finalMediaTypes[index] !== 'video' && finalMediaTypes[index] !== 'audio') {
-                                  setFullscreenMedia({ url, type: finalMediaTypes[index] });
-                                }
-                              }}
-                            >
-                              {finalMediaTypes[index] === 'video' ? (
-                                <LazyVideo
-                                  src={isVisible ? url : ''}
-                                  controls
-                                  className="w-full h-auto block"
-                                  onClick={(e: React.MouseEvent) => e.stopPropagation()}
-                                />
-                              ) : finalMediaTypes[index] === 'audio' ? (
-                                <div className="flex flex-col items-center justify-center gap-3 py-6 px-4">
-                                  <div className="w-14 h-14 rounded-full bg-zinc-200 dark:bg-zinc-800 flex items-center justify-center">
-                                    <Music className="w-7 h-7 text-zinc-500" />
-                                  </div>
-                                  <audio src={url} controls className="w-full" onClick={(e) => e.stopPropagation()} />
-                                </div>
-                              ) : (
-                                <img
-                                  src={url}
-                                  alt={`Post media ${index + 1}`}
-                                  className="w-full h-auto block"
-                                  loading="lazy"
-                                />
-                              )}
-                              {/* Page indicator */}
-                              <div className="absolute top-3 right-3 px-2 py-1 bg-black/50 backdrop-blur-sm rounded-full text-[10px] font-bold text-white">
-                                {index + 1} / {finalMediaUrls.length}
-                              </div>
-                            </div>
-                          </CarouselItem>
-                        ))}
-                      </CarouselContent>
-                    </Carousel>
-                  </div>
-                ) : (
-                  /* Single media — 16px side margin, rounded */
-                  <div
-                    className="relative mx-4 rounded-2xl overflow-hidden bg-zinc-100 dark:bg-zinc-900 group"
-                    onClick={() => { if (finalMediaTypes[0] !== 'video' && finalMediaTypes[0] !== 'audio') setFullscreenMedia({ url: finalMediaUrls[0], type: finalMediaTypes[0] }); }}
-                    style={{ cursor: finalMediaTypes[0] === 'video' || finalMediaTypes[0] === 'audio' ? 'default' : 'pointer' }}
-                  >
-                    {finalMediaTypes[0] === 'audio' || (finalMediaUrls[0] && /\.(mp3|wav|ogg|aac|flac|m4a)$/i.test(finalMediaUrls[0])) ? (
-                      <div className="flex flex-col items-center justify-center gap-3 py-6 px-4">
-                        <div className="w-14 h-14 rounded-full bg-zinc-200 dark:bg-zinc-800 flex items-center justify-center">
-                          <Music className="w-7 h-7 text-zinc-500" />
-                        </div>
-                        <audio src={finalMediaUrls[0]} controls className="w-full" onClick={(e) => e.stopPropagation()} />
+              <div className="pb-2 px-4">
+                <div className={`grid gap-1.5 rounded-2xl overflow-hidden bg-zinc-100 dark:bg-zinc-900 ${
+                  finalMediaUrls.length === 1 ? 'grid-cols-1' :
+                  finalMediaUrls.length === 2 ? 'grid-cols-2' :
+                  'grid-cols-2'
+                }`}>
+                  {finalMediaUrls.slice(0, 4).map((url, index) => {
+                    const type = finalMediaTypes[index];
+                    const isLast = index === 3 && finalMediaUrls.length > 4;
+                    const overlay = isLast ? finalMediaUrls.length - 4 : 0;
+                    
+                    // Layout logic for 3 items: first item is full height on left, others on right
+                    const isFirstOfThree = finalMediaUrls.length === 3 && index === 0;
+                    
+                    return (
+                      <div 
+                        key={index} 
+                        className={`relative bg-zinc-100 dark:bg-zinc-900 ${
+                          finalMediaUrls.length === 1 ? 'aspect-auto' : 
+                          isFirstOfThree ? 'row-span-2 aspect-[1/2]' : 
+                          'aspect-square'
+                        }`}
+                      >
+                        <MediaGridCell
+                          url={url}
+                          type={type}
+                          index={index}
+                          overlay={overlay}
+                          isVisible={isVisible}
+                          onOpen={(url, type) => {
+                            if (type !== 'video' && type !== 'audio') {
+                              setFullscreenMedia({ url, type });
+                            }
+                          }}
+                        />
                       </div>
-                    ) : finalMediaTypes[0] === 'video' || (finalMediaUrls[0] && (finalMediaUrls[0].endsWith('.mp4') || finalMediaUrls[0].endsWith('.webm') || finalMediaUrls[0].endsWith('.mov'))) ? (
-                      <LazyVideo
-                        src={isVisible ? finalMediaUrls[0] : ''}
-                        controls
-                        className="w-full h-auto block"
-                        onClick={(e: React.MouseEvent) => e.stopPropagation()}
-                      />
-                    ) : (
-                      <img
-                        key={finalMediaUrls[0]}
-                        src={finalMediaUrls[0]}
-                        alt="Post content"
-                        className="w-full h-auto block"
-                        loading="eager"
-                        onError={(e) => {
-                          const img = e.target as HTMLImageElement;
-                          if (!img.dataset.retried) {
-                            img.dataset.retried = '1';
-                            const src = img.src;
-                            img.src = '';
-                            img.src = src;
-                          }
-                        }}
-                      />
-                    )}
-                    {finalMediaTypes[0] !== 'video' && finalMediaTypes[0] !== 'audio' && (
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
-                        <Maximize2 className="w-10 h-10 text-white opacity-0 group-hover:opacity-100 transition-opacity" strokeWidth={1.5} />
-                      </div>
-                    )}
-                  </div>
-                )}
+                    );
+                  })}
+                </div>
               </div>
             )}
 
