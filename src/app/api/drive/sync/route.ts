@@ -3,13 +3,10 @@ import { createClient } from '@supabase/supabase-js';
 import { verifyToken } from '@/lib/auth-utils';
 
 export const config = {
-  api: {
-    bodyParser: {
-      sizeLimit: '500mb',
-    },
-    responseLimit: false,
-  },
+  maxDuration: 60,
 };
+
+export const runtime = 'nodejs';
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,

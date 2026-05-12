@@ -453,7 +453,7 @@ export default function HomePage() {
         <div className="flex flex-col">
           {posts.map((post, index) => (
             <div
-              key={`${post.id}-${index}`}
+              key={post.id}
               data-post-index={index}
               ref={(node) => {
                 // Attach to lastPostRef for infinite scroll
