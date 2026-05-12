@@ -408,7 +408,7 @@ export default function HomePage() {
 
        <header className={`fixed top-0 left-0 right-0 h-16 z-50 px-4 bg-white dark:bg-black border border-black/10 dark:border-white/10 rounded-[999px] transition-transform duration-300 ${
         useScrollDirection() ? 'translate-y-0' : '-translate-y-full'
-      `}>
+      }`}>
         <div className="h-full flex items-center justify-between">
           <span className="font-bold text-2xl tracking-tight font-[family-name:var(--font-syne)] text-black dark:text-white">
             Sharable
