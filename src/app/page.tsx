@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Loader } from "@/components/ui/loader";
 import { motion } from "framer-motion";
 import { Sun, Moon } from "lucide-react";
