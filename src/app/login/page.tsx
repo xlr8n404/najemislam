@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { Loader } from "@/components/ui/loader";
 import { motion } from "framer-motion";
 import { LoginForm } from "@/components/auth/login-form";
