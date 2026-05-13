@@ -1408,8 +1408,12 @@ export function PostCard({
         />
 
             <Drawer open={showMenu} onOpenChange={(open) => { setShowMenu(open); if(!open) setShowDeleteConfirm(false); }}>
-              <DrawerContent className="bg-zinc-100 dark:bg-zinc-900 border-black/10 dark:border-white/10 pb-8 rounded-t-[30px]">
+              <DrawerContent className="bg-zinc-100 dark:bg-zinc-900 border-black/10 dark:border-white/10 pb-8 rounded-t-2xl">
               <div className="mx-auto w-full max-w-xl">
+                {/* Grabber */}
+                <div className="flex justify-center pt-2 pb-6">
+                  <div className="w-10 h-1 bg-zinc-300 dark:bg-zinc-700 rounded-full" />
+                </div>
                 {showDeleteConfirm ? (
                   <div className="py-6 px-4 space-y-4">
                     <div className="text-center space-y-2">
