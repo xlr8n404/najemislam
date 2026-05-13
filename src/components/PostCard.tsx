@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Heart, MessageCircle, Share2, MoreHorizontal, X, Send, Trash2, Clock, Reply, ChevronDown, ChevronUp, Bookmark, Copy, Download, Maximize2, Repeat, TrendingUp, CornerRightDown, Settings2, Music, Play } from 'lucide-react';
+import { Heart, MessageCircle, Share2, MoreHorizontal, X, Send, Trash2, Clock, Reply, ChevronDown, ChevronUp, Bookmark, Copy, Maximize2, Repeat, TrendingUp, CornerRightDown, Settings2, Music, Play } from 'lucide-react';
 import { Loader } from '@/components/ui/loader';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/lib/supabase';
@@ -277,8 +277,9 @@ export function PostCard({
       const [isSaved, setIsSaved] = useState(initialSaved);
       const [mentionResults, setMentionResults] = useState<any[]>([]);
       const [showMentions, setShowMentions] = useState(false);
-      const [fullscreenMedia, setFullscreenMedia] = useState<{ url: string; type: string } | null>(null);
+      const [fullscreenMedia, setFullscreenMedia] = useState<{ url: string; type: string; index: number } | null>(null);
         const [scale, setScale] = useState(1);
+        const [mediaCarouselIndex, setMediaCarouselIndex] = useState(0);
         const [showHeartAnim, setShowHeartAnim] = useState(false);
         const [viewportHeight, setViewportHeight] = useState<number | null>(null);
         const [votedComments, setVotedComments] = useState<Set<string>>(new Set());
@@ -1744,28 +1745,17 @@ export function PostCard({
                 </div>
 
             {hasMedia && (
-              <div className="pb-2 px-4">
-                <div className={`grid gap-1.5 rounded-2xl overflow-hidden bg-zinc-100 dark:bg-zinc-900 ${
-                  finalMediaUrls.length === 1 ? 'grid-cols-1' :
-                  finalMediaUrls.length === 2 ? 'grid-cols-2' :
-                  'grid-cols-2'
-                }`}>
+              <div className="rounded-2xl overflow-hidden bg-zinc-100 dark:bg-zinc-900 mx-4 my-2">
+                <div className="grid grid-cols-2 gap-1 auto-rows-[1fr]" style={{aspectRatio: finalMediaUrls.length === 1 ? '1' : undefined}}>
                   {finalMediaUrls.slice(0, 4).map((url, index) => {
                     const type = finalMediaTypes[index];
                     const isLast = index === 3 && finalMediaUrls.length > 4;
                     const overlay = isLast ? finalMediaUrls.length - 4 : 0;
                     
-                    // Layout logic for 3 items: first item is full height on left, others on right
-                    const isFirstOfThree = finalMediaUrls.length === 3 && index === 0;
-                    
                     return (
                       <div 
                         key={index} 
-                        className={`relative bg-zinc-100 dark:bg-zinc-900 ${
-                          finalMediaUrls.length === 1 ? 'aspect-auto' : 
-                          isFirstOfThree ? 'row-span-2 aspect-[1/2]' : 
-                          'aspect-square'
-                        }`}
+                        className="relative bg-zinc-100 dark:bg-zinc-900 aspect-square"
                       >
                         <MediaGridCell
                           url={url}
@@ -1775,7 +1765,8 @@ export function PostCard({
                           isVisible={isVisible}
                           onOpen={(url, type) => {
                             if (type !== 'video' && type !== 'audio') {
-                              setFullscreenMedia({ url, type });
+                              setFullscreenMedia({ url, type, index });
+                              setMediaCarouselIndex(index);
                             }
                           }}
                         />
@@ -2167,68 +2158,114 @@ export function PostCard({
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center overflow-hidden"
+                className="fixed inset-0 z-[100] bg-black flex flex-col overflow-hidden"
                 onClick={closeFullscreen}
               >
-                <div className="absolute top-6 right-6 flex items-center gap-4 z-[110]">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      const a = document.createElement('a');
-                      a.href = fullscreenMedia.url;
-                      a.download = `shareit-${id}.${fullscreenMedia.type === 'video' ? 'mp4' : fullscreenMedia.type === 'audio' ? 'mp3' : 'jpg'}`;
-                      document.body.appendChild(a);
-                      a.click();
-                      document.body.removeChild(a);
-                    }}
-                    className="p-3 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors backdrop-blur-md border border-white/10"
-                  >
-                    <Download className="w-6 h-6" strokeWidth={1.5} />
-                  </button>
+                {/* Header with user profile, media count, and close button */}
+                <div className="h-16 flex items-center justify-between px-4 border-b border-white/10 z-[110] flex-shrink-0">
+                  {/* Left: User Avatar (40px) */}
+                  <div className="w-10 h-10 rounded-full overflow-hidden border border-white/20 bg-zinc-900 flex-shrink-0">
+                    <img 
+                      src={avatarSrc} 
+                      alt={user?.username || user?.full_name || 'User'} 
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+
+                  {/* Middle: Media Count */}
+                  <div className="text-white font-medium">
+                    {mediaCarouselIndex + 1}/{finalMediaUrls.length}
+                  </div>
+
+                  {/* Right: Close Button */}
                   <button
                     onClick={(e) => { e.stopPropagation(); closeFullscreen(); }}
-                    className="p-3 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors backdrop-blur-md border border-white/10"
+                    className="p-2 text-white hover:bg-white/10 rounded-full transition-colors"
                   >
                     <X className="w-6 h-6" strokeWidth={1.5} />
                   </button>
                 </div>
-              
-                <motion.div
-                  initial={{ scale: 0.9, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  exit={{ scale: 0.9, opacity: 0 }}
-                  transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-                  className="w-full h-full flex items-center justify-center relative touch-none"
-                  onClick={(e) => e.stopPropagation()}
-                  onTouchStart={handleTouchStart}
-                  onTouchMove={handleTouchMove}
-                  onTouchEnd={handleTouchEnd}
-                >
-                  {fullscreenMedia.type === 'video' ? (
-                    <video 
-                      src={fullscreenMedia.url} 
-                      controls 
-                      autoPlay
-                      className="w-full h-full object-contain"
-                    />
-                  ) : (
-                    <motion.div
-                      className="w-full h-full flex items-center justify-center"
-                      initial={{ scale: 1 }}
-                      animate={{ scale }}
-                      onDoubleClick={() => setScale(s => s === 1 ? 2.5 : 1)}
-                    >
-                      <motion.img 
-                        drag={scale > 1}
-                        dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
-                        dragElastic={0}
-                        src={fullscreenMedia.url} 
-                        alt="Fullscreen content" 
-                        className={`w-full h-full object-contain ${scale > 1 ? 'cursor-grab active:cursor-grabbing' : 'cursor-zoom-in'}`}
-                      />
-                    </motion.div>
+
+                {/* Media Container */}
+                <div className="flex-1 flex items-center justify-center relative overflow-hidden touch-none">
+                  {/* Carousel for multiple media */}
+                  {finalMediaUrls.length > 1 && (
+                    <>
+                      {/* Previous button */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const prevIndex = mediaCarouselIndex === 0 ? finalMediaUrls.length - 1 : mediaCarouselIndex - 1;
+                          setMediaCarouselIndex(prevIndex);
+                          setFullscreenMedia({ 
+                            url: finalMediaUrls[prevIndex], 
+                            type: finalMediaTypes[prevIndex],
+                            index: prevIndex
+                          });
+                          setScale(1);
+                        }}
+                        className="absolute left-4 top-1/2 -translate-y-1/2 z-10 p-2 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors backdrop-blur-md border border-white/10"
+                      >
+                        <ChevronUp className="w-6 h-6 rotate-90" strokeWidth={2} />
+                      </button>
+
+                      {/* Next button */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const nextIndex = mediaCarouselIndex === finalMediaUrls.length - 1 ? 0 : mediaCarouselIndex + 1;
+                          setMediaCarouselIndex(nextIndex);
+                          setFullscreenMedia({ 
+                            url: finalMediaUrls[nextIndex], 
+                            type: finalMediaTypes[nextIndex],
+                            index: nextIndex
+                          });
+                          setScale(1);
+                        }}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 z-10 p-2 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors backdrop-blur-md border border-white/10"
+                      >
+                        <ChevronDown className="w-6 h-6 rotate-90" strokeWidth={2} />
+                      </button>
+                    </>
                   )}
-                </motion.div>
+                
+                  <motion.div
+                    initial={{ scale: 0.9, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.9, opacity: 0 }}
+                    transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+                    className="w-full h-full flex items-center justify-center relative"
+                    onClick={(e) => e.stopPropagation()}
+                    onTouchStart={handleTouchStart}
+                    onTouchMove={handleTouchMove}
+                    onTouchEnd={handleTouchEnd}
+                  >
+                    {fullscreenMedia.type === 'video' ? (
+                      <video 
+                        src={fullscreenMedia.url} 
+                        controls 
+                        autoPlay
+                        className="w-full h-full object-contain"
+                      />
+                    ) : (
+                      <motion.div
+                        className="w-full h-full flex items-center justify-center"
+                        initial={{ scale: 1 }}
+                        animate={{ scale }}
+                        onDoubleClick={() => setScale(s => s === 1 ? 2.5 : 1)}
+                      >
+                        <motion.img 
+                          drag={scale > 1}
+                          dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
+                          dragElastic={0}
+                          src={fullscreenMedia.url} 
+                          alt={`Media ${mediaCarouselIndex + 1}`}
+                          className={`w-full h-full object-contain ${scale > 1 ? 'cursor-grab active:cursor-grabbing' : 'cursor-zoom-in'}`}
+                        />
+                      </motion.div>
+                    )}
+                  </motion.div>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
