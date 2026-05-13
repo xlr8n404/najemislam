@@ -1885,12 +1885,12 @@ export function PostCard({
                             transition={{ type: 'tween', duration: 0.3, ease: 'easeOut' }}
                             onClick={(e) => e.stopPropagation()}
                               style={{ height: viewportHeight ? `${viewportHeight}px` : '90dvh', WebkitOverflowScrolling: 'touch' }}
-                                className="w-full max-w-xl bg-zinc-100 dark:bg-zinc-900 text-black dark:text-white flex flex-col relative rounded-t-[30px] overflow-hidden shadow-2xl pt-10 will-change-transform" onTouchMove={(e) => e.preventDefault()}
-                              >
-                                {/* Pull Bar */}
-                                <div className="absolute top-4 left-1/2 -translate-x-1/2 w-12 h-1.5 bg-zinc-300 dark:bg-zinc-700 rounded-full cursor-grab active:cursor-grabbing" />
-                                
-                                {/* Comment Sheet Header — fixed h-16 */}
+                                className="w-full max-w-xl bg-zinc-100 dark:bg-zinc-900 text-black dark:text-white flex flex-col relative rounded-t-2xl overflow-hidden shadow-2xl pt-10 will-change-transform" onTouchMove={(e) => e.preventDefault()}
+  >
+  {/* Grabber */}
+  <div className="absolute top-2 left-1/2 -translate-x-1/2 w-10 h-1 bg-zinc-300 dark:bg-zinc-700 rounded-full cursor-grab active:cursor-grabbing" />
+  
+  {/* Comment Sheet Header — fixed h-16 */}
                                 <div className="h-16 shrink-0 flex items-center justify-between px-2 border-b border-black/5 dark:border-white/5">
                                     {/* Left: Like+count, Comment+count, Repost+count, Share (no count) */}
                                     <div className="flex items-center">
@@ -2107,12 +2107,14 @@ export function PostCard({
                   animate={{ y: 0 }}
                   exit={{ y: '100%' }}
                   transition={{ type: 'tween', duration: 0.3 }}
-                  className="fixed bottom-0 left-0 right-0 z-[80] max-w-xl mx-auto rounded-t-[30px] bg-zinc-100 dark:bg-zinc-900 overflow-hidden"
+                  className="fixed bottom-0 left-0 right-0 z-[80] max-w-xl mx-auto rounded-t-2xl bg-zinc-100 dark:bg-zinc-900 overflow-hidden"
                   onClick={(e) => e.stopPropagation()}
-                >
-                  <div className="w-12 h-1.5 bg-zinc-300 dark:bg-zinc-700 rounded-full mx-auto mt-4 mb-4" />
-                  
-                  <div className="px-4 pb-6 space-y-3">
+  >
+  <div className="flex justify-center pt-2 pb-6">
+    <div className="w-10 h-1 bg-zinc-300 dark:bg-zinc-700 rounded-full" />
+  </div>
+  
+  <div className="px-4 pb-6 space-y-3">
                     {(() => {
                       const comment = comments.find(c => c.id === selectedCommentMenu || c.replies?.find(r => r.id === selectedCommentMenu));
                       const targetComment = comment?.id === selectedCommentMenu ? comment : comment?.replies?.find(r => r.id === selectedCommentMenu);

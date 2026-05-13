@@ -397,7 +397,7 @@ export default function CommunityDetailPage() {
           </div>
         </div>
 
-        {/* ── Tab Content ─────────────────────────────────────────────────── */}
+        {/* ── Tab Content ──────��──────────────────────────────────────────── */}
         <div className="mt-2">
           {activeTab === 'posts' && (
             loading ? (
@@ -538,7 +538,7 @@ export default function CommunityDetailPage() {
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'tween', duration: 0.3, ease: 'easeOut' }}
-              className="fixed bottom-0 left-0 right-0 z-[70] max-w-xl mx-auto bg-white dark:bg-zinc-950 rounded-t-[30px] overflow-hidden shadow-2xl flex flex-col"
+              className="fixed bottom-0 left-0 right-0 z-[70] max-w-xl mx-auto bg-white dark:bg-zinc-950 rounded-t-2xl overflow-hidden shadow-2xl flex flex-col"
               style={{ height: '90dvh' }}
               onClick={e => e.stopPropagation()}
             >
