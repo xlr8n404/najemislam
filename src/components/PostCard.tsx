@@ -1408,7 +1408,7 @@ export function PostCard({
         />
 
             <Drawer open={showMenu} onOpenChange={(open) => { setShowMenu(open); if(!open) setShowDeleteConfirm(false); }}>
-              <DrawerContent className="bg-zinc-100 dark:bg-zinc-900 border-black/10 dark:border-white/10 pb-8 rounded-t-[30px]">
+              <DrawerContent className="bg-zinc-100 dark:bg-zinc-900 border-black/10 dark:border-white/10 pb-8 rounded-t-[8px]">
               <div className="mx-auto w-full max-w-xl">
                 {showDeleteConfirm ? (
                   <div className="py-6 px-4 space-y-4">
@@ -1624,7 +1624,7 @@ export function PostCard({
                 </button>
                 
                     <Drawer open={showMenu} onOpenChange={(open) => { setShowMenu(open); if(!open) setShowDeleteConfirm(false); }}>
-                      <DrawerContent className="bg-zinc-100 dark:bg-zinc-900 border-black/10 dark:border-white/10 pb-8 rounded-t-[30px]">
+                      <DrawerContent className="bg-zinc-100 dark:bg-zinc-900 border-black/10 dark:border-white/10 pb-8 rounded-t-[8px]">
                       <div className="mx-auto w-full max-w-xl">
                         {showDeleteConfirm ? (
                           <div className="py-6 px-4 space-y-4">
@@ -1828,7 +1828,7 @@ export function PostCard({
           </div>
 
                 <Drawer open={showRepostConfirm} onOpenChange={setShowRepostConfirm}>
-                  <DrawerContent className="bg-zinc-100 dark:bg-zinc-900 border-black/10 dark:border-white/10 pb-8 rounded-t-[30px]">
+                  <DrawerContent className="bg-zinc-100 dark:bg-zinc-900 border-black/10 dark:border-white/10 pb-8 rounded-t-[8px]">
                   <div className="mx-auto w-full max-w-xl">
                     <div className="py-6 px-4 space-y-4">
                     <div className="text-center space-y-2">
