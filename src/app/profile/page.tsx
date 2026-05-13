@@ -791,7 +791,7 @@ export default function ProfilePage() {
               className="fixed bottom-0 left-0 right-0 z-[100] bg-white dark:bg-zinc-950 rounded-t-3xl px-5 pt-4 pb-8 max-w-xl mx-auto shadow-2xl"
             >
               {/* Handle */}
-              <div className="w-10 h-1 bg-zinc-300 dark:bg-zinc-700 rounded-full mx-auto mb-5" />
+              <div className="bg-zinc-300 dark:bg-zinc-700 rounded-full mx-auto" style={{ marginTop: '16px', marginBottom: '16px', width: '48px', height: '8px' }} />
 
               {/* Close button */}
               <button

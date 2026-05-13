@@ -1888,7 +1888,7 @@ export function PostCard({
                                 className="w-full max-w-xl bg-zinc-100 dark:bg-zinc-900 text-black dark:text-white flex flex-col relative rounded-t-2xl overflow-hidden shadow-2xl pt-10 will-change-transform" onTouchMove={(e) => e.preventDefault()}
   >
   {/* Grabber */}
-  <div className="absolute top-2 left-1/2 -translate-x-1/2 w-10 h-1 bg-zinc-300 dark:bg-zinc-700 rounded-full cursor-grab active:cursor-grabbing" />
+  <div className="absolute left-1/2 -translate-x-1/2 bg-zinc-300 dark:bg-zinc-700 rounded-full cursor-grab active:cursor-grabbing" style={{ top: '16px', width: '48px', height: '8px' }} />
   
   {/* Comment Sheet Header — fixed h-16 */}
                                 <div className="h-16 shrink-0 flex items-center justify-between px-2 border-b border-black/5 dark:border-white/5">
@@ -2110,8 +2110,8 @@ export function PostCard({
                   className="fixed bottom-0 left-0 right-0 z-[80] max-w-xl mx-auto rounded-t-2xl bg-zinc-100 dark:bg-zinc-900 overflow-hidden"
                   onClick={(e) => e.stopPropagation()}
   >
-  <div className="flex justify-center pt-2 pb-6">
-    <div className="w-10 h-1 bg-zinc-300 dark:bg-zinc-700 rounded-full" />
+  <div className="flex justify-center" style={{ paddingTop: '16px', paddingBottom: '16px' }}>
+    <div className="bg-zinc-300 dark:bg-zinc-700 rounded-full" style={{ width: '48px', height: '8px' }} />
   </div>
   
   <div className="px-4 pb-6 space-y-3">

@@ -482,8 +482,8 @@ export default function CommunitySettingsPage() {
               className="fixed bottom-0 left-0 right-0 z-50 max-w-xl mx-auto rounded-t-2xl bg-white dark:bg-zinc-950 overflow-hidden shadow-2xl"
               onClick={e => e.stopPropagation()}
             >
-              <div className="flex justify-center pt-2 pb-6">
-                <div className="w-10 h-1 bg-zinc-300 dark:bg-zinc-700 rounded-full" />
+              <div className="flex justify-center" style={{ paddingTop: '16px', paddingBottom: '16px' }}>
+                <div className="bg-zinc-300 dark:bg-zinc-700 rounded-full" style={{ width: '48px', height: '8px' }} />
               </div>
               <div className="px-4 pb-8">
                 {transferStep === 1 && (
