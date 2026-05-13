@@ -479,10 +479,12 @@ export default function CommunitySettingsPage() {
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'tween', duration: 0.3, ease: 'easeOut' }}
-              className="fixed bottom-0 left-0 right-0 z-50 max-w-xl mx-auto rounded-t-[30px] bg-white dark:bg-zinc-950 overflow-hidden shadow-2xl"
+              className="fixed bottom-0 left-0 right-0 z-50 max-w-xl mx-auto rounded-t-2xl bg-white dark:bg-zinc-950 overflow-hidden shadow-2xl"
               onClick={e => e.stopPropagation()}
             >
-              <div className="w-12 h-1.5 bg-zinc-300 dark:bg-zinc-700 rounded-full mx-auto mt-4 mb-6" />
+              <div className="flex justify-center pt-2 pb-6">
+                <div className="w-10 h-1 bg-zinc-300 dark:bg-zinc-700 rounded-full" />
+              </div>
               <div className="px-4 pb-8">
                 {transferStep === 1 && (
                   <>

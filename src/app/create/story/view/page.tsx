@@ -430,7 +430,7 @@ function StoryViewContent() {
 
       {/* Three-dot menu bottom sheet */}
       <Drawer open={showMenu} onOpenChange={(open) => { setShowMenu(open); if (!open) setShowDeleteConfirm(false); }}>
-        <DrawerContent className="bg-zinc-100 dark:bg-zinc-900 border-black/10 dark:border-white/10 pb-8 rounded-t-[30px]">
+        <DrawerContent className="bg-zinc-100 dark:bg-zinc-900 border-black/10 dark:border-white/10 pb-8 rounded-t-2xl">
           <div className="mx-auto w-full max-w-xl">
             <div className="flex flex-col py-4">
               {/* Posted info */}

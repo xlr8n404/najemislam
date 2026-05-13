@@ -29,12 +29,12 @@ export function CreateBottomSheet({ isOpen, onClose }: CreateBottomSheetProps) {
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-neutral-900 rounded-t-3xl"
+            className="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-neutral-900 rounded-t-2xl"
           >
             <div className="max-w-xl mx-auto w-full px-6 py-6">
-              {/* Handle bar */}
-              <div className="flex justify-center mb-6">
-                <div className="w-12 h-1 bg-neutral-200 dark:bg-neutral-700 rounded-full" />
+              {/* Grabber */}
+              <div className="flex justify-center pt-2 pb-6">
+                <div className="w-10 h-1 bg-neutral-200 dark:bg-neutral-700 rounded-full" />
               </div>
 
               {/* Title */}
