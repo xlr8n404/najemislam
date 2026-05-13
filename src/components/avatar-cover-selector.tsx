@@ -20,7 +20,10 @@ export function AvatarCoverSelector({
   onDelete,
 }: AvatarCoverSelectorProps) {
   const isCover = type === 'cover';
-  const title = isCover ? 'Cover Photo' : 'Profile Photo';
+  const title = isCover ? 'Cover Photo?' : 'Profile Photo?';
+  const details = isCover 
+    ? 'Show your vibe. Add a cover photo to highlight your personality and make your profile stand out.'
+    : 'This is how people recognize you. Add a profile photo to represent yourself across Sharable.';
   const deleteLabel = 'Remove Photo';
   const addLabel = 'Add Photo';
 
@@ -40,13 +43,19 @@ export function AvatarCoverSelector({
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'tween', duration: 0.3 }}
-            className="fixed bottom-0 left-0 right-0 z-50 max-w-xl mx-auto rounded-t-[30px] bg-white dark:bg-black overflow-hidden"
+            className="fixed bottom-0 left-0 right-0 z-50 max-w-xl mx-auto rounded-t-2xl bg-white dark:bg-black overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="w-12 h-1.5 bg-zinc-300 dark:bg-zinc-700 rounded-full mx-auto mt-4 mb-6" />
+            {/* Grabber */}
+            <div className="flex justify-center pt-2 pb-4">
+              <div className="w-10 h-2 bg-zinc-300 dark:bg-zinc-700 rounded-full" />
+            </div>
 
             <div className="px-4 pb-8">
-              <h2 className="text-xl font-bold text-black dark:text-white mb-6">{title}</h2>
+              <div className="text-center mb-6">
+                <h2 className="text-xl font-bold text-black dark:text-white mb-2">{title}</h2>
+                <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">{details}</p>
+              </div>
 
               <div className="flex gap-3">
                 {/* Remove Button - Left */}
