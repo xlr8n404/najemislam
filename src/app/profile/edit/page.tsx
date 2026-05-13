@@ -272,7 +272,7 @@ export default function EditProfilePage() {
           </div>
 
           {/* Header Overlay on Cover Photo */}
-          <div className="absolute top-0 left-0 right-0 px-4 h-20 flex items-center justify-between z-10">
+          <div className="absolute top-0 left-0 right-0 px-4 flex items-center justify-between z-10 border-b border-black/10 dark:border-white/10" style={{height: '64px'}}>
             {/* Back Button */}
             <Link 
               href="/profile" 

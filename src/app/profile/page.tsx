@@ -622,7 +622,7 @@ export default function ProfilePage() {
             )
           ) : (
             <div className="px-4 py-4 space-y-4">
-              {/* Bio / Description Box */}
+              {/* Section 1: Bio / Description */}
               <div className="bg-zinc-100 dark:bg-zinc-900/50 rounded-2xl p-4 border border-black/5 dark:border-white/5">
                 <div className="flex items-center gap-3 text-zinc-500 dark:text-zinc-400 mb-3">
                   <span className="text-xs font-bold uppercase tracking-widest">
@@ -637,9 +637,9 @@ export default function ProfilePage() {
                 </p>
               </div>
 
-              {/* Details Box */}
-              <div className="bg-zinc-100 dark:bg-zinc-900/50 rounded-2xl p-4 border border-black/5 dark:border-white/5 space-y-6">
-                {/* Account Type — always shown */}
+              {/* Section 2: Account Type & Role */}
+              <div className="bg-zinc-100 dark:bg-zinc-900/50 rounded-2xl p-4 border border-black/5 dark:border-white/5 space-y-4">
+                {/* Account Type */}
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 rounded-xl bg-black/5 dark:bg-white/5 flex items-center justify-center text-zinc-500 dark:text-zinc-400">
                     {profile?.account_type === 'brand' ? (
@@ -656,7 +656,23 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
-                {/* Full Name — always shown */}
+                {/* Account Role */}
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-black/5 dark:bg-white/5 flex items-center justify-center text-zinc-500 dark:text-zinc-400">
+                    <UserCircle size={22} strokeWidth={1.5} />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-[12px] text-zinc-500 dark:text-zinc-400 font-medium">Account Role</p>
+                    <p className="font-semibold text-black dark:text-white">
+                      {profile?.identity_tag || 'Not set'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Section 3: Other Details */}
+              <div className="bg-zinc-100 dark:bg-zinc-900/50 rounded-2xl p-4 border border-black/5 dark:border-white/5 space-y-4">
+                {/* Full Name */}
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 rounded-xl bg-black/5 dark:bg-white/5 flex items-center justify-center text-zinc-500 dark:text-zinc-400">
                     <UserCircle size={22} strokeWidth={1.5} />
@@ -667,7 +683,7 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
-                {/* Username — always shown */}
+                {/* Username */}
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 rounded-xl bg-black/5 dark:bg-white/5 flex items-center justify-center text-zinc-500 dark:text-zinc-400">
                     <AtSign size={22} strokeWidth={1.5} />
@@ -736,7 +752,7 @@ export default function ProfilePage() {
                   </div>
                 )}
 
-                {/* Active From — always shown */}
+                {/* Active From */}
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 rounded-xl bg-black/5 dark:bg-white/5 flex items-center justify-center text-zinc-500 dark:text-zinc-400">
                     <Calendar size={22} strokeWidth={1.5} />
