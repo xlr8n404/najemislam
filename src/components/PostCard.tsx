@@ -1746,34 +1746,36 @@ export function PostCard({
 
             {hasMedia && (
               <div className="rounded-2xl overflow-hidden bg-zinc-100 dark:bg-zinc-900 mx-4 my-2">
-                <div className="grid grid-cols-2 gap-1 auto-rows-[1fr]" style={{aspectRatio: finalMediaUrls.length === 1 ? '1' : undefined}}>
-                  {finalMediaUrls.slice(0, 4).map((url, index) => {
-                    const type = finalMediaTypes[index];
-                    const isLast = index === 3 && finalMediaUrls.length > 4;
-                    const overlay = isLast ? finalMediaUrls.length - 4 : 0;
-                    
-                    return (
-                      <div 
-                        key={index} 
-                        className="relative bg-zinc-100 dark:bg-zinc-900 aspect-square"
-                      >
-                        <MediaGridCell
-                          url={url}
-                          type={type}
-                          index={index}
-                          overlay={overlay}
-                          isVisible={isVisible}
-                          onOpen={(url, type) => {
-                            if (type !== 'video' && type !== 'audio') {
-                              setFullscreenMedia({ url, type, index });
-                              setMediaCarouselIndex(index);
-                            }
-                          }}
-                        />
-                      </div>
-                    );
-                  })}
-                </div>
+                <Carousel className="w-full">
+                  <CarouselContent className="-ml-0">
+                    {finalMediaUrls.map((url, index) => {
+                      const type = finalMediaTypes[index];
+                      return (
+                        <CarouselItem key={index} className="pl-0">
+                          <div className="relative bg-zinc-100 dark:bg-zinc-900 aspect-square">
+                            <MediaGridCell
+                              url={url}
+                              type={type}
+                              index={index}
+                              isVisible={isVisible}
+                              onOpen={(url, type) => {
+                                if (type !== 'video' && type !== 'audio') {
+                                  setFullscreenMedia({ url, type, index });
+                                  setMediaCarouselIndex(index);
+                                }
+                              }}
+                            />
+                            {finalMediaUrls.length > 1 && (
+                              <div className="absolute bottom-3 right-3 bg-black/60 backdrop-blur-md text-white text-[10px] font-bold px-2 py-1 rounded-full z-10">
+                                {index + 1}/{finalMediaUrls.length}
+                              </div>
+                            )}
+                          </div>
+                        </CarouselItem>
+                      );
+                    })}
+                  </CarouselContent>
+                </Carousel>
               </div>
             )}
 
